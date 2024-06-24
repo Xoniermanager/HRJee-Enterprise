@@ -1,0 +1,138 @@
+import axiosDelete from './axiosDelete';
+import axiosGet from './axiosGet';
+import axiosPost from './axiosPost';
+import axiosPut from './axiosPut';
+
+export const login = (url,data) => {
+  let item = axiosPost(url,data);
+  return item;
+};
+export const signUp = (url, data) => {
+  let item = axiosPost(url, data);
+  return item;
+};
+export const getProfile = (url,token) => {
+  let item = axiosGet(url,token);
+  return item;
+};
+export const updateProfile = (url,data,token) => {
+  let item = axiosPost(url,data,token);
+  return item;
+};
+export const changePasswords = (url,data,token) => {
+  let item = axiosPost(url,data,token);
+  return item;
+};
+export const Dashboard=(url,token)=>{
+  let item = axiosGet(url,token);
+  return item;
+}
+export const getDosageInstruction=(url,token)=>{
+  let item = axiosGet(url,token);
+  return item;
+}
+export const getEmergencySupport=(url,token)=>{
+  let item = axiosGet(url,token);
+  return item;
+}
+export const Reports=(url,data,token)=>{
+  let item = axiosPost(url,data,token);
+  return item;
+}
+export const AdminsterListing=(url,token)=>{
+  let item = axiosGet(url,token);
+  return item;
+}
+export const getDiseaseDetails=(url,token)=>{
+  let item = axiosGet(url,token);
+  return item;
+}
+export const patient = url => {
+  let item = axiosGet(url);
+  return item;
+};
+export const getDosageDetails =(url,token) => {
+  let item = axiosGet(url,token);
+  return item;
+};
+export const AddListMedicine =(url,data,token,form) => {
+  let item = axiosPost(url,data,token,form);
+  return item;
+};
+export const Update_Password =(url,data,token) => {
+  let item = axiosPost(url,data,token);
+  return item;
+};
+export const forget_password =(url,data,token) => {
+  let item = axiosPost(url,data,token);
+  return item;
+};
+export const medicine_view =(url,token) => {
+  let item = axiosGet(url,token);
+  return item;
+};
+export const AddMedication =(url,data,token) => {
+  let item = axiosPost(url,data,token);
+  return item;
+};
+export const scheduleMedicine=(url,token) => {
+  let item = axiosGet(url,token);
+  return item;
+};
+export const AddscheduleMedicine=(url,data,token) => {
+  let item = axiosPost(url,data,token);
+  return item;
+};
+export const getDashboard=(url,data,token) => {
+  let item = axiosPost(url,data,token);
+  return item;
+};
+export const upload_image=(url,data,token) => {
+  let item = axiosPost(url,data,token);
+  return item;
+};
+export const Report_Page=(url,data,token) => {
+  let item = axiosPost(url,data,token);
+  return item;
+};
+export const gethistory=(url,token) => {
+  let item = axiosGet(url,token);
+  return item;
+};
+export const getPatientDeatils=(url,token) => {
+  let item = axiosGet(url,token);
+  return item;
+};
+export const getMedicineList=(url,token) => {
+  let item = axiosGet(url,token);
+  return item;
+}; 
+
+export const AllPPEOtherStockDetails=(url,token) => {
+  let item = axiosGet(url,token);
+  return item;
+}; 
+export const getCheck=(url,data,token) => {
+  let item = axiosPost(url,data,token);
+  return item;
+};
+export const EditLog=(url,data,token,form) => {
+  let item = axiosPut(url,data,token,form);
+  return item;
+};
+export const DeleteAddminsterMedi=(url,data,token) => {
+  let item = axiosDelete(url,data,token);
+  return item;
+};
+export const EditPrn=(url,data,token,form) => {
+  let item = axiosPut(url,data,token,form);
+  return item;
+};
+export const setTokenDone=(url,data,token) => {
+  let item = axiosPost(url,data,token);
+  return item;
+};
+export const logout = (url,token) => {
+  let item = axiosPost(url,token);
+  return item;
+};

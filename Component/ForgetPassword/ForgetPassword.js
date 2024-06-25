@@ -89,7 +89,7 @@ const ForgetPassword = () => {
       </TouchableOpacity>
       <TouchableOpacity
         style={LoginGuestStyle.submit_button}
-        onPress={() => navigation.navigate('LoginScreen')} >
+        onPress={() => navigation.navigate('ResetPassword',{email:email})} >
             {loader ? (
           <ActivityIndicator size="small" color="#fff" />
         ) : (

@@ -21,6 +21,7 @@ import ForgetPassword from '../../Component/ForgetPassword/ForgetPassword';
 import MyDrawer from '../MyDrawer/MyDrawer';
 import CustomDrawer from '../MyDrawer/CustomDrawer';
 import ChangePassword from '../../Component/Password/ChangePassword';
+import ResetPassword from '../../Component/ForgetPassword/ResetPassword';
 
 
 const MyStack = () => {
@@ -116,6 +117,11 @@ const MyStack = () => {
       <Stack.Screen
         name="ChangePassword"
         component={ChangePassword}
+        options={{headerShown: false}}
+      />
+      <Stack.Screen
+        name="ResetPassword"
+        component={ResetPassword}
         options={{headerShown: false}}
       />
     </Stack.Navigator>

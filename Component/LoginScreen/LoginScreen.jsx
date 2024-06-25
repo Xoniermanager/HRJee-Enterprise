@@ -124,7 +124,7 @@ const LoginScreen = () => {
           <Text style={LoginGuestStyle.error}>{passwordError}</Text>
         ) : null}
         <TouchableOpacity
-          onPress={() => navigation.navigate('TwoFectorVerification')}>
+          onPress={() => navigation.navigate('ForgetPassword')}>
           <Text style={LoginGuestStyle.forget}>Forget password ?</Text>
         </TouchableOpacity>
         <TouchableOpacity

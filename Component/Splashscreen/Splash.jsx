@@ -7,7 +7,7 @@ const Splash = () => {
   const navigation = useNavigation();
   setTimeout(async () => {
     const token = await AsyncStorage.getItem('token');
-
+    console.log("splash token ", token)
     if (token !== null) {
       navigation.navigate('MyTabbar')
     } else {

@@ -9,14 +9,14 @@ import {
   SafeAreaView,
   Alert,
 } from 'react-native';
-import React, { useState, useEffect } from 'react';
-import { useNavigation } from '@react-navigation/native';
-import { TextInput } from 'react-native-gesture-handler';
-import { Root, Popup, Toast } from 'popup-ui'
+import React, {useState, useEffect} from 'react';
+import {useNavigation} from '@react-navigation/native';
+import {TextInput} from 'react-native-gesture-handler';
+import {Root, Popup, Toast} from 'popup-ui';
 import LoginGuestStyle from './LoginGuestStyle';
-import { login, setTokenDone } from '../../APINetwork/ComponentApi';
+import {login, setTokenDone} from '../../APINetwork/ComponentApi';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { BASE_URL } from '../../utils';
+import {BASE_URL} from '../../utils';
 import axios from 'axios';
 
 const LoginScreen = () => {
@@ -27,21 +27,17 @@ const LoginScreen = () => {
   const [emailError, setEmailError] = useState('');
   const [passwordError, setPasswordError] = useState('');
   const [showPassword, setShowPassword] = useState(false);
-  const [tok, setTok] = useState()
+  const [tok, setTok] = useState();
 
   let data = {
-    email:email,
-    password:password,
+    email: email,
+    password: password,
   };
   const toggleShowPassword = () => {
     setShowPassword(!showPassword);
   };
 
-
   const loginSubmit = async () => {
-
-
-    
     try {
       const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
       if (email.trim() === '' || password.trim() === '') {
@@ -56,16 +52,14 @@ const LoginScreen = () => {
         const url = `${BASE_URL}/login`;
         const response = await login(url, data);
 
-        console.log("response......", response)
 
         if (response?.data?.status == true) {
           setLoader(false);
-          await AsyncStorage.setItem('token', response?.data?.token);
-          navigation.navigate('MyTabbar')
-          setEmail('')
-          setPassword('')
-          setEmailError('')
-          setPasswordError('')
+          navigation.navigate('Verification', response?.data?.data);
+          setEmail('');
+          setPassword('');
+          setEmailError('');
+          setPasswordError('');
         }
       }
     } catch (error) {
@@ -73,17 +67,16 @@ const LoginScreen = () => {
     }
   };
 
-
-
   return (
     <SafeAreaView style={LoginGuestStyle.contanier}>
       <Root>
-
         <Image
           source={require('../../assets/logo.png')}
           style={LoginGuestStyle.Img_icon}
         />
-        <Text style={LoginGuestStyle.LoginGuest_Text}>Login to your Account</Text>
+        <Text style={LoginGuestStyle.LoginGuest_Text}>
+          Login to your Account
+        </Text>
 
         <Text style={LoginGuestStyle.Phone_number}>E-mail</Text>
         <View style={LoginGuestStyle.passInput}>
@@ -96,7 +89,7 @@ const LoginScreen = () => {
           />
           <Image
             source={require('../../assets/Login/user.png')}
-            style={{ width: 25, height: 25, marginRight: 10 }}
+            style={{width: 25, height: 25, marginRight: 10}}
           />
         </View>
 
@@ -117,12 +110,12 @@ const LoginScreen = () => {
             {showPassword ? (
               <Image
                 source={require('../../assets/Login/hide.png')}
-                style={{ width: 25, height: 25, marginRight: 10 }}
+                style={{width: 25, height: 25, marginRight: 10}}
               />
             ) : (
               <Image
                 source={require('../../assets/Login/show.png')}
-                style={{ width: 25, height: 25, marginRight: 10 }}
+                style={{width: 25, height: 25, marginRight: 10}}
               />
             )}
           </TouchableOpacity>
@@ -130,13 +123,13 @@ const LoginScreen = () => {
         {passwordError ? (
           <Text style={LoginGuestStyle.error}>{passwordError}</Text>
         ) : null}
-        <TouchableOpacity onPress={() => navigation.navigate('TwoFectorVerification')}>
+        <TouchableOpacity
+          onPress={() => navigation.navigate('TwoFectorVerification')}>
           <Text style={LoginGuestStyle.forget}>Forget password ?</Text>
         </TouchableOpacity>
         <TouchableOpacity
           style={LoginGuestStyle.submit_button}
-          onPress={() => loginSubmit()}
-        >
+          onPress={() => loginSubmit()}>
           {loader ? (
             <ActivityIndicator size="small" color="#fff" />
           ) : (

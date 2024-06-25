@@ -104,7 +104,7 @@ const MyStack = () => {
         options={{headerShown: false}}
       />
       <Stack.Screen
-        name="TwoFectorVerification"
+        name="Verification"
         component={TwoFectorVerification}
         options={{headerShown: false}}
       />

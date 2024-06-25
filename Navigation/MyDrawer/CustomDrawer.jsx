@@ -34,6 +34,7 @@ export default function CustomDrawer(props) {
     try {
       const url = `${BASE_URL}/logout`;
       const response = await logout(url, token);
+      AsyncStorage.removeItem('token')
       navigation.navigate('OnboardingScreen')
     } catch (error) {
       console.error('Error making POST request:', error);

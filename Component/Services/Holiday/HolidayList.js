@@ -13,16 +13,17 @@ import { getHoliday } from '../../../APINetwork/ComponentApi';
 import { BASE_URL } from '../../../utils';
 import Reload from '../../../Reload';
 import { showMessage } from "react-native-flash-message";
-import HolidayList from './HolidayList';
 
 
-const Holiday = ({ navigation }) => {
+const HolidayList = ({ navigation }) => {
     const [selected, setSelected] = useState('');
     const [toggleCheckBox, setToggleCheckBox] = useState(false);
     const [holidays, setHolidays] = useState([]);
     const [expandedProfile, setExpandedProfile] = useState(false);
     const [monthlyHolidays, setMonthlyHolidays] = useState([]);
     const [loader, setLoader] = useState(false);
+
+    console.log("--------", monthlyHolidays)
 
     const getMonthlyHolidays = (dateString) => {
         const selectedMonth = new Date(dateString).getMonth() + 1;
@@ -54,15 +55,15 @@ const Holiday = ({ navigation }) => {
         fetchHolidays();
     }, []);
 
-    // if (holidays?.length === 0) {
-    //     return <Reload />
-    // }
+    if (holidays?.length === 0) {
+        return <Reload />
+    }
 
     return (
         <SafeAreaView style={styles.container}>
             <View style={{ marginTop: 15 }}>
                 <View style={{ alignSelf: "center" }}>
-                    <Text style={styles.name}>Holiday</Text>
+                    <Text style={styles.name}>Holiday List</Text>
                 </View>
 
                 <ScrollView
@@ -75,26 +76,9 @@ const Holiday = ({ navigation }) => {
                         borderTopRightRadius: 40,
                     }}>
 
-                    <Calendar
-                        style={{ borderTopLeftRadius: 50, borderTopRightRadius: 50, backgroundColor: "#fff" }}
-                        onDayPress={day => {
-                            setSelected(day.dateString);
-                            getMonthlyHolidays(day.dateString);
-                        }}
-                        markedDates={{
-                            [selected]: { selected: true, disableTouchEvent: true, selectedDotColor: 'orange' }
-                        }}
-                    />
-
-                    <View style={{ marginHorizontal: responsiveWidth(5) }}>
-                        <View style={{ flexDirection: "row", justifyContent: "space-between" }}>
-                            <Text style={{ color: "#0E0E64", marginVertical: 10, fontSize: 18, fontWeight: "500" }}>Holiday of the month</Text>
-                            <TouchableOpacity onPress={()=> navigation.navigate('HolidayList')}>
-                                <Text style={{ color: "#0E0E64", marginVertical: 10, fontSize: 18, fontWeight: "500" }}>View all</Text>
-                            </TouchableOpacity>
-                        </View>
-                        {monthlyHolidays?.length > 0 ? (
-                            monthlyHolidays?.map((holiday, index) => (
+                    <View style={{ marginHorizontal: responsiveWidth(5) , marginTop:responsiveHeight(1)}}>
+                        {holidays?.length > 0 ? (
+                            holidays?.map((holiday, index) => (
                                 <View key={index} style={{ height: responsiveHeight(10), borderRadius: 15, flexDirection: "row", backgroundColor: "#fff", borderWidth: 0.5, borderColor: "#0E0E64", elevation: 3, marginBottom: 5 }}>
                                     <View style={{ marginLeft: 20, backgroundColor: "#0E0E64", height: 70, width: 50, justifyContent: "center", borderBottomRightRadius: 30, borderBottomLeftRadius: 30 }}>
                                         <Image style={{ height: 30, width: 30, resizeMode: "contain", alignSelf: "center" }} source={require('../../../assets/HomeScreen/calendar.png')} />
@@ -106,7 +90,9 @@ const Holiday = ({ navigation }) => {
                                 </View>
                             ))
                         ) : (
-                            <Text style={{ color: "#0E0E64", fontSize: 18, fontWeight: "500" }}>No holidays available this month</Text>
+                            <View style={{ alignSelf: "center", justifyContent: "center", alignItems: "center", flex: 1 }}>
+                                <Text style={{ color: "#0E0E64", fontSize: 18, fontWeight: "500", textAlign: "center" }}>No holidays available this month</Text>
+                            </View>
                         )}
                     </View>
                 </ScrollView>
@@ -115,7 +101,7 @@ const Holiday = ({ navigation }) => {
     );
 };
 
-export default Holiday;
+export default HolidayList;
 
 const styles = StyleSheet.create({
     container: {

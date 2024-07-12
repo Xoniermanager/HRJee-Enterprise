@@ -1,5 +1,5 @@
 import LinearGradient from 'react-native-linear-gradient';
-import React, {useState, useContext, useEffect} from 'react';
+import React, { useState, useContext, useEffect } from 'react';
 import {
   Text,
   View,
@@ -17,17 +17,20 @@ import {
   responsiveFontSize,
 } from 'react-native-responsive-dimensions';
 import FontAwesome from 'react-native-vector-icons/FontAwesome';
-import {DrawerActions, useNavigation} from '@react-navigation/native';
-import {createDrawerNavigator} from '@react-navigation/drawer';
-import {createStackNavigator} from '@react-navigation/stack';
-import {BASE_URL} from '../../utils';
+import { DrawerActions, useNavigation } from '@react-navigation/native';
+import { createDrawerNavigator } from '@react-navigation/drawer';
+import { createStackNavigator } from '@react-navigation/stack';
+import { BASE_URL } from '../../utils';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import axios from 'axios';
+import Reload from '../../Reload';
+import { getProfile } from '../../APINetwork/ComponentApi';
+import { showMessage } from "react-native-flash-message";
 
 const Drawer = createDrawerNavigator();
 const Stack = createStackNavigator();
 
-const Account = ({title, description, imageUrl}) => {
+const Account = ({ title, description, imageUrl }) => {
   const showData = [
     {
       id: 1,
@@ -51,13 +54,15 @@ const Account = ({title, description, imageUrl}) => {
       backgroundcolor: '#44D5FB',
     },
   ];
+  const [getProfileApiData, setGetProfileApiData] = useState('');
+  const [loader, setLoader] = useState(false);
 
   {
     /* This is Services card List */
   }
   const navigation = useNavigation();
 
-  const renderServicesList = ({item}) => (
+  const renderServicesList = ({ item }) => (
     <View
       style={{
         justifyContent: 'center',
@@ -67,15 +72,15 @@ const Account = ({title, description, imageUrl}) => {
         marginHorizontal: 5,
         borderRadius: 20,
       }}>
-      <View style={{padding: 10, alignItems: 'center'}}>
+      <View style={{ padding: 10, alignItems: 'center' }}>
         <Image
-          style={{height: 50, width: 50, marginBottom: 2}}
+          style={{ height: 50, width: 50, marginBottom: 2 }}
           source={item.uri}
         />
-        <Text style={{marginBottom: 2, fontSize: 16, color: '#000'}}>
+        <Text style={{ marginBottom: 2, fontSize: 16, color: '#000' }}>
           {item.name}
         </Text>
-        <Text style={{fontSize: 16, color: '#000'}}>{item.num}</Text>
+        <Text style={{ fontSize: 16, color: '#000' }}>{item.num}</Text>
       </View>
     </View>
   );
@@ -129,6 +134,36 @@ const Account = ({title, description, imageUrl}) => {
     }
   };
 
+  useEffect(() => {
+    async function check() {
+      try {
+        setLoader(true);
+        let token = await AsyncStorage.getItem('TOKEN');
+        const url = `${BASE_URL}/profile`;
+        const response = await getProfile(url, token);
+
+        if (response?.data?.status === true) {
+          showMessage({
+            message: `${response?.data?.message}`,
+            type: "success",
+          });
+          setGetProfileApiData(response?.data?.data);
+          setLoader(false);
+        } else {
+          setLoader(false);
+        }
+      } catch (error) {
+        console.error('Error making POST request:', error);
+        setLoader(false);
+      }
+    }
+    check();
+  }, []);
+
+  if(getProfileApiData == "" && getProfileApiData == [] && getProfileApiData == null)
+  {
+    return <Reload/>
+  }
   return (
     <SafeAreaView style={styles.container}>
       <ScrollView showsVerticalScrollIndicator={false}>
@@ -137,31 +172,44 @@ const Account = ({title, description, imageUrl}) => {
           style={{
             marginTop: 15,
           }}>
-          <View style={{flexDirection: 'row', alignSelf: 'center'}}>
+          <View style={{ flexDirection: 'row', alignSelf: 'center' }}>
             <Text style={styles.name}>Profile</Text>
             <TouchableOpacity
               onPress={() =>
                 navigation.dispatch(DrawerActions.openDrawer('MyDrawer'))
               }
-              style={{marginLeft: 5}}>
+              style={{ marginLeft: 5 }}>
               <FontAwesome style={{}} name="edit" size={30} color="#fff" />
             </TouchableOpacity>
           </View>
-          <View style={{marginTop: 10, alignSelf: 'center'}}>
-            <Image
-              style={{
-                height: 100,
-                width: 100,
-                resizeMode: 'contain',
-                marginVertical: 5,
-                alignSelf: 'center',
-              }}
-              source={require('../../assets/HomeScreen/profile.png')}
-            />
-            <Text style={styles.name}>Hello, xyz</Text>
-            <Text style={styles.name}>React native devloper</Text>
-            <Text style={styles.name}>1234567890</Text>
-            <Text style={styles.name}>demo@xonier.com</Text>
+          <View style={{ marginTop: 10, alignSelf: 'center' }}>
+            {
+              getProfileApiData?.profile_image == "" || getProfileApiData?.profile_image == [] || getProfileApiData?.profile_image == null?
+                <Image
+                  style={{
+                    height: 100,
+                    width: 100,
+                    resizeMode: 'contain',
+                    marginVertical: 5,
+                    alignSelf: 'center',
+                  }}
+                  source={require('../../assets/HomeScreen/profile.png')}
+                />
+                :
+                <Image
+                  style={{
+                    height: 100,
+                    width: 100,
+                    resizeMode: 'contain',
+                    marginVertical: 5,
+                    alignSelf: 'center',
+                  }}
+                  source={{ uri: 'https://i.postimg.cc/L69jybXV/512.png' }} // Replace with the actual image URL
+                />
+            }
+            <Text style={styles.name}>{getProfileApiData.name}</Text>
+            <Text style={styles.name}>{getProfileApiData?.phone}</Text>
+            <Text style={styles.name}>{getProfileApiData?.email}</Text>
           </View>
         </View>
 
@@ -184,7 +232,7 @@ const Account = ({title, description, imageUrl}) => {
             At work for : 4 years, 1 month, 20 Day
           </Text>
           <FlatList
-            style={{alignSelf: 'center'}}
+            style={{ alignSelf: 'center' }}
             horizontal
             showsHorizontalScrollIndicator={false}
             data={showData}
@@ -219,19 +267,19 @@ const Account = ({title, description, imageUrl}) => {
                 justifyContent: 'space-between',
                 alignItems: 'center',
               }}>
-              <Text style={{color: '#000', fontSize: responsiveFontSize(2.3)}}>
+              <Text style={{ color: '#000', fontSize: responsiveFontSize(2.3) }}>
                 Bank Details
               </Text>
-              <TouchableOpacity onPress={()=>toggleExpandedBank()}>
+              <TouchableOpacity onPress={() => toggleExpandedBank()}>
                 {expandedbank ? (
                   <Image
-                    style={{height: 30, width: 30, resizeMode: 'contain'}}
+                    style={{ height: 30, width: 30, resizeMode: 'contain' }}
                     source={require('../../assets/HomeScreen/up.png')}
                   />
                 ) : (
                   <>
                     <Image
-                      style={{height: 30, width: 30, resizeMode: 'contain'}}
+                      style={{ height: 30, width: 30, resizeMode: 'contain' }}
                       source={require('../../assets/HomeScreen/down.png')}
                     />
                   </>
@@ -316,19 +364,19 @@ const Account = ({title, description, imageUrl}) => {
                 justifyContent: 'space-between',
                 alignItems: 'center',
               }}>
-              <Text style={{color: '#000', fontSize: responsiveFontSize(2.3)}}>
+              <Text style={{ color: '#000', fontSize: responsiveFontSize(2.3) }}>
                 Assets
               </Text>
               <TouchableOpacity onPress={toggleExpandedAssets}>
                 {expandedassets ? (
                   <Image
-                    style={{height: 30, width: 30, resizeMode: 'contain'}}
+                    style={{ height: 30, width: 30, resizeMode: 'contain' }}
                     source={require('../../assets/HomeScreen/up.png')}
                   />
                 ) : (
                   <>
                     <Image
-                      style={{height: 30, width: 30, resizeMode: 'contain'}}
+                      style={{ height: 30, width: 30, resizeMode: 'contain' }}
                       source={require('../../assets/HomeScreen/down.png')}
                     />
                   </>
@@ -394,19 +442,19 @@ const Account = ({title, description, imageUrl}) => {
                 justifyContent: 'space-between',
                 alignItems: 'center',
               }}>
-              <Text style={{color: '#000', fontSize: responsiveFontSize(2.3)}}>
+              <Text style={{ color: '#000', fontSize: responsiveFontSize(2.3) }}>
                 Documents
               </Text>
               <TouchableOpacity onPress={toggleExpandedDocuments}>
                 {expandeddocuments ? (
                   <Image
-                    style={{height: 30, width: 30, resizeMode: 'contain'}}
+                    style={{ height: 30, width: 30, resizeMode: 'contain' }}
                     source={require('../../assets/HomeScreen/up.png')}
                   />
                 ) : (
                   <>
                     <Image
-                      style={{height: 30, width: 30, resizeMode: 'contain'}}
+                      style={{ height: 30, width: 30, resizeMode: 'contain' }}
                       source={require('../../assets/HomeScreen/down.png')}
                     />
                   </>
@@ -482,9 +530,9 @@ const styles = StyleSheet.create({
     backgroundColor: '#d3e3fd30',
     borderColor: '#0c57d0',
   },
-  heading: {fontWeight: '500', fontSize: 15},
-  heading_grey: {fontSize: 14, color: 'grey', fontWeight: '300'},
-  add_txt: {fontSize: 14, color: '#efad37', fontWeight: '600'},
+  heading: { fontWeight: '500', fontSize: 15 },
+  heading_grey: { fontSize: 14, color: 'grey', fontWeight: '300' },
+  add_txt: { fontSize: 14, color: '#efad37', fontWeight: '600' },
   centeredView: {
     flex: 1,
     justifyContent: 'center',
@@ -513,8 +561,8 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     flexDirection: 'row',
   },
-  input_title: {marginBottom: 3, fontSize: 14, fontWeight: '500'},
-  input_top_margin: {marginTop: 15},
+  input_title: { marginBottom: 3, fontSize: 14, fontWeight: '500' },
+  input_top_margin: { marginTop: 15 },
   input: {
     height: 45,
     backgroundColor: 'white',
@@ -546,8 +594,8 @@ const styles = StyleSheet.create({
 
     // width: '80%',
   },
-  bottomsheetTxt: {fontSize: 17},
-  bottomsheetLogo: {fontSize: 22, marginRight: 15},
+  bottomsheetTxt: { fontSize: 17 },
+  bottomsheetLogo: { fontSize: 22, marginRight: 15 },
   bottomsheetBtn: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -616,7 +664,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#fff',
     borderRadius: 8,
     shadowColor: '#000',
-    shadowOffset: {width: 0, height: 2},
+    shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.8,
     shadowRadius: 2,
     elevation: 5,

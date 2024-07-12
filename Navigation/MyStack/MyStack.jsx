@@ -21,6 +21,7 @@ import ForgetPassword from '../../Component/ForgetPassword/ForgetPassword';
 import MyDrawer from '../MyDrawer/MyDrawer';
 import CustomDrawer from '../MyDrawer/CustomDrawer';
 import ChangePassword from '../../Component/Password/ChangePassword';
+import HolidayList from '../../Component/Services/Holiday/HolidayList';
 
 
 const MyStack = () => {
@@ -116,6 +117,11 @@ const MyStack = () => {
       <Stack.Screen
         name="ChangePassword"
         component={ChangePassword}
+        options={{headerShown: false}}
+      />
+      <Stack.Screen
+        name="HolidayList"
+        component={HolidayList}
         options={{headerShown: false}}
       />
     </Stack.Navigator>

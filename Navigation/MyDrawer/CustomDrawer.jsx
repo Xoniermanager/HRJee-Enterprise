@@ -29,12 +29,10 @@ export default function CustomDrawer(props) {
   };
 
   const handleLogout = async () => {
-    const token = await AsyncStorage.getItem('token');
-    console.log("token", token)
+    const token = await AsyncStorage.getItem('TOKEN');
+    console.log("token-------------", token)
     try {
-      const url = `${BASE_URL}/logout`;
-      const response = await logout(url, token);
-      AsyncStorage.removeItem('token')
+      AsyncStorage.removeItem('TOKEN')
       navigation.navigate('OnboardingScreen')
     } catch (error) {
       console.error('Error making POST request:', error);

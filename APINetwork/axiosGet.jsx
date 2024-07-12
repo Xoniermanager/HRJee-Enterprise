@@ -11,9 +11,9 @@ const axiosGet = async (url, token) => {
 
     return data;
   } catch (error) {
-    console.log(error?.response?.data?.message,"300000");
+    console.log(error);
 
-    // return {status: 500};
+    return {status: 500};
   }
 };
 export default axiosGet;

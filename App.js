@@ -5,6 +5,7 @@ import { NavigationContainer } from '@react-navigation/native';
 import ConextApi from './Store/ConetxtApi.jsx/ConextApi';
 import MyStack from './Navigation/MyStack/MyStack';
 import 'react-native-gesture-handler';
+import FlashMessage from "react-native-flash-message";
 
 const App = () => {
   return (
@@ -13,7 +14,7 @@ const App = () => {
       <NavigationContainer>
         <MyStack />
       </NavigationContainer>
-
+      <FlashMessage position="top" />
     </ConextApi>
   )
 }
@@ -21,4 +22,5 @@ const App = () => {
 export default App
 
 const styles = StyleSheet.create({})
+
 

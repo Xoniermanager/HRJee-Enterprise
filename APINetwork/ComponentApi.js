@@ -15,7 +15,27 @@ export const getProfile = (url,token) => {
   let item = axiosGet(url,token);
   return item;
 };
+export const getHoliday = (url,token) => {
+  let item = axiosGet(url,token);
+  return item;
+};
+export const getLeaveType = (url,token) => {
+  let item = axiosGet(url,token);
+  return item;
+};
+export const getAddress = (url,token) => {
+  let item = axiosGet(url,token);
+  return item;
+};
 export const updateProfile = (url,data,token) => {
+  let item = axiosPost(url,data,token);
+  return item;
+};
+export const updateAddress = (url,data,token) => {
+  let item = axiosPut(url,data,token);
+  return item;
+};
+export const LeaveApply = (url,data,token) => {
   let item = axiosPost(url,data,token);
   return item;
 };

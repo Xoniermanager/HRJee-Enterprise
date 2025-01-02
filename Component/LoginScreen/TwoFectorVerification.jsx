@@ -242,6 +242,7 @@ import axios from 'axios';
 import { useNavigation } from '@react-navigation/native';
 import { showMessage } from 'react-native-flash-message';
 import { CodeField, Cursor } from 'react-native-confirmation-code-field';
+import Themes from '../Theme/Theme';
 
 const CELL_COUNT = 4;
 
@@ -461,10 +462,11 @@ const styles = StyleSheet.create({
     lineHeight: responsiveHeight(6),
     fontSize: responsiveFontSize(2.5),
     borderWidth: 2,
-    borderColor: '#00000030',
+    borderColor: '#00000030', 
     textAlign: 'center',
-    backgroundColor: '#fff',
-    borderRadius: 5,
+    backgroundColor: "#fff",
+    borderRadius: 5, 
+    color: Themes == 'dark' ? '#000' : '#000'
   },
   focusCell: {
     borderColor: '#000',

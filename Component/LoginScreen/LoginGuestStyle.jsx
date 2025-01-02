@@ -1,9 +1,10 @@
-import { StyleSheet } from 'react-native';
+import { Platform, StyleSheet } from 'react-native';
 import {
     responsiveHeight,
     responsiveWidth,
     responsiveFontSize,
   } from 'react-native-responsive-dimensions';
+import Themes from '../Theme/Theme';
 const LoginGuestStyle = StyleSheet.create({
 
     contanier: {
@@ -120,7 +121,7 @@ const LoginGuestStyle = StyleSheet.create({
       alignSelf: 'center',
       backgroundColor: '#fff',
       marginTop: 7,
-      padding:2,
+      padding:Platform.OS === 'ios' ? 12 : 2,
       color: '#000',
       flexDirection:'row',
       alignItems:'center',
@@ -129,6 +130,7 @@ const LoginGuestStyle = StyleSheet.create({
     },
     InputPassword:{
       width: responsiveWidth(68),
+      color: Themes == 'dark' ? '#000' : '#000'
     }
 
 });

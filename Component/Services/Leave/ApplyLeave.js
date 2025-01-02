@@ -1,4 +1,4 @@
-import { Image, SafeAreaView, StyleSheet, Text, View, TouchableOpacity, ScrollView, TextInput } from 'react-native';
+import { Image, SafeAreaView, StyleSheet, Text, View, TouchableOpacity, ScrollView, TextInput, Platform } from 'react-native';
 import React, { useState, useEffect, useMemo } from 'react';
 import LinearGradient from 'react-native-linear-gradient';
 import {
@@ -15,6 +15,10 @@ import Reload from '../../../Reload';
 import { Dropdown } from 'react-native-element-dropdown';
 import axios from 'axios';
 import RadioGroup, { RadioButtonProps } from 'react-native-radio-buttons-group';
+import CardSkeletonBorder from '../../Skeleton/CardStyle/CardSkeletonBorder';
+import ProfileDetails from '../../Skeleton/ProfileDetails';
+import ApplyLeaveSkeleton from '../../Skeleton/ApplyLeaveSkeleton';
+import Themes from '../../Theme/Theme';
 
 
 const ApplyLeave = ({ navigation }) => {
@@ -42,36 +46,46 @@ const ApplyLeave = ({ navigation }) => {
         {
             id: '1', // acts as primary key, should be unique and non-empty string
             label: 'Morning',
-            value: 'first_half'
+            value: 'first_half',
+            labelStyle:{ color: Themes == 'dark' ? '#000' : '#000'} // Customize label style here
         },
         {
             id: '2',
             label: 'Afternoon',
-            value: 'second_half'
+            value: 'second_half',
+            labelStyle:{ color: Themes == 'dark' ? '#000' : '#000'} // Customize label style here
         }
     ]), []);
     const radioButtons1: RadioButtonProps[] = useMemo(() => ([
         {
             id: '1', // acts as primary key, should be unique and non-empty string
             label: 'Morning',
-            value: 'option1'
+            value: 'option1',
+            labelStyle:{ color: Themes == 'dark' ? '#000' : '#000'} // Customize label style here
+
         },
         {
             id: '2',
             label: 'Afternoon',
-            value: 'option2'
+            value: 'option2',
+            labelStyle:{ color: Themes == 'dark' ? '#000' : '#000'} // Customize label style here
+
         }
     ]), []);
     const radioButtons2: RadioButtonProps[] = useMemo(() => ([
         {
             id: '1', // acts as primary key, should be unique and non-empty string
             label: 'Morning',
-            value: 'option1'
+            value: 'option1',
+            labelStyle:{ color: Themes == 'dark' ? '#000' : '#000'} // Customize label style here
+
         },
         {
             id: '2',
             label: 'Afternoon',
-            value: 'option2'
+            value: 'option2',
+            labelStyle:{ color: Themes == 'dark' ? '#000' : '#000'} // Customize label style here
+
         }
     ]), []);
 
@@ -209,9 +223,9 @@ const ApplyLeave = ({ navigation }) => {
 
     // This is ending api part
 
-    if (getleavetypeapidata == '') {
-        return <Reload />
-    }
+    // if (getleavetypeapidata == '') {
+    //     return <Reload />
+    // }
 
     return (
 
@@ -234,132 +248,139 @@ const ApplyLeave = ({ navigation }) => {
                     marginTop: responsiveHeight(3),
                     borderTopRightRadius: 40
                 }}>
-                <View style={{ flexDirection: "row", marginTop: responsiveHeight(3), alignSelf: "center", alignItems: "center", justifyContent: "space-between" }}>
-                    <View style={{ alignItems: "center", marginHorizontal: responsiveWidth(2) }}>
-                        <TouchableOpacity onPress={() => handlePress(1)} style={{ backgroundColor: "#0E0E64", borderRadius: 100, height: 90, width: 90, justifyContent: "center" }}>
-                            <Text style={{ color: "#fff", fontSize: 15, textAlign: "center" }}>{startDate ? new Date(startDate).getDate() : 'Start'}</Text>
-                            <Text style={{ color: "#fff", fontSize: 15, textAlign: "center" }}>{startDate ? new Date(startDate).toLocaleString('default', { month: 'long' }) : 'Date'}</Text>
-                        </TouchableOpacity>
-                        <Image style={{ height: 50, width: 50, }} source={require('../../../assets/ApplyLeave/arrow-down.png')} />
-                        <TouchableOpacity onPress={() => handlePress(2)} style={{ backgroundColor: "#0E0E64", borderRadius: 100, height: 90, width: 90, justifyContent: "center" }}>
-                            <Text style={{ color: "#fff", fontSize: 15, textAlign: "center" }}>{endDate ? new Date(endDate).getDate() : 'End'}</Text>
-                            <Text style={{ color: "#fff", fontSize: 15, textAlign: "center" }}>{endDate ? new Date(endDate).toLocaleString('default', { month: 'long' }) : 'Date'}</Text>
-                        </TouchableOpacity>
-                        <Text style={{ color: "#0E0E64", fontSize: 18, marginTop: responsiveHeight(1) }}>{daysBetween} Days</Text>
-                    </View>
-                    <View style={{ marginHorizontal: responsiveWidth(2) }}>
-                        <Calendar style={{ borderTopLeftRadius: 50, borderTopRightRadius: 50, backgroundColor: "#fff", elevation: 7, width: responsiveWidth(70) }}
-                            onDayPress={day => {
-                                setSelected(day.dateString);
-                                setMonth(day);
-
-                                if (!startDate) {
-                                    setStartDate(day.dateString); // Set start date if it's not already set
-                                } else if (!endDate) {
-                                    setEndDate(day.dateString); // Set end date if start date is already set
-                                }
-                            }}
-                            markedDates={{
-                                [selected]: { selected: true, disableTouchEvent: true, selectedDotColor: 'orange' },
-                                [startDate]: { startingDay: true, color: 'orange', textColor: 'white' },
-                                [endDate]: { endingDay: true, color: 'orange', textColor: 'white' },
-                            }}
-                        />
-
-
-                        {/* <Text>End date greater then start date</Text> */}
-                    </View>
-                </View>
                 {
-                    startDate > endDate ?
-                        showMessage({
-                            message: `End date greater then start date, Please select valid details`,
-                            type: "danger",
-                        })
-                        // <Text style={{ textAlign: "center" }}>End date greater then start date, Please select valid details</Text>
+                    loader ? <ApplyLeaveSkeleton />
                         :
-                        null
-                }
-                <View style={{ flexDirection: "row", marginHorizontal: responsiveWidth(2) }}>
-                    <CheckBox
-                        disabled={false}
-                        value={toggleCheckBox}
-                        onValueChange={(newValue) => setToggleCheckBox(newValue)}
-                    />
-                    <Text style={{ alignSelf: "center", fontSize: 16, color: "#000" }}>Is half day</Text>
-                </View>
-                {
-                    toggleCheckBox == true ?
-                        startDate == endDate ?
-                            <View style={{ borderRadius: 10, backgroundColor: "#EDFBFE", padding: 5, marginHorizontal: responsiveWidth(2) }}>
-                                <RadioGroup containerStyle={{ flexDirection: "row" }}
-                                    radioButtons={radioButtons}
-                                    onPress={setSelectedId}
-                                    selectedId={selectedId}
-                                />
-                            </View>
-                            :
-                            <View style={{ borderRadius: 10, backgroundColor: "#EDFBFE", padding: 5, marginHorizontal: responsiveWidth(2) }}>
-                                <Text style={{ color: "#000" }}>First day of leave</Text>
-                                <RadioGroup containerStyle={{ flexDirection: "row" }}
-                                    radioButtons={radioButtons1}
-                                    onPress={setSelectedId1}
-                                    selectedId={selectedId1}
-                                />
-                                <Text style={{ color: "#000" }}>Last day of leave</Text>
-                                <RadioGroup containerStyle={{ flexDirection: "row" }}
-                                    radioButtons={radioButtons2}
-                                    onPress={setSelectedId2}
-                                    selectedId={selectedId2}
-                                />
-                            </View>
-                        :
-                        null
-                }
+                        <>
+                            <View style={{ flexDirection: "row", marginTop: responsiveHeight(3), alignSelf: "center", alignItems: "center", justifyContent: "space-between" }}>
+                                <View style={{ alignItems: "center", marginHorizontal: responsiveWidth(2) }}>
+                                    <TouchableOpacity onPress={() => handlePress(1)} style={{ backgroundColor: "#0E0E64", borderRadius: 100, height: 90, width: 90, justifyContent: "center" }}>
+                                        <Text style={{ color: "#fff", fontSize: 15, textAlign: "center" }}>{startDate ? new Date(startDate).getDate() : 'Start'}</Text>
+                                        <Text style={{ color: "#fff", fontSize: 15, textAlign: "center" }}>{startDate ? new Date(startDate).toLocaleString('default', { month: 'long' }) : 'Date'}</Text>
+                                    </TouchableOpacity>
+                                    <Image style={{ height: 50, width: 50, }} source={require('../../../assets/ApplyLeave/arrow-down.png')} />
+                                    <TouchableOpacity onPress={() => handlePress(2)} style={{ backgroundColor: "#0E0E64", borderRadius: 100, height: 90, width: 90, justifyContent: "center" }}>
+                                        <Text style={{ color: "#fff", fontSize: 15, textAlign: "center" }}>{endDate ? new Date(endDate).getDate() : 'End'}</Text>
+                                        <Text style={{ color: "#fff", fontSize: 15, textAlign: "center" }}>{endDate ? new Date(endDate).toLocaleString('default', { month: 'long' }) : 'Date'}</Text>
+                                    </TouchableOpacity>
+                                    <Text style={{ color: "#0E0E64", fontSize: 18, marginTop: responsiveHeight(1) }}>{daysBetween} Days</Text>
+                                </View>
+                                <View style={{ marginHorizontal: responsiveWidth(2) }}>
+                                    <Calendar style={{ borderTopLeftRadius: 50, borderTopRightRadius: 50, backgroundColor: "#fff", elevation: 7, width: responsiveWidth(70) }}
+                                        onDayPress={day => {
+                                            setSelected(day.dateString);
+                                            setMonth(day);
 
-                {/* This is profile details */}
-                <View style={{ marginHorizontal: responsiveWidth(2), marginTop: responsiveHeight(1), borderTopRightRadius: 10, borderBottomRightRadius: 10 }}>
-                    {
-                        getleavetypeapidata?.map((item, index) => {
-                            return (
-                                <View key={index} style={{ backgroundColor: "#EDFBFE", padding: 10, marginBottom: 5, borderRadius: 10 }}>
+                                            if (!startDate) {
+                                                setStartDate(day.dateString); // Set start date if it's not already set
+                                            } else if (!endDate) {
+                                                setEndDate(day.dateString); // Set end date if start date is already set
+                                            }
+                                        }}
+                                        markedDates={{
+                                            [selected]: { selected: true, disableTouchEvent: true, selectedDotColor: 'orange' },
+                                            [startDate]: { startingDay: true, color: 'orange', textColor: 'white' },
+                                            [endDate]: { endingDay: true, color: 'orange', textColor: 'white' },
+                                        }}
+                                    />
+
+
+                                    {/* <Text>End date greater then start date</Text> */}
+                                </View>
+                            </View>
+                            {
+                                startDate > endDate ?
+                                    showMessage({
+                                        message: `End date greater then start date, Please select valid details`,
+                                        type: "danger",
+                                    })
+                                    // <Text style={{ textAlign: "center" }}>End date greater then start date, Please select valid details</Text>
+                                    :
+                                    null
+                            }
+                            <View style={{ flexDirection: "row", marginHorizontal: responsiveWidth(2) }}>
+                                <CheckBox
+                                    disabled={false}
+                                    value={toggleCheckBox}
+                                    onValueChange={(newValue) => setToggleCheckBox(newValue)}
+                                    tintColors={{ true: color = "#000", false: color = "#000" }}
+
+                                />
+                                <Text style={{ alignSelf: "center", fontSize: 16, color: "#000", marginHorizontal: Platform.OS == 'ios' ? 8: null }}>Is half day</Text>
+                            </View>
+                            {
+                                toggleCheckBox == true ?
+                                    startDate == endDate ?
+                                        <View style={{ borderRadius: 10, backgroundColor: "#EDFBFE", padding: 5, marginHorizontal: responsiveWidth(2) }}>
+                                            <RadioGroup containerStyle={{ flexDirection: "row", }}
+                                                radioButtons={radioButtons}
+                                                onPress={setSelectedId}
+                                                selectedId={selectedId}
+                                            />
+                                        </View>
+                                        :
+                                        <View style={{ borderRadius: 10, backgroundColor: "#EDFBFE", padding: 5, marginHorizontal: responsiveWidth(2) }}>
+                                            <Text style={{color: Themes == 'dark' ? '#000' : '#000' }}>First day of leave</Text>
+                                            <RadioGroup containerStyle={{ flexDirection: "row" }}
+                                                radioButtons={radioButtons1}
+                                                onPress={setSelectedId1}
+                                                selectedId={selectedId1}
+                                            />
+                                            <Text style={{  color: Themes == 'dark' ? '#000' : '#000' }}>Last day of leave</Text>
+                                            <RadioGroup containerStyle={{ flexDirection: "row" }}
+                                                radioButtons={radioButtons2}
+                                                onPress={setSelectedId2}
+                                                selectedId={selectedId2}
+                                            />
+                                        </View>
+                                    :
+                                    null
+                            }
+
+                            {/* This is profile details */}
+                            <View style={{ marginHorizontal: responsiveWidth(2), marginTop: responsiveHeight(1), borderTopRightRadius: 10, borderBottomRightRadius: 10 }}>
+                                <View style={{ backgroundColor: "#EDFBFE", padding: 10, marginBottom: 5, borderRadius: 10 }}>
                                     <Dropdown selectedTextProps={{
                                         style: {
                                             color: '#000',
                                         },
                                     }}
                                         style={styles.input}
-                                        placeholderStyle={styles.placeholderStyle}
                                         data={getleavetypeapidata && getleavetypeapidata}
                                         maxHeight={300}
                                         labelField="name"
                                         valueField="id"
                                         placeholder={!isFocus ? 'Select leave type' : '...'}
-                                        value={value1 ? value1 : item?.state_id}
+                                        value={value1}
                                         onChange={item => {
                                             setValue1(item.id);
                                         }}
+                                        placeholderStyle={{
+                                            color: Themes == 'dark' ? '#000' : '#000',          // Assuming Themes.colors.placeholder is defined
+                                          }}
+                                          itemTextStyle={{   color: Themes == 'dark' ? '#000' : '#000',  }}
+                                    />
+                                </View>
+                                <View style={{ borderRadius: 30, marginBottom: 8, padding: 5, backgroundColor: "#EDFBFE", opacity: 1, elevation: 10, }}>
+                                    <TextInput
+                                        placeholder='Reason'
+                                        numberOfLines={6}
+                                        textAlignVertical={'top'}
+                                        onChangeText={(text) => setReason(text)}
+                                        placeholderTextColor={Themes == 'dark' ? '#000' : '#000'}
+                                        color= {Themes == 'dark' ? '#000' : '#000'}
                                     />
                                 </View>
 
-                            )
-                        })
-                    }
+                            </View>
 
-                    <View style={{ borderRadius: 30, marginBottom: 8, padding: 5, backgroundColor: "#EDFBFE", opacity: 1, elevation: 10, }}>
-                        <TextInput
-                            placeholder='Reason'
-                            numberOfLines={6}
-                            textAlignVertical={'top'}
-                            onChangeText={(text) => setReason(text)}
-                        />
-                    </View>
+                            <TouchableOpacity onPress={() => handleSubmit()} style={{ marginBottom: 5, backgroundColor: "#0433DA", padding: 18, width: "90%", alignSelf: "center", borderRadius: 50 }}>
+                                <Text style={{ textAlign: "center", color: "#fff", fontSize: 18, fontWeight: "bold" }}>Submit</Text>
+                            </TouchableOpacity>
+                        </>
+                }
 
-                </View>
 
-                <TouchableOpacity onPress={() => handleSubmit()} style={{ marginBottom: 5, backgroundColor: "#0433DA", padding: 18, width: "90%", alignSelf: "center", borderRadius: 50 }}>
-                    <Text style={{ textAlign: "center", color: "#fff", fontSize: 18, fontWeight: "bold" }}>Submit</Text>
-                </TouchableOpacity>
 
             </ScrollView>
 

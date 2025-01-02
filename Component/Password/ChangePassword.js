@@ -8,6 +8,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import {
     responsiveFontSize, responsiveHeight, responsiveWidth
 } from 'react-native-responsive-dimensions';
+import Themes from '../Theme/Theme';
 const ChangePassword = ({ navigation }) => {
     const [oldPassword, setOldPassword] = useState('');
     const [newPassword, setNewPassword] = useState('');
@@ -34,7 +35,6 @@ const ChangePassword = ({ navigation }) => {
                 setLoader(true);
                 const url = `${BASE_URL}/change/password`;
                 const response = await changePasswords(url, data, token);
-                console.log("response......", response?.data)
                 if (response?.data?.status == true) {
                     setLoader(false);
                     setOldPassword('')
@@ -72,20 +72,22 @@ const ChangePassword = ({ navigation }) => {
                     <TextInput
                         style={styles.input}
                         placeholder="Old Password"
-                        placeholderTextColor={"#000"}
                         secureTextEntry
                         value={oldPassword}
                         onChangeText={setOldPassword}
                         onChange={() => setOldPasswordError(null)}
+                        placeholderTextColor={Themes == 'dark' ? '#000' : '#000'}
+                        color= {Themes == 'dark' ? '#000' : '#000'}
                     />
                     <TextInput
                         style={styles.input}
                         placeholder="New Password"
-                        placeholderTextColor={"#000"}
                         secureTextEntry
                         value={newPassword}
                         onChangeText={setNewPassword}
                         onChange={() => setNewPasswordError(null)}
+                        placeholderTextColor={Themes == 'dark' ? '#000' : '#000'}
+                        color= {Themes == 'dark' ? '#000' : '#000'}
                     />
                     {newPasswordError ? (
                         <Text style={LoginGuestStyle.error}>{newPasswordError}</Text>
@@ -98,6 +100,8 @@ const ChangePassword = ({ navigation }) => {
                         value={confirmPassword}
                         onChangeText={setConfirmPassword}
                         onChange={() => setConfirmPasswordError(null)}
+                        // placeholderTextColor={Themes == 'dark' ? '#000' : '#000'}
+                        color= {Themes == 'dark' ? '#000' : '#000'}
                         setNewPasswordError
                     />
                     {confirmPasswordError ? (
@@ -136,6 +140,7 @@ const styles = StyleSheet.create({
         padding: 10,
         marginBottom: 10,
         textColor: "#000"
+        
     },
     updateButton: {
         backgroundColor: '#0052cc',

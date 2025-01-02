@@ -9,6 +9,8 @@ import { showMessage } from "react-native-flash-message";
 import {
   responsiveFontSize, responsiveHeight, responsiveWidth
 } from 'react-native-responsive-dimensions';
+import AddressDetails from '../../../Component/Skeleton/AddressDetails';
+import Themes from '../../../Component/Theme/Theme';
 
 const Address = () => {
   const [presentCountry, setPresentCountry] = useState();
@@ -19,6 +21,8 @@ const Address = () => {
   const [isBothAddressSame, setIsBothAddressSame] = useState(false);
   const [addresses, setAddresses] = useState([]);
   const [localAddress, setLocalAddress] = useState({});
+  const [loader, setLoader] = useState(false);
+
 
   const handleAddressChange = (id, itemAttributes) => {
     const index = addresses.findIndex(x => x.id == id);
@@ -53,12 +57,13 @@ const Address = () => {
 
   useEffect(() => {
     async function GetAddress() {
+      setLoader(true)
       try {
-
         let token = await AsyncStorage.getItem('TOKEN');
         const url = `${BASE_URL}/user/details`;
         const response = await getAddress(url, token);
         if (response?.data?.status === true) {
+          setLoader(false)
           showMessage({
             message: `${response?.data?.message}`,
             type: "success",
@@ -67,7 +72,7 @@ const Address = () => {
           setAddresses(response?.data?.data?.address_details)
           setCountries(response?.data?.data?.countries)
           setStates(response?.data?.data?.states)
-          
+
           response?.data?.data?.address_details?.forEach(element => {
             if (element.address_type == "both_same") {
               setIsBothAddressSame(true);
@@ -79,7 +84,7 @@ const Address = () => {
         }
       } catch (error) {
         console.error('Error making POST request:', error);
-
+        setLoader(false)
       }
     }
     GetAddress();
@@ -135,6 +140,10 @@ const Address = () => {
 
   /* Api intigration ending */
 
+  // if(!addresses == "" || addresses == null){
+  //   return <AddressDetails/>
+  // }
+
   return (
     <SafeAreaView style={styles.container}>
       <View style={{ alignSelf: "center", marginTop: 15, }}>
@@ -148,78 +157,93 @@ const Address = () => {
         marginTop: responsiveHeight(3),
         borderTopRightRadius: 40
       }}>
-        <View style={{ margin: 20 }}>
-        <FlatList
-          data={addresses}
-          renderItem={({ item, index }) => {
-            return (
-              <View>
-                {
-                  item?.address_type == "local" ?
-                    <>
-                      <Text style={{ color: "#0E0E64", marginVertical: 10, fontWeight: "bold", fontSize: 16 }}>Permanent Address</Text>                      
-                      <View style={styles.checkboxContainer}>
-                        <CheckBox
-                          value={isBothAddressSame}
-                          onValueChange={() => handleAddressCheckboxChange()}
-                        />
-                        <Text style={styles.sameAddressText}>Same as present address</Text>                      
-                      </View>
-                    </>
+        {
+          loader ? <AddressDetails /> :
+            <View style={{ margin: 20 }}>
+              <FlatList
+                data={addresses}
+                renderItem={({ item, index }) => {
+                  return (
+                    <View>
+                      {
+                        item?.address_type == "local" ?
+                          <>
+                            <Text style={{ color: "#0E0E64", marginVertical: 10, fontWeight: "bold", fontSize: 16 }}>Permanent Address</Text>
+                            <View style={styles.checkboxContainer}>
+                              <CheckBox
+                                value={isBothAddressSame}
+                                onValueChange={() => handleAddressCheckboxChange()}
+                              />
+                              <Text style={styles.sameAddressText}>Same as present address</Text>
+                            </View>
+                          </>
 
-                    :
-                    <Text style={{ color: "#0E0E64", marginVertical: 10, fontWeight: "bold", fontSize: 16 }}>Present Address</Text>}
+                          :
+                          <Text style={{ color: "#0E0E64", marginVertical: 10, fontWeight: "bold", fontSize: 16 }}>Present Address</Text>}
 
-                <Dropdown
-                  data={countries && countries}
-                  labelField="name"
-                  valueField="id"
-                  value={presentCountry ? presentCountry : item?.country_id}
-                  onChange={value => handleAddressChange(item.id, { country_id: value.id })}
-                  style={styles.input}
-                  placeholderStyle={styles.placeholderStyle}
-                  selectedTextProps={{
-                    style: {
-                      color: '#000',
-                    },
-                  }}
-                  placeholder="Select Country"
-                />
-                <Dropdown
-                  data={states}
-                  labelField="name"
-                  valueField="id"
-                  value={presentState ? presentState : item?.state_id}
-                  onChange={value => handleAddressChange(item.id, { state_id: value.id })}
-                  style={styles.input}
-                  placeholderStyle={styles.placeholderStyle}
-                  selectedTextProps={{
-                    style: {
-                      color: '#000',
-                    },
-                  }}
-                  placeholder="Select State"
-                />
-                <TextInput
-                  value={item?.city}
-                  onChangeText={value => handleAddressChange(item.id, { city: value })}
-                  placeholder="City"
-                  style={styles.input} />
-                <TextInput
-                  value={item?.address}
-                  onChangeText={value => handleAddressChange(item.id, { address: value })}
-                  placeholder="Address"
-                  style={styles.input}
-                />
-              </View>
+                      <Dropdown
+                        data={countries && countries}
+                        labelField="name"
+                        valueField="id"
+                        value={presentCountry ? presentCountry : item?.country_id}
+                        onChange={value => handleAddressChange(item.id, { country_id: value.id })}
+                        style={styles.input}
+                        selectedTextProps={{
+                          style: {
+                            color: '#000',
+                          },
+                        }}
+                        placeholder="Select Country"
+                        placeholderStyle={{
+                          color: Themes == 'dark' ? '#000' : '#000',          // Assuming Themes.colors.placeholder is defined
+                        }}
+                        itemTextStyle={{ color: Themes == 'dark' ? '#000' : '#000', }}
+                      />
+                      <Dropdown
+                        data={states}
+                        labelField="name"
+                        valueField="id"
+                        value={presentState ? presentState : item?.state_id}
+                        onChange={value => handleAddressChange(item.id, { state_id: value.id })}
+                        style={styles.input}
+                        selectedTextProps={{
+                          style: {
+                            color: '#000',
+                          },
+                        }}
+                        placeholder="Select State"
+                        placeholderStyle={{
+                          color: Themes == 'dark' ? '#000' : '#000',          // Assuming Themes.colors.placeholder is defined
+                        }}
+                        itemTextStyle={{ color: Themes == 'dark' ? '#000' : '#000', }}
+                      />
+                      <TextInput
+                        value={item?.city}
+                        onChangeText={value => handleAddressChange(item.id, { city: value })}
+                        placeholder="City"
+                        style={styles.input}
+                        placeholderTextColor={Themes == 'dark' ? '#000' : '#000'}
+                        color={Themes == 'dark' ? '#000' : '#000'}
+                      />
+                      <TextInput
+                        value={item?.address}
+                        onChangeText={value => handleAddressChange(item.id, { address: value })}
+                        placeholder="Address"
+                        style={styles.input}
+                        placeholderTextColor={Themes == 'dark' ? '#000' : '#000'}
+                        color= {Themes == 'dark' ? '#000' : '#000'}
+                      />
+                    </View>
 
-            )
-          }}
-        />
-        <TouchableOpacity onPress={() => AddressUpdate()} style={styles.updateButton} >
-          <Text style={styles.updateButtonText}>Update</Text>
-        </TouchableOpacity>
-        </View>
+                  )
+                }}
+              />
+              <TouchableOpacity onPress={() => AddressUpdate()} style={styles.updateButton} >
+                <Text style={styles.updateButtonText}>Update</Text>
+              </TouchableOpacity>
+            </View>
+        }
+
       </ScrollView>
     </SafeAreaView>
   );
@@ -228,8 +252,15 @@ const Address = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    padding: 16,
-    backgroundColor: '#ffffff',
+    backgroundColor: '#0E0E64',
+  },
+
+  name: {
+    color: '#fff',
+    fontSize: responsiveFontSize(3),
+    fontWeight: 'bold',
+    textAlign: "center",
+    marginBottom: responsiveHeight(0)
   },
   header: {
     fontSize: 24,
@@ -290,18 +321,6 @@ const styles = StyleSheet.create({
   updateButtonText: {
     color: '#fff',
     fontWeight: 'bold',
-  },
-  container: {
-    flex: 1,
-    backgroundColor: '#0E0E64',
-  },
-
-  name: {
-    color: '#fff',
-    fontSize: responsiveFontSize(3),
-    fontWeight: 'bold',
-    textAlign: "center",
-    marginBottom: responsiveHeight(0)
   },
   checkbox: {
     alignSelf: 'center',

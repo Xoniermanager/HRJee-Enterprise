@@ -8,6 +8,9 @@ import FontAwesome from 'react-native-vector-icons/FontAwesome';
 import Person_Detils from './MyDrawerScreens/Person_Detils';
 import Address from './MyDrawerScreens/Address';
 import CustomDrawer from './CustomDrawer';
+import PunchIn from './MyDrawerScreens/PunchIn';
+import PunchOut from './MyDrawerScreens/PunchOut';
+import ChangePassword from '../../Component/Password/ChangePassword';
 
 const MyDrawer = () => {
   const Drawer = createDrawerNavigator();
@@ -70,6 +73,39 @@ const MyDrawer = () => {
           drawerIcon: ({}) => (
             <View style={styles.drawerBox}>
               <Text style={styles.drawerText}>Address</Text>
+            </View>
+          ),
+        }}
+      />
+      <Drawer.Screen
+        name="PunchIn"
+        component={PunchIn}
+        options={{
+          drawerIcon: ({}) => (
+            <View style={styles.drawerBox}>
+              <Text style={styles.drawerText}>Punch In</Text>
+            </View>
+          ),
+        }}
+      />
+      <Drawer.Screen
+        name="PunchOut"
+        component={PunchOut}
+        options={{
+          drawerIcon: ({}) => (
+            <View style={styles.drawerBox}>
+              <Text style={styles.drawerText}>Punch Out</Text>
+            </View>
+          ),
+        }}
+      />
+      <Drawer.Screen
+        name="ChangePassword"
+        component={ChangePassword}
+        options={{
+          drawerIcon: ({}) => (
+            <View style={styles.drawerBox}>
+              <Text style={styles.drawerText}>Change Password</Text>
             </View>
           ),
         }}

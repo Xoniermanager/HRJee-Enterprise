@@ -7,9 +7,14 @@ import {
 import { logout } from '../../APINetwork/ComponentApi';
 import { BASE_URL } from '../../utils';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import axios from 'axios';
+import { showMessage } from "react-native-flash-message";
+import { useNavigation } from '@react-navigation/native';
+
 
 export default function CustomDrawer(props) {
-  const navigation = props.navigation;
+  const [loader, setLoader] = useState(false)
+  const navigation = useNavigation()
 
 
   const confirmLogout = () => {
@@ -29,13 +34,27 @@ export default function CustomDrawer(props) {
   };
 
   const handleLogout = async () => {
-    const token = await AsyncStorage.getItem('TOKEN');
-    console.log("token-------------", token)
     try {
-      AsyncStorage.removeItem('TOKEN')
-      navigation.navigate('OnboardingScreen')
+      const token = await AsyncStorage.getItem('TOKEN')
+      console.log("TOKEN", token)
+      const url = `${BASE_URL}/logout`;
+      console.log("url", url, token)
+      const response = await logout(url, token);
+      if (response?.data?.status == true) {
+        showMessage({
+          message: `${response?.data?.message}`,
+          type: "success",
+        });
+        await AsyncStorage.removeItem('TOKEN')
+        navigation.navigate('LoginScreen')
+        setLoader(false);
+      }
+      else {
+        setLoader(false);
+      }
     } catch (error) {
-      console.error('Error making POST request:', error);
+      console.log('Error making POST request:', error);
+      setLoader(false);
     }
   };
 
@@ -43,9 +62,6 @@ export default function CustomDrawer(props) {
     <View style={{ flex: 1 }}>
       <DrawerContentScrollView {...props}>
         <DrawerItemList {...props} />
-        <TouchableOpacity onPress={() => navigation.navigate('ChangePassword')}>
-          <Text style={{ color: '#fff', marginLeft: 35, fontSize: 17 }}>Change Password</Text>
-        </TouchableOpacity>
         <TouchableOpacity onPress={() => confirmLogout()}>
           <Text style={{ color: '#fff', marginLeft: 35, fontSize: 17, marginTop: 8 }}>Logout</Text>
         </TouchableOpacity>

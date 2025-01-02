@@ -6,74 +6,78 @@ import {
   TouchableOpacity,
   Image,
   ActivityIndicator,
-  SafeAreaView
+  SafeAreaView,
+  Platform
 } from 'react-native';
-import React, {useState} from 'react';
+import React, { useState } from 'react';
 import {
   responsiveHeight,
   responsiveWidth,
   responsiveFontSize,
 } from 'react-native-responsive-dimensions';
-import {useNavigation} from '@react-navigation/native';
+import { useNavigation } from '@react-navigation/native';
 import LoginGuestStyle from '../LoginScreen/LoginGuestStyle';
 import { forget_password } from '../../APINetwork/ComponentApi';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { BASE_URL } from '../../utils';
+import Themes from '../Theme/Theme';
+import { showMessage } from "react-native-flash-message";
+
+
 const ForgetPassword = () => {
   const navigation = useNavigation();
   const [email, setEmail] = useState();
-  const [emailError,setEmailError]=useState('')
   const [loader, setLoader] = useState(false);
 
 
   let data = {
-    email:email
-   
+    email: email
+
   };
-  const loginSubmit = async () => {
-    console.log(data)
-   
-   const Token=await AsyncStorage.getItem('token');
-   const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  const ForgetSubmit = async () => {
+    try {
+      const Token = await AsyncStorage.getItem('TOKEN');
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
-   if (email.trim() === '') {
-    setEmailError('Please enter some text');
-    
-   }
-   else if (!emailRegex.test(email)) {
-    setEmailError('Invalid email address');
-  } 
-  
-   else {
-     setLoader(true);
-     const url = `${BASE_URL}/patient/forgot-password`;
-     const response = await forget_password(url,data,Token);
-    
+      if (email?.trim() === "") {
+        showMessage({
+          message: "Please enter email",
+          type: "danger",
+        });
+      }
+      else if (!emailRegex.test(email)) {
+        showMessage({
+          message: "Invalid email address",
+          type: "danger",
+        });
+      }
+      else {
+        setLoader(true);
+        const url = `${BASE_URL}/password/forgot`
+        const response = await forget_password(url, data, Token);
 
-     if (response.status == 200) {
-       setLoader(false);
-       setEmailError('')
-       navigation.navigate('CheckMail')
-       
-     } else {
-       setEmailError('Wrong current password');
-       setLoader(false);
-       
-     }
-   }
- };
+
+        if (response?.data?.status == true) {
+          showMessage({
+            message: `${response?.data?.message}`,
+            type: "success",
+          });
+          setLoader(false);           
+          navigation.goBack()
+        } else {
+          setLoader(false);
+        }
+      }
+    } catch (error) {
+      console.log('Error making POST request:', error);
+      setLoader(false);
+    }
+
+
+
+  };
   return (
     <SafeAreaView style={LoginGuestStyle.contanier}>
-      {/* <View style={{flexDirection: 'row', alignItems: 'center',marginTop:10}}>
-        <TouchableOpacity onPress={() => navigation.goBack()}>
-          <Image
-            source={require('../../assets/ForgetPassword/back.png')}
-            style={{width: 25, height: 25, marginLeft: 15,}}
-          />
-        </TouchableOpacity>
-        <Text style={styles.RecoverPasswordText}>Recover Password</Text>
-      </View> */}
-
       <Text style={styles.registeredText}>
         Please provide your registered email address to recover your password.
       </Text>
@@ -83,17 +87,18 @@ const ForgetPassword = () => {
         value={email}
         onChangeText={prev => setEmail(prev)}
         style={styles.Input_Text}
+        placeholderTextColor={Themes == 'dark' ? '#000' : '#000'}
       />
       <TouchableOpacity onPress={() => navigation.goBack()}>
         <Text style={styles.forget}>Have Password ?</Text>
       </TouchableOpacity>
       <TouchableOpacity
         style={LoginGuestStyle.submit_button}
-        onPress={() => navigation.navigate('LoginScreen')} >
-            {loader ? (
+        onPress={() => ForgetSubmit()} >
+        {loader ? (
           <ActivityIndicator size="small" color="#fff" />
         ) : (
-        <Text style={styles.submit_text}>Submit</Text>
+          <Text style={styles.submit_text}>Submit</Text>
         )}
       </TouchableOpacity>
     </SafeAreaView>
@@ -108,14 +113,14 @@ const styles = StyleSheet.create({
   },
   RecoverPasswordText: {
     color: '#37496E',
-    fontSize:  responsiveFontSize(2),
+    fontSize: responsiveFontSize(2),
     fontWeight: '500',
     textAlign: 'center',
     marginLeft: 15,
   },
   registeredText: {
     color: '#fff',
-    fontSize:responsiveFontSize(2),
+    fontSize: responsiveFontSize(2),
     fontWeight: '500',
     textAlign: 'center',
     marginTop: 25,
@@ -125,7 +130,7 @@ const styles = StyleSheet.create({
     fontWeight: '500',
     marginHorizontal: 40,
     marginTop: 10,
-    color:"#fff"
+    color: "#fff"
   },
   Input_Text: {
     width: responsiveWidth(85),
@@ -133,11 +138,11 @@ const styles = StyleSheet.create({
     alignSelf: 'center',
     backgroundColor: '#fff',
     marginTop: 7,
-    padding: 10,
+    padding: Platform.OS === 'ios' ? 18 : 10,
     color: '#000',
   },
   forget: {
-    fontSize:  responsiveFontSize(1.7),
+    fontSize: responsiveFontSize(1.7),
     textAlign: 'right',
     fontWeight: '300',
     marginTop: 10,
@@ -156,7 +161,7 @@ const styles = StyleSheet.create({
   },
   submit_text: {
     color: '#fff',
-    fontSize:  responsiveFontSize(2),
+    fontSize: responsiveFontSize(2),
     fontWeight: '500',
   },
 });

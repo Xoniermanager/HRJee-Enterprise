@@ -1,11 +1,12 @@
 
-import { Image, SafeAreaView, StyleSheet, Text, View, FlatList, TouchableOpacity, ScrollView } from 'react-native';
+import { Image, SafeAreaView, StyleSheet, Text, View, FlatList, TouchableOpacity, ScrollView, Platform } from 'react-native';
 import React, { useState } from 'react';
 import LinearGradient from 'react-native-linear-gradient';
 import {
     responsiveFontSize, responsiveHeight, responsiveWidth
 } from 'react-native-responsive-dimensions';
 import { NavigationContainer } from '@react-navigation/native';
+import Themes from '../Theme/Theme';
 
 const Services = ({ navigation }) => {
 
@@ -14,27 +15,25 @@ const Services = ({ navigation }) => {
             id: 1,
             uri: require('../../assets/Services/s2.png'),
             name: "Leave",
-            nav: "ApplyLeave",
+            nav : 'Leaves'
         },
         {
             id: 2,
             uri: require('../../assets/Services/s3.png'),
             name: "Holiday",
             nav: "Holiday",
-            top: 30
         },
         {
             id: 3,
             uri: require('../../assets/Services/s4.png'),
-            name: "Payslip",
-            nav: "Salary"
+            name: "Location",
+            nav: "LocationList"
         },
         {
             id: 4,
             uri: require('../../assets/Services/s5.png'),
             name: "Documents",
             nav: "Documents",
-            top: 30
         },
         {
             id: 5,
@@ -47,13 +46,9 @@ const Services = ({ navigation }) => {
     {/* This is Services card List */ }
 
     const renderServicesList = ({ item }) => (
-        <TouchableOpacity onPress={() => navigation.navigate(item.nav)} activeOpacity={1} style={{marginHorizontal:responsiveWidth(5),  borderRadius: 20, backgroundColor: "#fff", elevation: 7, padding: 10, marginTop: item.top, width: responsiveWidth(35), height: responsiveHeight(20) }}>
-            <View style={{ justifyContent: "center", borderWidth: 8, borderColor: "#4EC8FA", borderRadius: 100, height: responsiveWidth(25), resizeMode: "contain", alignSelf: "center" }}>
-            <View style={{ marginBottom: 5, justifyContent: "center", borderWidth: 5, borderColor: "#fff", borderRadius: 100, height: responsiveWidth(25), resizeMode: "contain", alignSelf: "center" }}>
-            <Image style={{ alignSelf: "center", height: responsiveWidth(20), width: responsiveWidth(20), resizeMode: "center" }} source={item?.uri} />
-            </View>
-            </View>
-            <Text style={{ textAlign: "center", marginVertical: 5, fontSize: 20, color: "#0E0E64", fontWeight: "bold" }}>{item.name}</Text>
+        <TouchableOpacity onPress={() => navigation.navigate(item.nav)} activeOpacity={1} style={styles.item}>
+            <Image source={item.uri} style={styles.icon} />
+            <Text style={styles.title}>{item.name}</Text>
         </TouchableOpacity>
     );
 
@@ -63,21 +58,23 @@ const Services = ({ navigation }) => {
 
             <View
                 style={{
-                    marginTop: 15, 
+                    marginTop: 15,
                 }}>
                 <Text style={styles.name}>Services</Text>
                 <View
                     style={{
-                        backgroundColor: '#fff', 
+                        backgroundColor: '#fff',
                         borderTopLeftRadius: 40,
                         borderTopRightRadius: 40,
-                        
+                        height: "100%"
                     }}>
                     <FlatList
                         data={services}
                         renderItem={renderServicesList}
-                        contentContainerStyle={{flexDirection:"row",  marginTop:responsiveHeight(2), flexWrap:"wrap", justifyContent:"space-between",  height:responsiveHeight(100)}}
+                        numColumns={2}
                         keyExtractor={item => item.id}
+                        columnWrapperStyle={styles.row}
+                        contentContainerStyle={styles.containerlist}
                     />
 
                 </View>
@@ -92,12 +89,38 @@ const styles = StyleSheet.create({
         flex: 1,
         backgroundColor: '#0E0E64',
     },
-
+    containerlist: {
+        padding: 16
+    },
     name: {
         color: '#fff',
         fontSize: responsiveFontSize(3),
         fontWeight: 'bold',
         textAlign: "center",
-        marginBottom: responsiveHeight(10)
+        marginBottom: responsiveHeight(3)
+    },
+
+    row: {
+        justifyContent: 'space-between',
+    },
+    icon: {
+        width: 70,
+        height: 70,
+        marginBottom: 8, resizeMode:"contain"
+    },
+    title: {
+        fontSize: 16,
+        fontWeight: 'bold',
+        textAlign: 'center',  color:Themes == 'dark' ? '#000' : '#000'
+    },
+    item: {
+        backgroundColor: '#fff',
+        padding: 16,
+        marginVertical: 8,
+        width: '48%',
+        alignItems: 'center',
+        borderRadius: 8,
+        elevation:7, borderWidth: Platform.OS == "ios" ? 0.3 : null
     },
 });
+

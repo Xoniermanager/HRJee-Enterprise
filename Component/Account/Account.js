@@ -10,6 +10,7 @@ import {
   SafeAreaView,
   FlatList,
   Alert,
+  Platform,
 } from 'react-native';
 import {
   responsiveHeight,
@@ -26,11 +27,16 @@ import axios from 'axios';
 import Reload from '../../Reload';
 import { getProfile } from '../../APINetwork/ComponentApi';
 import { showMessage } from "react-native-flash-message";
+import RNFetchBlob from 'rn-fetch-blob';
+import AccountSkeleton from '../Skeleton/AccountSkeleton';
+import Themes from '../Theme/Theme';
+
+
 
 const Drawer = createDrawerNavigator();
 const Stack = createStackNavigator();
 
-const Account = ({ title, description, imageUrl }) => {
+const Account = ({ title, description }) => {
   const showData = [
     {
       id: 1,
@@ -55,11 +61,12 @@ const Account = ({ title, description, imageUrl }) => {
     },
   ];
   const [getProfileApiData, setGetProfileApiData] = useState('');
+  const [getAssetsApiData, setGetAssetsApiData] = useState('');
+  const [item, setURI] = useState('');
   const [loader, setLoader] = useState(false);
+  const [show, setShow] = useState(false);
 
-  {
-    /* This is Services card List */
-  }
+
   const navigation = useNavigation();
 
   const renderServicesList = ({ item }) => (
@@ -77,7 +84,7 @@ const Account = ({ title, description, imageUrl }) => {
           style={{ height: 50, width: 50, marginBottom: 2 }}
           source={item.uri}
         />
-        <Text style={{ marginBottom: 2, fontSize: 16, color: '#000' }}>
+        <Text numberOfLines={1} style={{ marginBottom: 2, fontSize: 16, color: '#000' }}>
           {item.name}
         </Text>
         <Text style={{ fontSize: 16, color: '#000' }}>{item.num}</Text>
@@ -93,12 +100,10 @@ const Account = ({ title, description, imageUrl }) => {
   const [expandedassets, setExpandedAssets] = useState(false);
   const [expandeddocuments, setExpandedDocuments] = useState(false);
   const [bankdetailsdata, setBankDetailsData] = useState('');
-
-  console.log('.........', bankdetailsdata);
+  const [documentdetailsdata, setGetDocumentApiData] = useState([]);
 
   const toggleExpandedBank = () => {
     setExpandedBank(!expandedbank);
-    BankDetails()
   };
   const toggleExpandedAssets = () => {
     setExpandedAssets(!expandedassets);
@@ -107,47 +112,50 @@ const Account = ({ title, description, imageUrl }) => {
     setExpandedDocuments(!expandeddocuments);
   };
 
-  const BankDetails = async () => {
-    try {
-      let token = await AsyncStorage.getItem('token');
-      const response = await axios.get(`${BASE_URL}/user/bank/details`, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
-      setBankDetailsData(response?.data?.data);
-    } catch (error) {
-      if (error.response) {
-        // Backend error handling
-        console.error('Backend returned status:', error.response.status);
-        console.error('Backend error data:', error.response.data);
-        throw new Error(error.response.data.message || 'Something went wrong');
-      } else if (error.request) {
-        // Network error handling
-        console.error('Network error:', error.request);
-        throw new Error('Network error, please try again');
-      } else {
-        // General error handling
-        console.error('Error:', error.message);
-        throw new Error('An unknown error occurred');
-      }
-    }
-  };
+  // const BankDetails = async () => {
+  //   try {
+  //     let token = await AsyncStorage.getItem('token');
+  //     const response = await axios.get(`${BASE_URL}/user/bank/details`, {
+  //       headers: {
+  //         Authorization: `Bearer ${token}`,
+  //       },
+  //     });
+  //     setBankDetailsData(response?.data?.data);
+  //   } catch (error) {
+  //     if (error.response) {
+  //       // Backend error handling
+  //       console.error('Backend returned status:', error.response.status);
+  //       console.error('Backend error data:', error.response.data);
+  //       throw new Error(error.response.data.message || 'Something went wrong');
+  //     } else if (error.request) {
+  //       // Network error handling
+  //       console.error('Network error:', error.request);
+  //       throw new Error('Network error, please try again');
+  //     } else {
+  //       // General error handling
+  //       console.error('Error:', error.message);
+  //       throw new Error('An unknown error occurred');
+  //     }
+  //   }
+  // };
 
   useEffect(() => {
     async function check() {
       try {
         setLoader(true);
         let token = await AsyncStorage.getItem('TOKEN');
-        const url = `${BASE_URL}/profile`;
+        const url = `${BASE_URL}/user/details`;
         const response = await getProfile(url, token);
 
         if (response?.data?.status === true) {
-          showMessage({
-            message: `${response?.data?.message}`,
-            type: "success",
-          });
+          // showMessage({
+          //   message: `${response?.data?.message}`,
+          //   type: "success",
+          // });
           setGetProfileApiData(response?.data?.data);
+          setBankDetailsData(response?.data?.data?.bank_details);
+          setGetDocumentApiData(response?.data?.data?.document_details);
+          setGetAssetsApiData(response?.data?.data?.asset_details);
           setLoader(false);
         } else {
           setLoader(false);
@@ -160,9 +168,74 @@ const Account = ({ title, description, imageUrl }) => {
     check();
   }, []);
 
-  if(getProfileApiData == "" && getProfileApiData == [] && getProfileApiData == null)
-  {
-    return <Reload/>
+  const historyDownload = (item) => {
+    if (item != null) {
+      setShow(true)
+      if (Platform.OS === 'ios' || Platform.OS == 'android') {
+        downloadHistory(item);
+      } else {
+        try {
+          PermissionsAndroid.request(
+            PermissionsAndroid.PERMISSIONS.WRITE_EXTERNAL_STORAGE,
+            {
+              title: 'storage title',
+              message: 'storage_permission',
+            },
+          ).then(granted => {
+            if (granted === PermissionsAndroid.RESULTS.GRANTED) {
+              console.log('Storage Permission Granted.');
+              setShow(false)
+
+              downloadHistory(item);
+            } else {
+              alert('storage_permission')
+              setShow(false)
+
+            }
+          });
+        } catch (err) {
+          //To handle permission related issue
+          console.log('error', err);
+          setloading(false)
+
+        }
+      }
+    }
+    else {
+      alert('No record found!')
+      setShow(false)
+    }
+
+
+  };
+  const downloadHistory = async (item) => {
+    const { config, fs } = RNFetchBlob;
+    let PictureDir = fs.dirs.PictureDir;
+    let date = new Date();
+    let options = {
+      fileCache: true,
+      addAndroidDownloads: {
+        //Related to the Android only
+        useDownloadManager: true,
+        notification: true,
+        path:
+          PictureDir +
+          '/Report_Download' +
+          Math.floor(date.getTime() + date.getSeconds() / 2),
+        description: 'Risk Report Download',
+      },
+    };
+    config(options)
+      .fetch('GET', item)
+      .then(res => {
+        alert('Report Downloaded Successfully.')
+        setShow(false)
+      });
+  };
+
+
+  if (loader) {
+    return <AccountSkeleton />
   }
   return (
     <SafeAreaView style={styles.container}>
@@ -184,7 +257,7 @@ const Account = ({ title, description, imageUrl }) => {
           </View>
           <View style={{ marginTop: 10, alignSelf: 'center' }}>
             {
-              getProfileApiData?.profile_image == "" || getProfileApiData?.profile_image == [] || getProfileApiData?.profile_image == null?
+              getProfileApiData?.profile_image == "" || getProfileApiData?.profile_image == [] || getProfileApiData?.profile_image == null ?
                 <Image
                   style={{
                     height: 100,
@@ -308,25 +381,25 @@ const Account = ({ title, description, imageUrl }) => {
                       <View style={styles.content}>
                         <Text style={styles.title}>A/C Holder</Text>
                         <Text style={styles.title}>
-                          {bankdetailsdata?.account_name}
+                          {bankdetailsdata?.account_name ? bankdetailsdata?.account_name : 'N/A'}
                         </Text>
                       </View>
                       <View style={styles.content}>
                         <Text style={styles.title}>A/C Number</Text>
                         <Text style={styles.title}>
-                          {bankdetailsdata?.account_number}
+                          {bankdetailsdata?.account_number ? bankdetailsdata?.account_number : 'N/A'}
                         </Text>
                       </View>
                       <View style={styles.content}>
                         <Text style={styles.title}>Bank Name</Text>
                         <Text style={styles.title}>
-                          {bankdetailsdata?.bank_name}
+                          {bankdetailsdata?.bank_name ? bankdetailsdata?.bank_name : 'N/A'}
                         </Text>
                       </View>
                       <View style={styles.content}>
                         <Text style={styles.title}>IFSC/RTGS Code</Text>
                         <Text style={styles.title}>
-                          {bankdetailsdata?.ifsc_code}
+                          {bankdetailsdata?.ifsc_code ? bankdetailsdata?.ifsc_code : 'N/A'}
                         </Text>
                       </View>
                     </View>
@@ -401,12 +474,32 @@ const Account = ({ title, description, imageUrl }) => {
                     borderBottomRightRadius: 0,
                   }}>
                   <>
-                    <View style={styles.card}>
-                      <View style={styles.content}>
-                        <Text style={styles.title}>{title}jjjj</Text>
-                        <Text style={styles.description}>{description}</Text>
-                      </View>
-                    </View>
+                    {
+                      getAssetsApiData?.map((elements, index) => {
+                        return (
+                          <View key={index} style={styles.card}>
+                            <View style={styles.content}>
+                              <Text style={styles.title}>Assigned Date</Text>
+                              <Text style={styles.title}>
+                                {elements?.assigned_date ? elements?.assigned_date : 'N/A'}
+                              </Text>
+                            </View>
+                            <View style={styles.content}>
+                              <Text style={styles.title}>Returned Date</Text>
+                              <Text style={styles.title}>
+                                {elements?.returned_date ? elements?.returned_date : 'N/A'}
+                              </Text>
+                            </View>
+                            <View style={styles.content}>
+                              <Text style={styles.title}>Comment</Text>
+                              <Text style={styles.title}>
+                                {elements?.comment ? elements?.comment : 'N/A'}
+                              </Text>
+                            </View>
+                          </View>
+                        )
+                      })
+                    }
                   </>
                 </View>
               </View>
@@ -416,7 +509,7 @@ const Account = ({ title, description, imageUrl }) => {
           {/* This is Address details */}
           <View
             style={{
-              marginBottom: responsiveHeight(50),
+              marginBottom: responsiveHeight(20),
               alignSelf: 'center',
               marginTop: responsiveHeight(1),
               borderTopLeftRadius: 10,
@@ -479,12 +572,28 @@ const Account = ({ title, description, imageUrl }) => {
                     borderBottomRightRadius: 0,
                   }}>
                   <>
-                    <View style={styles.card}>
-                      <View style={styles.content}>
-                        <Text style={styles.title}>{title}jjjj</Text>
-                        <Text style={styles.description}>{description}</Text>
-                      </View>
-                    </View>
+                    {
+                      documentdetailsdata?.map((elements, index) => {
+
+                        let fileURL = elements?.document;
+                        console.log(fileURL, 'fileURL')
+                        let fileName = elements?.document_types?.name
+                        let fileExtension = fileURL.split(".").pop();
+
+                        return (
+                          <View key={index} style={styles.card}>
+                            <View style={styles.content}>
+                              <Text style={styles.title}>{fileName}</Text>
+                              <Text style={styles.description}>{fileExtension}</Text>
+                              <TouchableOpacity onPress={() => historyDownload(fileURL)}
+                              >
+                                <Text style={[styles.description, styles.downloadtxt]}>Download</Text>
+                              </TouchableOpacity>
+                            </View>
+                          </View>
+                        )
+                      })
+                    }
                   </>
                 </View>
               </View>
@@ -515,6 +624,10 @@ const styles = StyleSheet.create({
     marginRight: 10,
     borderWidth: 1,
     borderColor: 'white',
+  },
+  downloadtxt: {
+    color: "blue",
+    fontWeight: "bold"
   },
   options: {
     width: 65,
@@ -669,8 +782,7 @@ const styles = StyleSheet.create({
     shadowRadius: 2,
     elevation: 5,
     margin: 10,
-    overflow: 'hidden',
-    width: responsiveWidth(90),
+    overflow: 'hidden', justifyContent:"space-between"
   },
   image: {
     width: '100%',
@@ -680,11 +792,11 @@ const styles = StyleSheet.create({
     padding: 10,
     flexDirection: 'row',
     justifyContent: 'space-between',
-    marginBottom: 2,
   },
   title: {
     fontWeight: 'bold',
-    marginBottom: 0,
+    marginBottom: 0, 
+    color:Themes == 'dark' ? '#000' : '#000'
   },
   description: {
     fontSize: 14,

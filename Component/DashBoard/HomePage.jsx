@@ -1,4 +1,4 @@
-import { Dimensions, StyleSheet, Text, View, Image, FlatList, TouchableOpacity, SafeAreaView, TextInput } from 'react-native'
+import { Dimensions, StyleSheet, Text, View, Image, FlatList, TouchableOpacity, ActivityIndicator, TextInput, Alert, Platform } from 'react-native'
 import React, { useState, useEffect, useMemo } from 'react'
 import { responsiveFontSize, responsiveHeight, responsiveWidth } from 'react-native-responsive-dimensions';
 const windowWidth = Dimensions.get('window').width;
@@ -10,11 +10,14 @@ import CheckBox from '@react-native-community/checkbox';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { BASE_URL } from '../../utils';
 import axios from 'axios';
-import { LeaveApply, getLeaveType, getProfile } from '../../APINetwork/ComponentApi';
+import { LeaveApply, getHoliday, getLeaveType, getProfile, gettodayattendance, punchin } from '../../APINetwork/ComponentApi';
 import { Dropdown } from 'react-native-element-dropdown';
 import RadioGroup, { RadioButtonProps } from 'react-native-radio-buttons-group';
 import { showMessage } from "react-native-flash-message";
-
+import HomeSkeleton from '../Skeleton/HomeSkeleton';
+import moment from 'moment';
+import AntDesign from 'react-native-vector-icons/AntDesign';
+import Themes from '../Theme/Theme';
 
 const HomePage = ({ navigation }) => {
 
@@ -38,114 +41,264 @@ const HomePage = ({ navigation }) => {
   const [startDate, setStartDate] = useState(null);
   const [endDate, setEndDate] = useState(null);
   const [getProfileApiData, setGetProfileApiData] = useState('');
+  const [punch, setPunch] = useState('');
+  const [todayAttendanceDetails, setTodayAttendanceDetails] = useState('');
+  const [lastAttendanceDetails, setLastAttendanceDetails] = useState('');
+  const [timerOn, settimerOn] = useState(false);
+  const [inTime, setinTime] = useState(null);
+  const [outTime, setOutTime] = useState(null)
+  const [activityTime, setactivityTime] = useState(null);
+  const [fullTime, setfullTime] = useState(null)
+  const [disabledBtn, setDisabledBtn] = useState(false);
+  const [loading, setloading] = useState(false);
+  const monthNames = [
+    'Jan',
+    'Feb',
+    'March',
+    'April',
+    'May',
+    'June',
+    'July',
+    'Aug',
+    'Sep',
+    'Oct',
+    'Nov',
+    'Dec',
+  ];
+  const days = [
+    'Sunday',
+    'Monday',
+    'Tuesday',
+    'Wednesday',
+    'Thursday',
+    'Friday',
+    'Saturday',
+  ];
+
+
+  const d = new Date();
+  var mon = d.getMonth() + 1 <= 9 ? '0' + (d.getMonth() + 1) : d.getMonth() + 1;
+
+  var day = d.getDate() <= 9 ? '0' + d.getDate() : d.getDate();
+
+  const datetime = d.getFullYear() + '-' + mon + '-' + day;
+  const hours =
+    d.getHours() < 10
+      ? `0${d.getHours()}`
+      : d.getHours() + ':' + d.getMinutes();
+
+
+
 
   const [holidays, setHolidays] = useState([]);
   const [monthlyHolidays, setMonthlyHolidays] = useState([]);
 
   const getMonthlyHolidays = (dateString) => {
-      const selectedMonth = new Date(dateString).getMonth() + 1;
-      const filteredHolidays = holidays?.filter(holiday => {
-          const holidayMonth = new Date(holiday.date).getMonth() + 1;
-          return holidayMonth === selectedMonth;
-      });
-      setMonthlyHolidays(filteredHolidays);
+    const selectedMonth = new Date(dateString).getMonth() + 1;
+    const filteredHolidays = holidays?.filter(holiday => {
+      const holidayMonth = new Date(holiday.date).getMonth() + 1;
+      return holidayMonth === selectedMonth;
+    });
+    setMonthlyHolidays(filteredHolidays);
   };
-
   useEffect(() => {
-    async function check() {
+    const fetchHolidays = async () => {
+      setLoader(true);
       try {
-        setLoader(true);
         let token = await AsyncStorage.getItem('TOKEN');
-        const url = `${BASE_URL}/profile`;
-        const response = await getProfile(url, token);
-
-        if (response?.data?.status === true) {
-          showMessage({
-            message: `${response?.data?.message}`,
-            type: "success",
-          });
-          setGetProfileApiData(response?.data?.data);
-          setLoader(false);
-        } else {
-          setLoader(false);
-        }
+        const url = `${BASE_URL}/holiday/list`;
+        const response = await getHoliday(url, token);
+        // showMessage({
+        //   message: `${response?.data?.message}`,
+        //   type: "success",
+        // });
+        setHolidays(response?.data?.data);
+        getMonthlyHolidays(new Date().toISOString().split('T')[0]); // Initialize with current month's holidays
       } catch (error) {
-        console.error('Error making POST request:', error);
-        setLoader(false);
+        console.error('Error fetching holiday data:', error?.response?.data);
       }
-    }
-    check();
+    };
+
+    fetchHolidays();
   }, []);
-  console.log("choose------", selectedId)
+  async function check() {
+    try {
+      setLoader(true);
+      let token = await AsyncStorage.getItem('TOKEN');
+      const url = `${BASE_URL}/profile`;
+      const response = await getProfile(url, token, navigation);
 
-
-  useEffect(() => {
-    async function check() {
-
-      try {
-        setLoader(true);
-        let token = await AsyncStorage.getItem('TOKEN');
-
-        const url = `${BASE_URL}/leave/type`;
-        const response = await getLeaveType(url, token);
-        if (response?.data?.status == true) {
-          // showMessage({
-          //     message: `${response?.data?.message}`,
-          //     type: "success",
-          // });
-          setGetLeaveTypeApiData(response?.data?.data)
-          setLoader(false);
-        }
-        else {
-          setLoader(false);
-        }
-      } catch (error) {
-        console.error('Error making POST request:', error);
+      if (response?.data?.status === true) {
+        // showMessage({
+        //   message: `${response?.data?.message}`,
+        //   type: "success",
+        // });
+        setGetProfileApiData(response?.data?.data);
+        setLoader(false);
+      } else {
         setLoader(false);
       }
+    } catch (error) {
+      console.error('Error making POST request:', error);
+      setLoader(false);
     }
-    check()
-  }, [])
+  }
+  async function getTodayAttendance() {
+    try {
+      setLoader(true);
+      settimerOn(false);
+      let token = await AsyncStorage.getItem('TOKEN');
+      const url = `${BASE_URL}/get-today-attendance`;
+      const response = await gettodayattendance(url, token);
+      if (response?.data?.status == true) {
+        const data = response.data.todayAttendanceDetails;
+        if (response?.data?.todayAttendanceDetails?.punch_in != '' && response?.data?.todayAttendanceDetails?.punch_out == null) {
+          setTodayAttendanceDetails(response?.data?.todayAttendanceDetails);
+          setinTime(response?.data?.todayAttendanceDetails?.punch_in)
+          setOutTime(response?.data?.todayAttendanceDetails?.punch_out)
+          settimerOn(true)
+          setloading(false);
+
+        } else {
+          if (data.punch_in != '' && data.punch_out != '') {
+            settimerOn(false);
+            setinTime(data.punch_in);
+            setOutTime(data.punch_out);
+            setloading(false);
+
+            var timeEnd1 = moment(data.punch_out);
+            const startDate = moment(data.punch_in);
+            const timeEnd = moment(timeEnd1);
+            const diff = timeEnd.diff(startDate);
+            const diffDuration = moment.duration(diff);
+            var days = diffDuration.days();
+            var hours = diffDuration.hours();
+            var minutes = diffDuration.minutes();
+            var seconds = diffDuration.seconds();
+            var time =
+              (hours < 10 ? '0' + hours : hours) +
+              ':' +
+              (minutes < 10 ? '0' + minutes : minutes) +
+              ':' +
+              (seconds < 10 ? '0' + seconds : seconds);
+            setfullTime(time);
+          }
+        }
+      } else {
+        setinTime(null);
+        setOutTime(null);
+        setactivityTime(null);
+        setloading(false);
+
+      }
+    } catch (error) {
+      console.error('Error making POST request:', error);
+      setloading(false);
+    }
+  }
+  async function getLastAttendance() {
+    try {
+      setLoader(true);
+      let token = await AsyncStorage.getItem('TOKEN');
+      const url = `${BASE_URL}/get-last-attendance`;
+      const response = await gettodayattendance(url, token);
+      setLastAttendanceDetails(response?.data?.data);
+      if (response?.data?.status === true) {
+        // showMessage({
+        //   message: `${response?.data?.message}`,
+        //   type: "success",
+        // });
+        setLoader(false);
+      } else {
+        setLoader(false);
+      }
+    } catch (error) {
+      console.error('Error making POST request:', error);
+      setLoader(false);
+    }
+  }
+  async function checkleave() {
+
+    try {
+      setLoader(true);
+      let token = await AsyncStorage.getItem('TOKEN');
+
+      const url = `${BASE_URL}/leave/type`;
+      const response = await getLeaveType(url, token);
+      if (response?.data?.status == true) {
+        // showMessage({
+        //     message: `${response?.data?.message}`,
+        //     type: "success",
+        // });
+        setGetLeaveTypeApiData(response?.data?.data)
+        setLoader(false);
+      }
+      else {
+        setLoader(false);
+      }
+    } catch (error) {
+      console.error('Error making POST request:', error);
+      setLoader(false);
+    }
+  }
+
+  useEffect(() => {
+    check();
+    getTodayAttendance()
+    checkleave()
+    getLastAttendance()
+  }, []);
 
   const radioButtons: RadioButtonProps[] = useMemo(() => ([
     {
-      id: '1', // acts as primary key, should be unique and non-empty string
-      label: 'Morning',
-      value: 'first_half'
+        id: '1', // acts as primary key, should be unique and non-empty string
+        label: 'Morning',
+        value: 'first_half',
+        labelStyle:{ color: Themes == 'dark' ? '#000' : '#000'} // Customize label style here
     },
     {
-      id: '2',
-      label: 'Afternoon',
-      value: 'second_half'
+        id: '2',
+        label: 'Afternoon',
+        value: 'second_half',
+        labelStyle:{ color: Themes == 'dark' ? '#000' : '#000'} // Customize label style here
     }
-  ]), []);
-  const radioButtons1: RadioButtonProps[] = useMemo(() => ([
+]), []);
+const radioButtons1: RadioButtonProps[] = useMemo(() => ([
     {
-      id: '1', // acts as primary key, should be unique and non-empty string
-      label: 'Morning',
-      value: 'option1'
+        id: '1', // acts as primary key, should be unique and non-empty string
+        label: 'Morning',
+        value: 'option1',
+        labelStyle:{ color: Themes == 'dark' ? '#000' : '#000'} // Customize label style here
+
     },
     {
-      id: '2',
-      label: 'Afternoon',
-      value: 'option2'
+        id: '2',
+        label: 'Afternoon',
+        value: 'option2',
+        labelStyle:{ color: Themes == 'dark' ? '#000' : '#000'} // Customize label style here
+
     }
-  ]), []);
-  const radioButtons2: RadioButtonProps[] = useMemo(() => ([
+]), []);
+const radioButtons2: RadioButtonProps[] = useMemo(() => ([
     {
-      id: '1', // acts as primary key, should be unique and non-empty string
-      label: 'Morning',
-      value: 'option1'
+        id: '1', // acts as primary key, should be unique and non-empty string
+        label: 'Morning',
+        value: 'option1',
+        labelStyle:{ color: Themes == 'dark' ? '#000' : '#000'} // Customize label style here
+
     },
     {
-      id: '2',
-      label: 'Afternoon',
-      value: 'option2'
+        id: '2',
+        label: 'Afternoon',
+        value: 'option2',
+        labelStyle:{ color: Themes == 'dark' ? '#000' : '#000'} // Customize label style here
+
     }
-  ]), []);
+]), []);
 
   // Get the current date
   const currentDate = new Date();
+
 
   // Format the date as "Friday, 5 April 2024"
   const options = { weekday: 'long', day: 'numeric', year: 'numeric', month: 'long' };
@@ -182,23 +335,47 @@ const HomePage = ({ navigation }) => {
     }
     setSelected(currentDate); // Highlight selected date
   };
-
   // This is starting api part
+  useEffect(() => {
+    let interval = null;
 
+    if (timerOn == true && inTime != null) {
+      // console.log('timer is on************');
+      interval = setInterval(() => {
+        var timeEnd1 = parseInt(new Date().getTime());
+        const startDate = moment(inTime);
+        const timeEnd = moment(timeEnd1);
+        const diff = timeEnd.diff(startDate);
+        const diffDuration = moment.duration(diff);
+        var days = diffDuration.days();
+        var hours = diffDuration.hours();
+        var minutes = diffDuration.minutes();
+        var seconds = diffDuration.seconds();
+        var time =
+          (hours < 10 ? '0' + hours : hours) +
+          ':' +
+          (minutes < 10 ? '0' + minutes : minutes) +
+          ':' +
+          (seconds < 10 ? '0' + seconds : seconds);
+        setactivityTime(time);
+      }, 1000);
+    } else {
+      clearInterval(interval);
+    }
+
+    return () => {
+      clearInterval(interval);
+    };
+  }, [timerOn]);
   useEffect(() => {
     async function check() {
 
       try {
         setLoader(true);
         let token = await AsyncStorage.getItem('TOKEN');
-
         const url = `${BASE_URL}/leave/type`;
         const response = await getLeaveType(url, token);
         if (response?.data?.status == true) {
-          // showMessage({
-          //     message: `${response?.data?.message}`,
-          //     type: "success",
-          // });
           setGetLeaveTypeApiData(response?.data?.data)
           setLoader(false);
         }
@@ -262,7 +439,6 @@ const HomePage = ({ navigation }) => {
           }
         }
 
-        console.log("payload------------", data)
         const response = await LeaveApply(url, data, token);
         if (response?.data?.status == true) {
           showMessage({
@@ -280,32 +456,67 @@ const HomePage = ({ navigation }) => {
       setLoader(false);
     }
   };
+  const Punch_IN_Out = async () => {
+    setloading(true);
+    setDisabledBtn(true)
+    try {
+      const url = `${BASE_URL}/employee/make/attendance`;
+      let token = await AsyncStorage.getItem('TOKEN');
+      const response = await punchin(url, token);
+      if (response?.data?.status == true) {
+        setPunch(response?.data)
+        getTodayAttendance()
+        showMessage({
+          message: `${response?.data?.message}`,
+          type: "success",
+        });
+
+        setLoader(false);
+      }
+      else {
+        setLoader(false);
+      }
+
+    } catch (error) {
+      console.error('Error making POST request:', error);
+      setLoader(false);
+    }
+  };
 
   //////////
   const services = [
     {
       id: "1",
       name: "Policies",
-      uri: require('../../assets/HomeScreen/h1.png')
+      uri: require('../../assets/HomeScreen/h1.png'),
+      nav: 'Policy'
     },
     {
       id: "2",
       name: "News",
-      uri: require('../../assets/HomeScreen/h2.png')
+      uri: require('../../assets/HomeScreen/h2.png'),
+      nav: 'News'
     },
     {
       id: "3",
       name: "Payslip",
-      uri: require('../../assets/HomeScreen/h3.png')
+      uri: require('../../assets/HomeScreen/h3.png'),
+      nav: "Payslip"
+    },
+    {
+      id: "4",
+      name: "Annouce",
+      uri: require('../../assets/announcement.png'),
+      nav: 'Announcement'
     }]
 
   {/* This is Services card List */ }
 
   const renderServicesList = ({ item }) => (
-    <View>
+    <TouchableOpacity onPress={() => navigation.navigate(item.nav)}>
       <Image style={{ height: responsiveHeight(18), width: responsiveWidth(35), resizeMode: "contain", overflow: 'hidden' }} source={item.uri} />
       <Text style={{ position: 'absolute', bottom: 5, alignSelf: 'center', fontSize: responsiveFontSize(2.5), color: '#fff', fontWeight: '500' }}>{item.name}</Text>
-    </View>
+    </TouchableOpacity>
   );
 
   {/* THis code is less more */ }
@@ -338,9 +549,28 @@ const HomePage = ({ navigation }) => {
     setExpandedProfile(!expandedprofile);
   };
 
+  const handleLogout = () => {
+    Alert.alert(
+      "Are you sure?",
+      "Do you really want to log out?",
+      [
+        {
+          text: "Cancel",
+          onPress: () => console.log("Cancel Pressed"),
+          style: "cancel"
+        },
+        { text: "OK", onPress: () => Punch_IN_Out() }
+      ]
+    );
+  };
+
+  if (loader) {
+    return <HomeSkeleton />
+  }
+
   return (
     <>
-      <View style={{ flex: 1, backgroundColor: "#fff" }}>
+      <View style={{ flex: 1, backgroundColor: "#EDEADE" }}>
         <View style={styles.parent}>
           <View style={styles.child}>
             <View style={{ flexDirection: "row", alignItems: "center", marginLeft: 15 }}>
@@ -353,31 +583,16 @@ const HomePage = ({ navigation }) => {
 
               }
               <View style={{ marginHorizontal: 15 }}>
-                <Text style={{ color: "#fff", fontSize: 20, fontWeight: "bold" }}>{getProfileApiData?.name}</Text>
+                <Text style={{ color: "#fff", fontSize: 15, fontWeight: "bold" }}>{getProfileApiData?.name}</Text>
                 <Text style={{ color: "#fff", fontSize: 18, }}>{formattedDate}</Text>
               </View>
             </View>
           </View>
         </View>
 
-        {/* This is map function using */}
-
-        {/* {
-          services?.map((elements, index) => {
-            return (
-              <View style={{  }}>
-                <View key={index}>
-                  <View><Image style={{ height: 100, width: 100 }} source={elements.uri} /></View>
-                </View>
-              </View>
-            )
-          })
-
-        } */}
-
         {/* This is Services list */}
         <ScrollView showsVerticalScrollIndicator={false}>
-          <View style={{ marginBottom: 100, width: responsiveWidth(95), alignSelf: "center", marginTop: responsiveHeight(2) }}>
+          <View style={{ marginBottom: 100, marginHorizontal: 10, alignSelf: "center", marginTop: responsiveHeight(2) }}>
             <FlatList horizontal showsHorizontalScrollIndicator={false}
               data={services}
               renderItem={renderServicesList}
@@ -387,15 +602,82 @@ const HomePage = ({ navigation }) => {
             {/* This is Punch in & Punch out */}
             <View style={{ marginBottom: responsiveHeight(1), padding: 20, backgroundColor: "#0E0E64", borderColor: "#0433DA", borderRadius: 20, borderWidth: 5, flexDirection: "row", justifyContent: "space-between", marginTop: 15 }}>
               <View>
-                <Text style={{ color: "#00f0ff", fontSize: 18, marginBottom: 5 }}>Friday</Text>
-                <Text style={{ color: "#00f0ff", fontSize: 18, marginTop: 5 }}>05-04-2024</Text>
+                <Text style={{ color: "#00f0ff", fontSize: 18, marginBottom: 5, marginTop: 5 }}>{days[d.getDay()]}</Text>
+                <Text style={{ color: "#00f0ff", fontSize: 18, marginTop: 5 }}>{d.getDate() + ' ' + monthNames[d.getMonth()] + ' ' + d.getFullYear()}</Text>
               </View>
               <View style={{ borderColor: "#00f0ff", borderWidth: 1, }}></View>
               <View>
-                <Text style={{ color: "#00f0ff", fontSize: 18, marginBottom: 5, width: responsiveWidth(35), textAlign: "center" }}>09:30:00</Text>
-                <TouchableOpacity style={{ backgroundColor: "#00f0ff", borderRadius: 20, }}>
-                  <Text style={{ textAlign: "center", color: "#000", padding: 8, fontSize: 18, }}>Punch in</Text>
-                </TouchableOpacity>
+
+                {inTime && !outTime && (
+                  <>
+                    <View
+                      style={{
+                        flexDirection: 'row', marginBottom: 8
+                      }}>
+                      <AntDesign
+                        name="rightcircle"
+                        style={{
+                          fontSize: 23,
+                          color: '#fff',
+                        }}
+                      />
+                      <Text style={{ color: "#00f0ff", fontSize: 18, textAlign: "center", marginHorizontal: 10 }}>{activityTime}</Text>
+                    </View>
+                    <TouchableOpacity
+                      onPress={() => handleLogout()}
+                      style={{
+                        backgroundColor: "#00f0ff", borderRadius: 20, height: 40, justifyContent: "center", width: 120, height: 40
+                      }}>
+                      {
+                        loading ? <ActivityIndicator color="#0E0E64" /> :
+                          <Text
+                            style={{
+                              textAlign: "center", color: "#0E0E64", fontSize: 16, textAlign: "center",
+                            }}>
+                            Punch Out
+                          </Text>
+                      }
+
+                    </TouchableOpacity>
+                  </>
+                )}
+
+                {!inTime && !outTime && (
+                  <TouchableOpacity
+                    onPress={() => Punch_IN_Out()}
+                    disabled={disabledBtn == true ? true : false}
+                    style={{
+                      backgroundColor: "#00f0ff", borderRadius: 20, height: 40, justifyContent: "center", width: 120, marginTop: 10
+                    }}>
+
+                    {
+                      loading ? <ActivityIndicator color="#0E0E64" /> :
+                        <Text
+                          style={{
+                            textAlign: "center", color: "#000", fontSize: 18, textAlign: "center"
+                          }}>
+                          Punch In
+                        </Text>
+                    }
+
+
+                  </TouchableOpacity>
+                )}
+
+                {inTime && outTime && (
+                  <>
+                    <View
+                      style={{
+                        flexDirection: 'row',
+                        justifyContent: "center",
+                      }}>
+                      <Text style={{ color: "#00f0ff", fontSize: 18, textAlign: "center", marginHorizontal: 10, marginBottom: 5, marginTop: 5, marginTop: 5 }}>{fullTime}</Text>
+                    </View>
+                    <Text style={{ color: 'red', marginTop: 5, fontSize: 18 }}>
+                      Total Time Elapsed
+                    </Text>
+                  </>
+                )}
               </View>
 
             </View>
@@ -480,8 +762,9 @@ const HomePage = ({ navigation }) => {
                             disabled={false}
                             value={toggleCheckBox}
                             onValueChange={(newValue) => setToggleCheckBox(newValue)}
+                            tintColors={{ true: color = "#000", false: color = "#000" }}
                           />
-                          <Text style={{ alignSelf: "center", fontSize: 16, color: "#000" }}>Is half day</Text>
+                          <Text style={{ alignSelf: "center", fontSize: 16, color: "#000", marginHorizontal: Platform.OS == 'ios' ? 8 : null }}>Is half day</Text>
                         </View>
                         {
                           toggleCheckBox == true ?
@@ -514,39 +797,47 @@ const HomePage = ({ navigation }) => {
 
                         {/* This is profile details */}
                         <View style={{ marginHorizontal: responsiveWidth(2), marginTop: responsiveHeight(1), borderTopRightRadius: 10, borderBottomRightRadius: 10 }}>
-                          {
+                          {/* {
                             getleavetypeapidata?.map((item, index) => {
                               return (
-                                <View key={index} style={{ backgroundColor: "#EDFBFE", padding: 10, marginBottom: 5, borderRadius: 10 }}>
-                                  <Dropdown selectedTextProps={{
-                                    style: {
-                                      color: '#000',
-                                    },
-                                  }}
-                                    style={styles.input}
-                                    placeholderStyle={styles.placeholderStyle}
-                                    data={getleavetypeapidata && getleavetypeapidata}
-                                    maxHeight={300}
-                                    labelField="name"
-                                    valueField="id"
-                                    placeholder={!isFocus ? 'Select leave type' : '...'}
-                                    value={value1 ? value1 : item?.state_id}
-                                    onChange={item => {
-                                      setValue1(item.id);
-                                    }}
-                                  />
-                                </View>
+                                
 
                               )
                             })
-                          }
+                          } */}
+                          <View style={{ backgroundColor: "#EDFBFE", padding: 10, marginBottom: 5, borderRadius: 10, }}>
+                            <Dropdown selectedTextProps={{
+                              style: {
+                                color: '#000',
+                              },
+                            }}
+                              data={getleavetypeapidata && getleavetypeapidata}
+                              maxHeight={300}
+                              labelField="name"
+                              valueField="id"
+                              placeholder={!isFocus ? 'Select leave type' : '...'}
+                              value={value1}
+                              onChange={item => {
+                                setValue1(item.id);
+                              }}                                    
+                              placeholderStyle={{
+                                color: Themes == 'dark' ? '#000' : '#000',          // Assuming Themes.colors.placeholder is defined
+                              }}
+                              itemTextStyle={{   color: Themes == 'dark' ? '#000' : '#000',  }}
+                              
+                              
+                            />
+                          </View>
 
-                          <View style={{ borderRadius: 30, marginBottom: 8, padding: 5, backgroundColor: "#EDFBFE", opacity: 1, elevation: 10, }}>
+                          <View style={{ borderRadius: 20, marginBottom: 8, padding: 5, backgroundColor: "#EDFBFE", opacity: 1, elevation: 10, }}>
                             <TextInput
                               placeholder='Reason'
                               numberOfLines={6}
                               textAlignVertical={'top'}
                               onChangeText={(text) => setReason(text)}
+                              style={{ height: 120 }} // Adjust height as needed
+                              placeholderTextColor={Themes == 'dark' ? '#000' : '#000'}
+                             color= {Themes == 'dark' ? '#000' : '#000'}
                             />
                           </View>
 
@@ -616,7 +907,7 @@ const HomePage = ({ navigation }) => {
                           </View>
                           {monthlyHolidays?.length > 0 ? (
                             monthlyHolidays?.map((holiday, index) => (
-                              <View key={index} style={{ height: responsiveHeight(10), borderRadius: 15, flexDirection: "row", backgroundColor: "#fff", borderWidth: 0.5, borderColor: "#0E0E64", elevation: 3, marginBottom: 5 }}>
+                              <View key={index} style={{ height: responsiveHeight(10), borderRadius: 15, flexDirection: "row", backgroundColor: "#fff", borderWidth: 0.5, borderColor: "#0E0E64", elevation: 3, marginBottom: 10 }}>
                                 <View style={{ marginLeft: 20, backgroundColor: "#0E0E64", height: 70, width: 50, justifyContent: "center", borderBottomRightRadius: 30, borderBottomLeftRadius: 30 }}>
                                   <Image style={{ height: 30, width: 30, resizeMode: "contain", alignSelf: "center" }} source={require('../../assets/HomeScreen/calendar.png')} />
                                 </View>
@@ -627,7 +918,7 @@ const HomePage = ({ navigation }) => {
                               </View>
                             ))
                           ) : (
-                            <Text style={{ color: "#0E0E64", fontSize: 18, fontWeight: "500" , textAlign:"center"}}>No holidays available this month</Text>
+                            <Text style={{ color: "#0E0E64", fontSize: 18, fontWeight: "500", textAlign: "center" }}>No holidays available this month</Text>
                           )}
                         </View>
                       </ScrollView>
@@ -663,16 +954,23 @@ const HomePage = ({ navigation }) => {
                   <View style={{ backgroundColor: "#FABED7", borderBottomLeftRadius: 10, borderBottomRightRadius: 10 }}>
                     <View style={{ width: "98%", marginLeft: "2%", backgroundColor: "#fff", borderTopLeftRadius: 0, borderBottomLeftRadius: 10, borderBottomRightRadius: 10 }}>
                       <View style={{ flex: 1, borderColor: '#4148fe', borderTopWidth: 0.8, }}></View>
-                      <View style={{ flexDirection: "row", justifyContent: "space-between", marginHorizontal: 10, marginVertical: 8 }}>
-                        <View style={{}}>
-                          <Text style={{ color: "#000", fontSize: 20, fontWeight: "500" }}>Monday</Text>
-                          <Text style={{ color: "#000", fontSize: 18 }}>08-04-2024</Text>
-                        </View>
-                        <View style={{}}>
-                          <Image style={{ color: "#000", fontSize: 20, fontWeight: "500", height: 30, width: 30, alignSelf: "center" }} source={require('../../assets/HomeScreen/clock.png')} />
-                          <Text style={{ color: "#000", fontSize: 18, textAlign: "center" }}>08:20</Text>
-                        </View>
-                      </View>
+                      {
+                        lastAttendanceDetails?.map((elements, index) => {
+                          return (
+                            <View key={index} style={{ flexDirection: "row", justifyContent: "space-between", marginHorizontal: 10, marginVertical: 8 }}>
+                              <View style={{}}>
+                                <Text style={{ color: "#000", fontSize: 20, fontWeight: "500" }}>{elements?.day}</Text>
+                                <Text style={{ color: "#000", fontSize: 18 }}>{elements?.date}</Text>
+                              </View>
+                              <View style={{}}>
+                                <Image style={{ color: "#000", fontSize: 20, fontWeight: "500", height: 30, width: 30, alignSelf: "center" }} source={require('../../assets/HomeScreen/clock.png')} />
+                                <Text style={{ color: "#000", fontSize: 18, textAlign: "center" }}>{elements?.total_hours}</Text>
+                              </View>
+
+                            </View>
+                          )
+                        })
+                      }
                     </View>
                   </View> :
                   null

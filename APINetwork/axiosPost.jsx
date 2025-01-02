@@ -1,64 +1,43 @@
-import axios from "axios";
-import FlashMessage from "react-native-flash-message";
-import { showMessage } from "react-native-flash-message";
+import axios from 'axios';
+import { showMessage } from 'react-native-flash-message';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { navigate } from './NavigationService';
 
-const axiosPost = async (url, data, token,) => {
-
-  var config = {
+const axiosPost = async (url, data, token) => {
+  const config = {
     method: 'post',
     url: url,
     headers: {
       Authorization: `Bearer ${token}`,
-      // 'Content-Type': 'multipart/form-data',
       'Content-Type': 'application/json',
     },
-    data
+    data,
   };
 
-  const response = await axios(config)
-    .then(function (response) {
-      return (response)
-    })
-    .catch(function (error) {
-      console.log("------", error.response.data.message)
-      // return (error)
-      if (error.response) {
-        // Server-side error
-        let message = 'Server error, please try again';
-
-        if (Array.isArray(error.response.data.message)) {
-          // If the message is an array, join its elements into a string
-          message = error.response.data.message.join(', ');
-        } else if (typeof error.response.data.message === 'object') {
-          // If the message is an object, extract and join its values into a string
-          message = Object.values(error.response.data.message).flat().join(', ');
-        } else if (typeof error.response.data.message === 'string') {
-          // If the message is a string, use it directly
-          message = error.response.data.message;
-        }
-
-        showMessage({
-          message: message,
-          type: "danger",
-        });
-      } else if (error.request) {
-        // Network error
-        showMessage({
-          message: 'Network error, please check your connection.',
-          type: "danger",
-        });
-      } else {
-        // Other errors
-        showMessage({
-          message: 'An unexpected error occurred.',
-          type: "danger",
-        });
-      }
+  try {
+    const response = await axios(config);
+    return response;
+  } catch (error) {
+    console.log("error", error?.response?.data?.errors)
+    // Display error message using react-native-flash-message
+    showMessage({
+      message: error.response?.data?.message,
+      description: error.response?.data?.errors || error.message || "Unknown error",
+      type: "danger",
     });
+    
+    // Optionally handle specific error cases, e.g., redirect on authentication errors
+    if (error?.response?.status === 401) {
+      // Redirect to login page or any other action
+      navigate('Login');
+    }
 
+    // Optionally log the error or perform other actions
+    console.error("Error in axiosPost:", error);
 
-  return response;
-
-}
+    // You may want to return a custom response or throw an error to be handled elsewhere
+    return Promise.reject(error);
+  }
+};
 
 export default axiosPost;

@@ -5,6 +5,9 @@ import {
     responsiveFontSize, responsiveHeight, responsiveWidth
 } from 'react-native-responsive-dimensions';
 import { NavigationContainer } from '@react-navigation/native';
+import Icon from 'react-native-vector-icons/MaterialIcons';
+import Themes from '../../Theme/Theme';
+
 
 const ResignStatus = ({ navigation }) => {
     {/* THis code is less more */ }
@@ -36,23 +39,32 @@ const ResignStatus = ({ navigation }) => {
                         borderTopRightRadius: 40,
                     }}>
                     <ScrollView showsVerticalScrollIndicator={false}>
-                        <View style={{marginTop:20, borderRadius: 30, marginBottom: 8, padding: 5, backgroundColor: "#EDFBFE", opacity: 1, elevation: 10, width:"95%", alignSelf:"center"}}>
-                            <View style={{ marginBottom: 5 }}>
-                                <Text style={{ color: "#000", fontWeight: "bold", marginLeft: 10 }}>Subject</Text>
-                                <Text style={{ marginLeft: 10 }}>This is the subject</Text>
+                        <View style={{ marginTop: 20, borderRadius: 30, marginBottom: 10, padding: 20, backgroundColor: "#EDFBFE", opacity: 1, elevation: 10, width: "95%", alignSelf: "center" }}>
+                            <View style={{ marginBottom: 20 }}>
+                                <Text style={{ color: "#000", fontWeight: "500", marginLeft: 10 }}>Subject</Text>
+                                
+                                <Text style={{ marginLeft: 10, color: Themes == 'dark' ? '#000' : '#000' }}>This is the subject</Text>
                             </View>
 
-                            <View style={{ marginBottom: 5 }}>
-                                <Text style={{ color: "#000", fontWeight: "bold", marginLeft: 10 }}>Mail to</Text>
-                                <Text style={{ marginLeft: 10 }}>demo@xoniertech.com</Text>
-                                <Text style={{ marginLeft: 10 }}>hr@xoniertech.com</Text>
+                            <View style={{ marginBottom: 20 }}>
+                                <Text style={{ color: "#000", fontWeight: "500", marginLeft: 10 }}>Mail to</Text>
+                                <Text style={{ marginLeft: 10, color: Themes == 'dark' ? '#000' : '#000'}}>demo@xoniertech.com</Text>
+                                <Text style={{ marginLeft: 10, color: Themes == 'dark' ? '#000' : '#000' }}>hr@xoniertech.com</Text>
                             </View>
-                            <Text style={{ color: "#000", fontWeight: "bold", marginLeft: 10 }}>Message</Text>
-                            <Text style={{ marginLeft: 10 }}>This is the main content for resignation latter</Text>
+                            <Text style={{ color: "#000", fontWeight: "500", marginLeft: 10 }}>Message</Text>
+                            <Text style={{ marginLeft: 10, color: Themes == 'dark' ? '#000' : '#000' }}>This is the main content for resignation latter</Text>
+
+                            <View style={{ borderRadius: 10, backgroundColor: "#F1416C", width: 75, alignSelf: "flex-end", marginRight: 20, marginTop: 10 }}>
+                                <Text style={{ textAlign: "center", padding: 5, color: "#fff" }}>Cache</Text>
+                            </View>
                         </View>
-                        <TouchableOpacity onPress={() => navigation.navigate('ResignStatus')} style={{ marginBottom: 5, backgroundColor: "green", padding: 18, width: "90%", alignSelf: "center", borderRadius: 50 }}>
-                            <Text style={{ textAlign: "center", color: "#fff", fontSize: 18, fontWeight: "bold" }}>Approved</Text>
-                        </TouchableOpacity>
+                        <View style={{flexDirection:"row", marginTop:10, justifyContent:"space-between", marginHorizontal:25, alignItems:"center"}}>
+                            <Text style={{color:"#000", fontSize:16}}>Resignation Status</Text>
+                            <TouchableOpacity onPress={() => navigation.navigate('ResignStatus')} style={{  backgroundColor: "#0CD533", borderRadius: 15 }}>
+                                <Text style={{ textAlign: "center", color: "#fff", padding:6 }}>Approved</Text>
+                            </TouchableOpacity>
+                        </View>
+
                     </ScrollView>
 
                 </View>
@@ -73,6 +85,6 @@ const styles = StyleSheet.create({
         fontSize: responsiveFontSize(3),
         fontWeight: 'bold',
         textAlign: "center",
-        marginBottom: responsiveHeight(10)
+        marginBottom: responsiveHeight(3)
     },
 });

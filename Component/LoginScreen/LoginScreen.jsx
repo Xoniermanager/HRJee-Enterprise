@@ -8,6 +8,7 @@ import {
   ActivityIndicator,
   SafeAreaView,
   Alert,
+  Platform,
 } from 'react-native';
 import React, { useState, useEffect } from 'react';
 import { useNavigation } from '@react-navigation/native';
@@ -20,12 +21,13 @@ import { BASE_URL } from '../../utils';
 import axios from 'axios';
 import FlashMessage from "react-native-flash-message";
 import { showMessage } from "react-native-flash-message";
-
+import Themes from '../Theme/Theme';
 
 const LoginScreen = () => {
   const navigation = useNavigation();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [logindata, setLogInData] = useState('');
   const [loader, setLoader] = useState(false);
   const [emailError, setEmailError] = useState('');
   const [passwordError, setPasswordError] = useState('');
@@ -44,11 +46,6 @@ const LoginScreen = () => {
         email: email,
         password: password,
       };
-      console.log("data------", data)
-
-      //  await AsyncStorage.setItem('EMAIL', JSON.stringify(email))
-      //  await AsyncStorage.setItem('PASSWORD', JSON.stringify(password))
-
       const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
       if (email == "") {
         showMessage({
@@ -89,10 +86,11 @@ const LoginScreen = () => {
         }
       }
     } catch (error) {
-      console.error('Error making POST request:', error);
+      console.log('Error making POST request:', error);
       setLoader(false);
     }
   };
+
 
   return (
     <SafeAreaView style={LoginGuestStyle.contanier}>
@@ -104,8 +102,8 @@ const LoginScreen = () => {
         <Text style={LoginGuestStyle.LoginGuest_Text}>
           Login to your Account
         </Text>
-
-        <Text style={LoginGuestStyle.Phone_number}>E-mail</Text>
+ 
+       <Text style={LoginGuestStyle.Phone_number}>E-mail</Text>
         <View style={LoginGuestStyle.passInput}>
           <TextInput
             placeholder="E-mail"
@@ -113,6 +111,7 @@ const LoginScreen = () => {
             onChangeText={prev => setEmail(prev)}
             style={LoginGuestStyle.InputPassword}
             onChange={() => setEmailError(null)}
+            placeholderTextColor={Themes == 'dark' ? '#000' : '#000'}
           />
           <Image
             source={require('../../assets/Login/user.png')}
@@ -120,9 +119,7 @@ const LoginScreen = () => {
           />
         </View>
 
-        {emailError ? (
-          <Text style={LoginGuestStyle.error}>{emailError}</Text>
-        ) : null}
+
         <Text style={LoginGuestStyle.Phone_number}>Password</Text>
         <View style={LoginGuestStyle.passInput}>
           <TextInput
@@ -132,6 +129,7 @@ const LoginScreen = () => {
             secureTextEntry={!showPassword}
             style={LoginGuestStyle.InputPassword}
             onChange={() => setPasswordError(null)}
+            placeholderTextColor={Themes == 'dark' ? '#000' : '#000'}
           />
           <TouchableOpacity onPress={() => toggleShowPassword()}>
             {showPassword ? (
@@ -147,17 +145,15 @@ const LoginScreen = () => {
             )}
           </TouchableOpacity>
         </View>
-        {passwordError ? (
-          <Text style={LoginGuestStyle.error}>{passwordError}</Text>
-        ) : null}
+
         <TouchableOpacity
           onPress={() => navigation.navigate('ForgetPassword')}>
           <Text style={LoginGuestStyle.forget}>Forget password ?</Text>
         </TouchableOpacity>
         <TouchableOpacity
           style={LoginGuestStyle.submit_button}
-          onPress={() => loginSubmit()}
-          // onPress={() => navigation.navigate('MyTabbar')}
+          // onPress={() => loginSubmit()}
+          onPress={() => navigation.navigate('MyTabbar')}
           disabled={loader}
         >
           {loader ? (

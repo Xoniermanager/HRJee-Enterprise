@@ -1,9 +1,15 @@
 import axiosDelete from './axiosDelete';
 import axiosGet from './axiosGet';
+import AxiosPost from './axiosPost';
 import axiosPost from './axiosPost';
 import axiosPut from './axiosPut';
 
+
 export const login = (url,data) => {
+  let item = axiosPost(url,data);
+  return item;
+};
+export const locationTracking = (url,data) => {
   let item = axiosPost(url,data);
   return item;
 };
@@ -12,6 +18,7 @@ export const signUp = (url, data) => {
   return item;
 };
 export const getProfile = (url,token) => {
+
   let item = axiosGet(url,token);
   return item;
 };
@@ -24,6 +31,14 @@ export const getLeaveType = (url,token) => {
   return item;
 };
 export const getAddress = (url,token) => {
+  let item = axiosGet(url,token);
+  return item;
+};
+export const getNews = (url,token) => {
+  let item = axiosGet(url,token);
+  return item;
+};
+export const getAnnouncement = (url,token) => {
   let item = axiosGet(url,token);
   return item;
 };
@@ -152,7 +167,19 @@ export const setTokenDone=(url,data,token) => {
   let item = axiosPost(url,data,token);
   return item;
 };
+export const punchin=(url,token) => {
+  let item = axiosGet(url,token);
+  return item;
+};
+export const gettodayattendance=(url,token) => {
+  let item = axiosGet(url,token);
+  return item;
+};
+export const getrecentattendence=(url,data,token) => {
+  let item = axiosPost(url,data,token);
+  return item;
+};
 export const logout = (url,token) => {
-  let item = axiosPost(url,token);
+  let item = axiosGet(url,token);
   return item;
 };

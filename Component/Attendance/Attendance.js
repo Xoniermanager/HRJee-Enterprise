@@ -1,5 +1,5 @@
 import { Image, SafeAreaView, Modal, StyleSheet, TextInput, Text, View, FlatList, Switch, TouchableOpacity, ScrollView, Button, Platform } from 'react-native';
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useContext } from 'react';
 import LinearGradient from 'react-native-linear-gradient';
 import {
     responsiveFontSize, responsiveHeight, responsiveWidth
@@ -13,6 +13,7 @@ import { getrecentattendence, gettodayattendance } from '../../APINetwork/Compon
 import moment from 'moment';
 import DateTimePickerModal from 'react-native-modal-datetime-picker';
 import Themes from '../Theme/Theme';
+import { ThemeContext } from '../../Store/ConetxtApi.jsx/ConextApi';
 
 
 const Attendance = () => {
@@ -46,6 +47,7 @@ const Attendance = () => {
             fontcolor: "#4EC8FA"
         }
     ]
+    const { currentTheme, } = useContext(ThemeContext)
 
     const [startdate, setStartDate] = useState(new Date());
     const [modalVisible, setModalVisible] = useState(false);
@@ -59,7 +61,6 @@ const Attendance = () => {
     const [fromDate, setFromDate] = useState(null);
     const [toDate, setToDate] = useState(null);
 
-    console.log("data------", data?.data)
 
     const StatusItem = ({ color, text, value }) => (
         <View style={[styles.statusItem, { backgroundColor: color }]}>
@@ -215,7 +216,7 @@ const Attendance = () => {
 
 
     return (
-        <SafeAreaView style={styles.container}>
+        <SafeAreaView style={[styles.container, { backgroundColor: currentTheme.background }]}>
 
             <View
                 style={{
@@ -328,7 +329,7 @@ const Attendance = () => {
                                 </View>
 
                                 {/* Logs codes */}
-                                <View style={{ width: responsiveWidth(90),  alignSelf: 'center', marginBottom:100 }}>
+                                <View style={{ width: responsiveWidth(90), alignSelf: 'center', marginBottom: 100 }}>
                                     <Text style={{ color: "#0E0E64", fontWeight: "bold", fontSize: 20, padding: 5, marginVertical: 5 }}>Logs</Text>
                                     {
                                         data?.data?.length > 0 ?
@@ -337,12 +338,12 @@ const Attendance = () => {
                                                     data?.data?.map((elements, index) => {
                                                         return (
                                                             <View style={{ flexDirection: "row", }}>
-                                                                <View style={{ position: 'absolute', justifyContent:"center" }}>
+                                                                <View style={{ position: 'absolute', justifyContent: "center" }}>
                                                                     <View style={{ borderWidth: 1.5, height: 50, width: 2, elevation: 7, backgroundColor: "#000", opacity: 0.3 }}></View>
                                                                     <Image style={{ height: 15, width: 15, marginLeft: -6, resizeMode: "contain", position: "absolute" }} source={require('../../assets/Attendence/point.png')} />
                                                                 </View>
 
-                                                                <View key={index} style={{marginBottom:5, justifyContent: "space-between", flex: 1, flexDirection: "row", padding: 15, borderRadius: 20, marginLeft: 10, backgroundColor: "#EDFBFE" }}>
+                                                                <View key={index} style={{ marginBottom: 5, justifyContent: "space-between", flex: 1, flexDirection: "row", padding: 15, borderRadius: 20, marginLeft: 10, backgroundColor: "#EDFBFE" }}>
                                                                     <Text style={{ fontSize: 16, color: "#000" }}>{elements?.date}</Text>
                                                                     <Text style={{ fontSize: 16, color: "#000", fontWeight: "bold" }}>{elements?.total_hours}</Text>
                                                                 </View>

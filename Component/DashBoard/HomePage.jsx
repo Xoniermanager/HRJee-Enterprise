@@ -1,5 +1,5 @@
-import { Dimensions, StyleSheet, Text, View, Image, FlatList, TouchableOpacity, ActivityIndicator, TextInput, Alert, Platform } from 'react-native'
-import React, { useState, useEffect, useMemo } from 'react'
+import { Dimensions, StyleSheet, Text, View, Image, FlatList, TouchableOpacity, ActivityIndicator, TextInput, Alert, Platform ,Switch} from 'react-native'
+import React, { useState, useEffect, useMemo,useContext } from 'react'
 import { responsiveFontSize, responsiveHeight, responsiveWidth } from 'react-native-responsive-dimensions';
 const windowWidth = Dimensions.get('window').width;
 const windowHeight = Dimensions.get('window').height;
@@ -18,6 +18,7 @@ import HomeSkeleton from '../Skeleton/HomeSkeleton';
 import moment from 'moment';
 import AntDesign from 'react-native-vector-icons/AntDesign';
 import Themes from '../Theme/Theme';
+import { ThemeContext } from '../../Store/ConetxtApi.jsx/ConextApi';
 
 const HomePage = ({ navigation }) => {
 
@@ -28,6 +29,7 @@ const HomePage = ({ navigation }) => {
   const date = new Date(selected);
   const month = date.toLocaleString('default', { month: 'long' }); // Get full month name
   // const month = date.getMonth() + 1; // Get month number (1-12)
+  const { toggleTheme, currentTheme, theme,isEnabled,} = useContext(ThemeContext)
 
   // const [toggleCheckBox, setToggleCheckBox] = useState(false)
   const [getleavetypeapidata, setGetLeaveTypeApiData] = useState([])
@@ -570,7 +572,7 @@ const radioButtons2: RadioButtonProps[] = useMemo(() => ([
 
   return (
     <>
-      <View style={{ flex: 1, backgroundColor: "#EDEADE" }}>
+      <View style={{ flex: 1, backgroundColor:currentTheme.background }}>
         <View style={styles.parent}>
           <View style={styles.child}>
             <View style={{ flexDirection: "row", alignItems: "center", marginLeft: 15 }}>
@@ -583,11 +585,20 @@ const radioButtons2: RadioButtonProps[] = useMemo(() => ([
 
               }
               <View style={{ marginHorizontal: 15 }}>
+              <Switch
+          trackColor={{false: '#767577', true: '#81B0FF'}}
+          thumbColor={isEnabled ? '#F5DD4B' : '#F4F3F4'}
+          ios_backgroundColor="#3E3E3E"
+          onValueChange={toggleTheme}
+          value={isEnabled}
+        />
                 <Text style={{ color: "#fff", fontSize: 15, fontWeight: "bold" }}>{getProfileApiData?.name}</Text>
                 <Text style={{ color: "#fff", fontSize: 18, }}>{formattedDate}</Text>
               </View>
             </View>
+         
           </View>
+
         </View>
 
         {/* This is Services list */}

@@ -68,7 +68,9 @@ const LoginScreen = () => {
       else {
         setLoader(true);
         const url = `${BASE_URL}/login`;
+        console.log(data,'response')
         const response = await login(url, data);
+      
         if (response?.data?.status == true) {
           showMessage({
             message: `${response?.data?.message}`,
@@ -152,8 +154,8 @@ const LoginScreen = () => {
         </TouchableOpacity>
         <TouchableOpacity
           style={LoginGuestStyle.submit_button}
-          // onPress={() => loginSubmit()}
-          onPress={() => navigation.navigate('MyTabbar')}
+          onPress={() => loginSubmit()}
+          // onPress={() => navigation.navigate('MyTabbar')}
           disabled={loader}
         >
           {loader ? (

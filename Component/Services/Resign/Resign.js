@@ -1,23 +1,24 @@
 import { Image, SafeAreaView, StyleSheet, TextInput, Text, View, FlatList, TouchableOpacity, ScrollView } from 'react-native';
-import React, { useState } from 'react';
+import React, { useContext, useState } from 'react';
 import LinearGradient from 'react-native-linear-gradient';
 import {
     responsiveFontSize, responsiveHeight, responsiveWidth
 } from 'react-native-responsive-dimensions';
 import { NavigationContainer } from '@react-navigation/native';
 import Themes from '../../Theme/Theme';
+import { ThemeContext } from '../../../Store/ConetxtApi.jsx/ConextApi';
 
 const Resign = ({ navigation }) => {
     {/* THis code is less more */ }
 
     const [expandedprofile, setExpandedProfile] = useState(false);
-
+    const {currentTheme} = useContext(ThemeContext);
     const toggleExpandedProfile = () => {
         setExpandedProfile(!expandedprofile);
     };
 
     return (
-        <SafeAreaView style={styles.container}>
+        <SafeAreaView style={[styles.container,{backgroundColor:currentTheme.background_v2}]}>
 
             <View
                 style={{
@@ -32,7 +33,7 @@ const Resign = ({ navigation }) => {
                     style={{
                         width: '100%',
                         height: '100%',
-                        backgroundColor: '#fff',
+                        backgroundColor:currentTheme.background,
                         borderTopLeftRadius: 40,
                         borderTopRightRadius: 40,
                     }}>
@@ -95,7 +96,7 @@ const Resign = ({ navigation }) => {
 
                         </View>
 
-                        <TouchableOpacity onPress={() => navigation.navigate('ResignStatus')} style={{ marginBottom: 5, backgroundColor: "#0433DA", padding: 18, width: "90%", alignSelf: "center", borderRadius: 50 }}>
+                        <TouchableOpacity onPress={() => navigation.navigate('ResignStatus')} style={{ marginBottom: 5, backgroundColor: currentTheme.background_v2, padding: 18, width: "90%", alignSelf: "center", borderRadius: 50 }}>
                             <Text style={{ textAlign: "center", color: "#fff", fontSize: 18, fontWeight: "bold" }}>Submit</Text>
                         </TouchableOpacity>
                     </ScrollView>

@@ -1,5 +1,5 @@
-import { StyleSheet, Text, View, Image, TouchableOpacity, Alert } from 'react-native';
-import React, { useEffect, useState } from 'react';
+import { StyleSheet, Text, View, Image, TouchableOpacity, Alert, Switch } from 'react-native';
+import React, { useContext, useEffect, useState } from 'react';
 import {
   DrawerContentScrollView,
   DrawerItemList,
@@ -10,12 +10,15 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import axios from 'axios';
 import { showMessage } from "react-native-flash-message";
 import { useNavigation } from '@react-navigation/native';
+import { ThemeContext } from '../../Store/ConetxtApi.jsx/ConextApi';
+import { responsiveFontSize } from 'react-native-responsive-dimensions';
 
 
 export default function CustomDrawer(props) {
   const [loader, setLoader] = useState(false)
   const navigation = useNavigation()
-
+  const {toggleTheme, currentTheme, theme, isEnabled} =
+  useContext(ThemeContext);
 
   const confirmLogout = () => {
     Alert.alert(
@@ -62,6 +65,17 @@ export default function CustomDrawer(props) {
     <View style={{ flex: 1 }}>
       <DrawerContentScrollView {...props}>
         <DrawerItemList {...props} />
+        <View style={styles.themeToggleContainer}>
+            <Text style={[styles.toggleText]}>Theme</Text>
+            <Switch
+              trackColor={{ false: '#767577', true: '#81B0FF' }}
+              thumbColor={isEnabled ? '#F5DD4B' : '#F4F3F4'}
+              ios_backgroundColor="#3E3E3E"
+              onValueChange={toggleTheme}
+              value={isEnabled}
+              style={{marginRight:60}}
+            />
+          </View>
         <TouchableOpacity onPress={() => confirmLogout()}>
           <Text style={{ color: '#fff', marginLeft: 35, fontSize: 17, marginTop: 8 }}>Logout</Text>
         </TouchableOpacity>
@@ -88,5 +102,16 @@ const styles = StyleSheet.create({
   drawerBox: {
     flexDirection: 'row',
     alignItems: 'center',
+  },
+  themeToggleContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    padding: 10,
+    justifyContent: 'space-between',
+  },
+  toggleText: {
+    fontSize: responsiveFontSize(2),
+    color: '#fff',
+    marginLeft:20
   },
 });

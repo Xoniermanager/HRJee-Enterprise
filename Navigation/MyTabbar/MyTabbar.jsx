@@ -1,5 +1,5 @@
 import { StyleSheet, Text, View, Image } from 'react-native';
-import React from 'react';
+import React, { useContext } from 'react';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import HomePage from '../../Component/DashBoard/HomePage';
 import { responsiveFontSize, responsiveWidth } from 'react-native-responsive-dimensions';
@@ -10,9 +10,11 @@ import Account from '../../Component/Account/Account';
 import Attendance from '../../Component/Attendance/Attendance';
 import Services from '../../Component/Services/Services';
 import MyDrawer from '../MyDrawer/MyDrawer';
+import { ThemeContext } from '../../Store/ConetxtApi.jsx/ConextApi';
 
 const MyTabbar = ({ route }) => {
   const Tab = createBottomTabNavigator();
+  const {currentTheme} = useContext(ThemeContext);
 
   return (
     <Tab.Navigator
@@ -22,7 +24,7 @@ const MyTabbar = ({ route }) => {
         headerShown: false,
         tabBarStyle: {
           height: 70,
-          backgroundColor: '#0E0E64',
+          backgroundColor: currentTheme.background_v2,
           borderTopWidth: 0,
           position:'absolute', marginBottom:5,
           marginHorizontal: responsiveWidth(5), borderRadius: 100,  
@@ -54,7 +56,7 @@ const MyTabbar = ({ route }) => {
                     />
                   </View>
                   :
-                  <View style={{ backgroundColor: "#0E0E64", marginTop: -60, borderWidth: 4, borderColor: "#fff", borderRadius: 100, height: 60, width: 60, justifyContent: "center" }}>
+                  <View style={{ backgroundColor: currentTheme.background_v2, marginTop: -60, borderWidth: 4, borderColor: "#fff", borderRadius: 100, height: 60, width: 60, justifyContent: "center" }}>
                     <Image
                       source={require('../../assets/HomeScreen/home.png')}
                       style={{
@@ -106,7 +108,7 @@ const MyTabbar = ({ route }) => {
                     />
                   </View>
                   :
-                  <View style={{ backgroundColor: "#0E0E64", marginTop: -60, borderWidth: 4, borderColor: "#fff", borderRadius: 100, height: 60, width: 60, justifyContent: "center" }}>
+                  <View style={{ backgroundColor: currentTheme.background_v2, marginTop: -60, borderWidth: 4, borderColor: "#fff", borderRadius: 100, height: 60, width: 60, justifyContent: "center" }}>
                     <Image
                       source={require('../../assets/HomeScreen/salary.png')}
                       style={{
@@ -157,7 +159,7 @@ const MyTabbar = ({ route }) => {
                     />
                   </View>
                   :
-                  <View style={{ backgroundColor: "#0E0E64", marginTop: -60, borderWidth: 4, borderColor: "#fff", borderRadius: 100, height: 60, width: 60, justifyContent: "center" }}>
+                  <View style={{ backgroundColor: currentTheme.background_v2, marginTop: -60, borderWidth: 4, borderColor: "#fff", borderRadius: 100, height: 60, width: 60, justifyContent: "center" }}>
                     <Image
                       source={require('../../assets/HomeScreen/user.png')}
                       style={{
@@ -208,7 +210,7 @@ const MyTabbar = ({ route }) => {
                     />
                   </View>
                   :
-                  <View style={{ backgroundColor: "#0E0E64", marginTop: -60, borderWidth: 4, borderColor: "#fff", borderRadius: 100, height: 60, width: 60, justifyContent: "center" }}>
+                  <View style={{ backgroundColor: currentTheme.background_v2, marginTop: -60, borderWidth: 4, borderColor: "#fff", borderRadius: 100, height: 60, width: 60, justifyContent: "center" }}>
                     <Image
                       source={require('../../assets/Services/services.png')}
                       style={{

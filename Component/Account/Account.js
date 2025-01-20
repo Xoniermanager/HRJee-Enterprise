@@ -1,5 +1,5 @@
 import LinearGradient from 'react-native-linear-gradient';
-import React, { useState, useContext, useEffect } from 'react';
+import React, {useState, useContext, useEffect} from 'react';
 import {
   Text,
   View,
@@ -18,25 +18,24 @@ import {
   responsiveFontSize,
 } from 'react-native-responsive-dimensions';
 import FontAwesome from 'react-native-vector-icons/FontAwesome';
-import { DrawerActions, useNavigation } from '@react-navigation/native';
-import { createDrawerNavigator } from '@react-navigation/drawer';
-import { createStackNavigator } from '@react-navigation/stack';
-import { BASE_URL } from '../../utils';
+import {DrawerActions, useNavigation} from '@react-navigation/native';
+import {createDrawerNavigator} from '@react-navigation/drawer';
+import {createStackNavigator} from '@react-navigation/stack';
+import {BASE_URL} from '../../utils';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import axios from 'axios';
 import Reload from '../../Reload';
-import { getProfile } from '../../APINetwork/ComponentApi';
-import { showMessage } from "react-native-flash-message";
+import {getProfile} from '../../APINetwork/ComponentApi';
+import {showMessage} from 'react-native-flash-message';
 import RNFetchBlob from 'rn-fetch-blob';
 import AccountSkeleton from '../Skeleton/AccountSkeleton';
 import Themes from '../Theme/Theme';
-
-
+import {ThemeContext} from '../../Store/ConetxtApi.jsx/ConextApi';
 
 const Drawer = createDrawerNavigator();
 const Stack = createStackNavigator();
 
-const Account = ({ title, description }) => {
+const Account = ({title, description}) => {
   const showData = [
     {
       id: 1,
@@ -66,10 +65,9 @@ const Account = ({ title, description }) => {
   const [loader, setLoader] = useState(false);
   const [show, setShow] = useState(false);
 
-
   const navigation = useNavigation();
 
-  const renderServicesList = ({ item }) => (
+  const renderServicesList = ({item}) => (
     <View
       style={{
         justifyContent: 'center',
@@ -79,15 +77,17 @@ const Account = ({ title, description }) => {
         marginHorizontal: 5,
         borderRadius: 20,
       }}>
-      <View style={{ padding: 10, alignItems: 'center' }}>
+      <View style={{padding: 10, alignItems: 'center'}}>
         <Image
-          style={{ height: 50, width: 50, marginBottom: 2 }}
+          style={{height: 50, width: 50, marginBottom: 2}}
           source={item.uri}
         />
-        <Text numberOfLines={1} style={{ marginBottom: 2, fontSize: 16, color: '#000' }}>
+        <Text
+          numberOfLines={1}
+          style={{marginBottom: 2, fontSize: 16, color: '#000'}}>
           {item.name}
         </Text>
-        <Text style={{ fontSize: 16, color: '#000' }}>{item.num}</Text>
+        <Text style={{fontSize: 16, color: '#000'}}>{item.num}</Text>
       </View>
     </View>
   );
@@ -101,7 +101,7 @@ const Account = ({ title, description }) => {
   const [expandeddocuments, setExpandedDocuments] = useState(false);
   const [bankdetailsdata, setBankDetailsData] = useState('');
   const [documentdetailsdata, setGetDocumentApiData] = useState([]);
-
+  const {currentTheme} = useContext(ThemeContext);
   const toggleExpandedBank = () => {
     setExpandedBank(!expandedbank);
   };
@@ -168,9 +168,9 @@ const Account = ({ title, description }) => {
     check();
   }, []);
 
-  const historyDownload = (item) => {
+  const historyDownload = item => {
     if (item != null) {
-      setShow(true)
+      setShow(true);
       if (Platform.OS === 'ios' || Platform.OS == 'android') {
         downloadHistory(item);
       } else {
@@ -184,32 +184,27 @@ const Account = ({ title, description }) => {
           ).then(granted => {
             if (granted === PermissionsAndroid.RESULTS.GRANTED) {
               console.log('Storage Permission Granted.');
-              setShow(false)
+              setShow(false);
 
               downloadHistory(item);
             } else {
-              alert('storage_permission')
-              setShow(false)
-
+              alert('storage_permission');
+              setShow(false);
             }
           });
         } catch (err) {
           //To handle permission related issue
           console.log('error', err);
-          setloading(false)
-
+          setloading(false);
         }
       }
+    } else {
+      alert('No record found!');
+      setShow(false);
     }
-    else {
-      alert('No record found!')
-      setShow(false)
-    }
-
-
   };
-  const downloadHistory = async (item) => {
-    const { config, fs } = RNFetchBlob;
+  const downloadHistory = async item => {
+    const {config, fs} = RNFetchBlob;
     let PictureDir = fs.dirs.PictureDir;
     let date = new Date();
     let options = {
@@ -228,58 +223,59 @@ const Account = ({ title, description }) => {
     config(options)
       .fetch('GET', item)
       .then(res => {
-        alert('Report Downloaded Successfully.')
-        setShow(false)
+        alert('Report Downloaded Successfully.');
+        setShow(false);
       });
   };
 
-
   if (loader) {
-    return <AccountSkeleton />
+    return <AccountSkeleton />;
   }
   return (
-    <SafeAreaView style={styles.container}>
+    <SafeAreaView
+      style={[styles.container, {backgroundColor: currentTheme.background_v2}]}>
       <ScrollView showsVerticalScrollIndicator={false}>
         {/* this is code of profile details */}
         <View
           style={{
             marginTop: 15,
           }}>
-          <View style={{ flexDirection: 'row', alignSelf: 'center' }}>
+          <View style={{flexDirection: 'row', alignSelf: 'center'}}>
             <Text style={styles.name}>Profile</Text>
             <TouchableOpacity
               onPress={() =>
                 navigation.dispatch(DrawerActions.openDrawer('MyDrawer'))
               }
-              style={{ marginLeft: 5 }}>
+              style={{marginLeft: 5}}>
               <FontAwesome style={{}} name="edit" size={30} color="#fff" />
             </TouchableOpacity>
           </View>
-          <View style={{ marginTop: 10, alignSelf: 'center' }}>
-            {
-              getProfileApiData?.profile_image == "" || getProfileApiData?.profile_image == [] || getProfileApiData?.profile_image == null ?
-                <Image
-                  style={{
-                    height: 100,
-                    width: 100,
-                    resizeMode: 'contain',
-                    marginVertical: 5,
-                    alignSelf: 'center',
-                  }}
-                  source={require('../../assets/HomeScreen/profile.png')}
-                />
-                :
-                <Image
-                  style={{
-                    height: 100,
-                    width: 100,
-                    resizeMode: 'contain',
-                    marginVertical: 5,
-                    alignSelf: 'center',
-                  }}
-                  source={{ uri: 'https://i.postimg.cc/L69jybXV/512.png' }} // Replace with the actual image URL
-                />
-            }
+          <View style={{marginTop: 10, alignSelf: 'center'}}>
+            {getProfileApiData?.profile_image == '' ||
+            getProfileApiData?.profile_image == [] ||
+            getProfileApiData?.profile_image == null ? (
+              <Image
+                style={{
+                  height: 100,
+                  width: 100,
+                  resizeMode: 'contain',
+                  marginVertical: 5,
+                  alignSelf: 'center',
+                }}
+                source={require('../../assets/HomeScreen/profile.png')}
+              />
+            ) : (
+              <Image
+                style={{
+                  height: 100,
+                  width: 100,
+                  resizeMode: 'contain',
+                  marginVertical: 5,
+                  alignSelf: 'center',
+                }}
+                source={{uri: 'https://i.postimg.cc/L69jybXV/512.png'}} // Replace with the actual image URL
+              />
+            )}
             <Text style={styles.name}>{getProfileApiData.name}</Text>
             <Text style={styles.name}>{getProfileApiData?.phone}</Text>
             <Text style={styles.name}>{getProfileApiData?.email}</Text>
@@ -289,7 +285,7 @@ const Account = ({ title, description }) => {
         <View
           style={{
             marginBottom: responsiveHeight(10),
-            backgroundColor: '#fff',
+            backgroundColor: currentTheme.background,
             borderTopLeftRadius: 40,
             marginTop: responsiveHeight(3),
             borderTopRightRadius: 40,
@@ -297,7 +293,7 @@ const Account = ({ title, description }) => {
           <Text
             style={{
               fontSize: 18,
-              color: '#0E0E64',
+              color: currentTheme.text,
               alignSelf: 'center',
               marginVertical: 10,
               fontWeight: 'bold',
@@ -305,7 +301,7 @@ const Account = ({ title, description }) => {
             At work for : 4 years, 1 month, 20 Day
           </Text>
           <FlatList
-            style={{ alignSelf: 'center' }}
+            style={{alignSelf: 'center'}}
             horizontal
             showsHorizontalScrollIndicator={false}
             data={showData}
@@ -326,9 +322,9 @@ const Account = ({ title, description }) => {
               style={{
                 marginBottom: expandedbank == true ? 0 : 8,
                 borderWidth: 1,
-                borderColor: '#00f0ff',
+                borderColor: currentTheme.background_v2,
                 width: '95%',
-                backgroundColor: '#fff',
+                backgroundColor: currentTheme.background,
                 opacity: 1,
                 elevation: 10,
                 borderTopLeftRadius: 50,
@@ -340,19 +336,33 @@ const Account = ({ title, description }) => {
                 justifyContent: 'space-between',
                 alignItems: 'center',
               }}>
-              <Text style={{ color: '#000', fontSize: responsiveFontSize(2.3) }}>
+              <Text
+                style={{
+                  color: currentTheme.text,
+                  fontSize: responsiveFontSize(2.3),
+                }}>
                 Bank Details
               </Text>
               <TouchableOpacity onPress={() => toggleExpandedBank()}>
                 {expandedbank ? (
                   <Image
-                    style={{ height: 30, width: 30, resizeMode: 'contain' }}
+                    style={{
+                      height: 30,
+                      width: 30,
+                      resizeMode: 'contain',
+                      tintColor: currentTheme.text,
+                    }}
                     source={require('../../assets/HomeScreen/up.png')}
                   />
                 ) : (
                   <>
                     <Image
-                      style={{ height: 30, width: 30, resizeMode: 'contain' }}
+                      style={{
+                        height: 30,
+                        width: 30,
+                        resizeMode: 'contain',
+                        tintColor: currentTheme.text,
+                      }}
                       source={require('../../assets/HomeScreen/down.png')}
                     />
                   </>
@@ -370,36 +380,68 @@ const Account = ({ title, description }) => {
                   style={{
                     borderTopWidth: expandedbank == true ? 0 : 2,
                     borderWidth: 1,
-                    borderColor: '#00f0ff',
-                    backgroundColor: '#fff',
+                    borderColor: currentTheme.background_v2,
+                    backgroundColor: currentTheme.background,
                     borderTopLeftRadius: 0,
                     borderBottomLeftRadius: 0,
                     borderBottomRightRadius: 0,
                   }}>
                   <>
-                    <View style={styles.card}>
+                    <View
+                      style={[
+                        styles.card,
+                        {
+                          borderColor: currentTheme.background_v2,
+                          backgroundColor: currentTheme.background,
+                          borderWidth: 0.5,
+                        },
+                      ]}>
                       <View style={styles.content}>
-                        <Text style={styles.title}>A/C Holder</Text>
-                        <Text style={styles.title}>
-                          {bankdetailsdata?.account_name ? bankdetailsdata?.account_name : 'N/A'}
+                        <Text
+                          style={[styles.title, {color: currentTheme.text}]}>
+                          A/C Holder
+                        </Text>
+                        <Text
+                          style={[styles.title, {color: currentTheme.text}]}>
+                          {bankdetailsdata?.account_name
+                            ? bankdetailsdata?.account_name
+                            : 'N/A'}
                         </Text>
                       </View>
                       <View style={styles.content}>
-                        <Text style={styles.title}>A/C Number</Text>
-                        <Text style={styles.title}>
-                          {bankdetailsdata?.account_number ? bankdetailsdata?.account_number : 'N/A'}
+                        <Text
+                          style={[styles.title, {color: currentTheme.text}]}>
+                          A/C Number
+                        </Text>
+                        <Text
+                          style={[styles.title, {color: currentTheme.text}]}>
+                          {bankdetailsdata?.account_number
+                            ? bankdetailsdata?.account_number
+                            : 'N/A'}
                         </Text>
                       </View>
                       <View style={styles.content}>
-                        <Text style={styles.title}>Bank Name</Text>
-                        <Text style={styles.title}>
-                          {bankdetailsdata?.bank_name ? bankdetailsdata?.bank_name : 'N/A'}
+                        <Text
+                          style={[styles.title, {color: currentTheme.text}]}>
+                          Bank Name
+                        </Text>
+                        <Text
+                          style={[styles.title, {color: currentTheme.text}]}>
+                          {bankdetailsdata?.bank_name
+                            ? bankdetailsdata?.bank_name
+                            : 'N/A'}
                         </Text>
                       </View>
                       <View style={styles.content}>
-                        <Text style={styles.title}>IFSC/RTGS Code</Text>
-                        <Text style={styles.title}>
-                          {bankdetailsdata?.ifsc_code ? bankdetailsdata?.ifsc_code : 'N/A'}
+                        <Text
+                          style={[styles.title, {color: currentTheme.text}]}>
+                          IFSC/RTGS Code
+                        </Text>
+                        <Text
+                          style={[styles.title, {color: currentTheme.text}]}>
+                          {bankdetailsdata?.ifsc_code
+                            ? bankdetailsdata?.ifsc_code
+                            : 'N/A'}
                         </Text>
                       </View>
                     </View>
@@ -423,9 +465,9 @@ const Account = ({ title, description }) => {
               style={{
                 marginBottom: expandedassets == true ? 0 : 8,
                 borderWidth: 1,
-                borderColor: '#00f0ff',
+                borderColor: currentTheme.background_v2,
                 width: '95%',
-                backgroundColor: '#fff',
+                backgroundColor: currentTheme.background,
                 opacity: 1,
                 elevation: 10,
                 borderTopLeftRadius: 50,
@@ -437,19 +479,33 @@ const Account = ({ title, description }) => {
                 justifyContent: 'space-between',
                 alignItems: 'center',
               }}>
-              <Text style={{ color: '#000', fontSize: responsiveFontSize(2.3) }}>
+              <Text
+                style={{
+                  color: currentTheme.text,
+                  fontSize: responsiveFontSize(2.3),
+                }}>
                 Assets
               </Text>
               <TouchableOpacity onPress={toggleExpandedAssets}>
                 {expandedassets ? (
                   <Image
-                    style={{ height: 30, width: 30, resizeMode: 'contain' }}
+                    style={{
+                      height: 30,
+                      width: 30,
+                      resizeMode: 'contain',
+                      tintColor: currentTheme.text,
+                    }}
                     source={require('../../assets/HomeScreen/up.png')}
                   />
                 ) : (
                   <>
                     <Image
-                      style={{ height: 30, width: 30, resizeMode: 'contain' }}
+                      style={{
+                        height: 30,
+                        width: 30,
+                        resizeMode: 'contain',
+                        tintColor: currentTheme.text,
+                      }}
                       source={require('../../assets/HomeScreen/down.png')}
                     />
                   </>
@@ -467,39 +523,80 @@ const Account = ({ title, description }) => {
                   style={{
                     borderTopWidth: expandedassets == true ? 0 : 2,
                     borderWidth: 1,
-                    borderColor: '#00f0ff',
-                    backgroundColor: '#fff',
+                    borderColor: currentTheme.background_v2,
+                    backgroundColor: currentTheme.background,
                     borderTopLeftRadius: 0,
                     borderBottomLeftRadius: 0,
                     borderBottomRightRadius: 0,
                   }}>
                   <>
-                    {
-                      getAssetsApiData?.map((elements, index) => {
-                        return (
-                          <View key={index} style={styles.card}>
-                            <View style={styles.content}>
-                              <Text style={styles.title}>Assigned Date</Text>
-                              <Text style={styles.title}>
-                                {elements?.assigned_date ? elements?.assigned_date : 'N/A'}
-                              </Text>
-                            </View>
-                            <View style={styles.content}>
-                              <Text style={styles.title}>Returned Date</Text>
-                              <Text style={styles.title}>
-                                {elements?.returned_date ? elements?.returned_date : 'N/A'}
-                              </Text>
-                            </View>
-                            <View style={styles.content}>
-                              <Text style={styles.title}>Comment</Text>
-                              <Text style={styles.title}>
-                                {elements?.comment ? elements?.comment : 'N/A'}
-                              </Text>
-                            </View>
+                    {getAssetsApiData?.map((elements, index) => {
+                      return (
+                        <View
+                          key={index}
+                          style={[
+                            styles.card,
+                            {
+                              backgroundColor: currentTheme.background,
+                              borderWidth: 0.5,
+                              borderColor: currentTheme.background_v2,
+                            },
+                          ]}>
+                          <View style={styles.content}>
+                            <Text
+                              style={[
+                                styles.title,
+                                {color: currentTheme.text},
+                              ]}>
+                              Assigned Date
+                            </Text>
+                            <Text
+                              style={[
+                                styles.title,
+                                {color: currentTheme.text},
+                              ]}>
+                              {elements?.assigned_date
+                                ? elements?.assigned_date
+                                : 'N/A'}
+                            </Text>
                           </View>
-                        )
-                      })
-                    }
+                          <View style={styles.content}>
+                            <Text
+                              style={[
+                                styles.title,
+                                {color: currentTheme.text},
+                              ]}>
+                              Returned Date
+                            </Text>
+                            <Text
+                              style={[
+                                styles.title,
+                                {color: currentTheme.text},
+                              ]}>
+                              {elements?.returned_date
+                                ? elements?.returned_date
+                                : 'N/A'}
+                            </Text>
+                          </View>
+                          <View style={styles.content}>
+                            <Text
+                              style={[
+                                styles.title,
+                                {color: currentTheme.text},
+                              ]}>
+                              Comment
+                            </Text>
+                            <Text
+                              style={[
+                                styles.title,
+                                {color: currentTheme.text},
+                              ]}>
+                              {elements?.comment ? elements?.comment : 'N/A'}
+                            </Text>
+                          </View>
+                        </View>
+                      );
+                    })}
                   </>
                 </View>
               </View>
@@ -521,9 +618,9 @@ const Account = ({ title, description }) => {
               style={{
                 marginBottom: expandeddocuments == true ? 0 : 8,
                 borderWidth: 1,
-                borderColor: '#00f0ff',
+                borderColor: currentTheme.background_v2,
                 width: '95%',
-                backgroundColor: '#fff',
+                backgroundColor: currentTheme.background,
                 opacity: 1,
                 elevation: 10,
                 borderTopLeftRadius: 50,
@@ -535,19 +632,33 @@ const Account = ({ title, description }) => {
                 justifyContent: 'space-between',
                 alignItems: 'center',
               }}>
-              <Text style={{ color: '#000', fontSize: responsiveFontSize(2.3) }}>
+              <Text
+                style={{
+                  color: currentTheme.text,
+                  fontSize: responsiveFontSize(2.3),
+                }}>
                 Documents
               </Text>
               <TouchableOpacity onPress={toggleExpandedDocuments}>
                 {expandeddocuments ? (
                   <Image
-                    style={{ height: 30, width: 30, resizeMode: 'contain' }}
+                    style={{
+                      height: 30,
+                      width: 30,
+                      resizeMode: 'contain',
+                      tintColor: currentTheme.text,
+                    }}
                     source={require('../../assets/HomeScreen/up.png')}
                   />
                 ) : (
                   <>
                     <Image
-                      style={{ height: 30, width: 30, resizeMode: 'contain' }}
+                      style={{
+                        height: 30,
+                        width: 30,
+                        resizeMode: 'contain',
+                        tintColor: currentTheme.text,
+                      }}
                       source={require('../../assets/HomeScreen/down.png')}
                     />
                   </>
@@ -565,35 +676,59 @@ const Account = ({ title, description }) => {
                   style={{
                     borderTopWidth: expandeddocuments == true ? 0 : 2,
                     borderWidth: 1,
-                    borderColor: '#00f0ff',
-                    backgroundColor: '#fff',
+                    borderColor: currentTheme.background_v2,
+                    backgroundColor: currentTheme.background,
                     borderTopLeftRadius: 0,
                     borderBottomLeftRadius: 0,
                     borderBottomRightRadius: 0,
                   }}>
                   <>
-                    {
-                      documentdetailsdata?.map((elements, index) => {
+                    {documentdetailsdata?.map((elements, index) => {
+                      let fileURL = elements?.document;
+                      console.log(fileURL, 'fileURL');
+                      let fileName = elements?.document_types?.name;
+                      let fileExtension = fileURL.split('.').pop();
 
-                        let fileURL = elements?.document;
-                        console.log(fileURL, 'fileURL')
-                        let fileName = elements?.document_types?.name
-                        let fileExtension = fileURL.split(".").pop();
-
-                        return (
-                          <View key={index} style={styles.card}>
-                            <View style={styles.content}>
-                              <Text style={styles.title}>{fileName}</Text>
-                              <Text style={styles.description}>{fileExtension}</Text>
-                              <TouchableOpacity onPress={() => historyDownload(fileURL)}
-                              >
-                                <Text style={[styles.description, styles.downloadtxt]}>Download</Text>
-                              </TouchableOpacity>
-                            </View>
+                      return (
+                        <View
+                          key={index}
+                          style={[
+                            styles.card,
+                            {
+                              backgroundColor: currentTheme.background,
+                              borderWidth: 0.5,
+                              borderColor: currentTheme.background_v2,
+                            },
+                          ]}>
+                          <View style={styles.content}>
+                            <Text
+                              style={[
+                                styles.title,
+                                {color: currentTheme.text},
+                              ]}>
+                              {fileName}
+                            </Text>
+                            <Text
+                              style={[
+                                styles.description,
+                                {color: currentTheme.text},
+                              ]}>
+                              {fileExtension}
+                            </Text>
+                            <TouchableOpacity
+                              onPress={() => historyDownload(fileURL)}>
+                              <Text
+                                style={[
+                                  styles.description,
+                                  styles.downloadtxt,
+                                ]}>
+                                Download
+                              </Text>
+                            </TouchableOpacity>
                           </View>
-                        )
-                      })
-                    }
+                        </View>
+                      );
+                    })}
                   </>
                 </View>
               </View>
@@ -626,8 +761,8 @@ const styles = StyleSheet.create({
     borderColor: 'white',
   },
   downloadtxt: {
-    color: "blue",
-    fontWeight: "bold"
+    color: 'blue',
+    fontWeight: 'bold',
   },
   options: {
     width: 65,
@@ -643,9 +778,9 @@ const styles = StyleSheet.create({
     backgroundColor: '#d3e3fd30',
     borderColor: '#0c57d0',
   },
-  heading: { fontWeight: '500', fontSize: 15 },
-  heading_grey: { fontSize: 14, color: 'grey', fontWeight: '300' },
-  add_txt: { fontSize: 14, color: '#efad37', fontWeight: '600' },
+  heading: {fontWeight: '500', fontSize: 15},
+  heading_grey: {fontSize: 14, color: 'grey', fontWeight: '300'},
+  add_txt: {fontSize: 14, color: '#efad37', fontWeight: '600'},
   centeredView: {
     flex: 1,
     justifyContent: 'center',
@@ -674,8 +809,8 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     flexDirection: 'row',
   },
-  input_title: { marginBottom: 3, fontSize: 14, fontWeight: '500' },
-  input_top_margin: { marginTop: 15 },
+  input_title: {marginBottom: 3, fontSize: 14, fontWeight: '500'},
+  input_top_margin: {marginTop: 15},
   input: {
     height: 45,
     backgroundColor: 'white',
@@ -707,8 +842,8 @@ const styles = StyleSheet.create({
 
     // width: '80%',
   },
-  bottomsheetTxt: { fontSize: 17 },
-  bottomsheetLogo: { fontSize: 22, marginRight: 15 },
+  bottomsheetTxt: {fontSize: 17},
+  bottomsheetLogo: {fontSize: 22, marginRight: 15},
   bottomsheetBtn: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -777,12 +912,13 @@ const styles = StyleSheet.create({
     backgroundColor: '#fff',
     borderRadius: 8,
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
+    shadowOffset: {width: 0, height: 2},
     shadowOpacity: 0.8,
     shadowRadius: 2,
     elevation: 5,
     margin: 10,
-    overflow: 'hidden', justifyContent:"space-between"
+    overflow: 'hidden',
+    justifyContent: 'space-between',
   },
   image: {
     width: '100%',
@@ -795,8 +931,8 @@ const styles = StyleSheet.create({
   },
   title: {
     fontWeight: 'bold',
-    marginBottom: 0, 
-    color:Themes == 'dark' ? '#000' : '#000'
+    marginBottom: 0,
+    color: Themes == 'dark' ? '#000' : '#000',
   },
   description: {
     fontSize: 14,

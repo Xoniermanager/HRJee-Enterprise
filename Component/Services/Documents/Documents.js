@@ -1,14 +1,15 @@
 
 import { Image, SafeAreaView, StyleSheet, Text, View, FlatList, TouchableOpacity, ScrollView } from 'react-native';
-import React, { useState } from 'react';
+import React, { useContext, useState } from 'react';
 import LinearGradient from 'react-native-linear-gradient';
 import {
     responsiveFontSize, responsiveHeight, responsiveWidth
 } from 'react-native-responsive-dimensions';
 import { NavigationContainer } from '@react-navigation/native';
+import { ThemeContext } from '../../../Store/ConetxtApi.jsx/ConextApi';
 
 const Documents = ({ navigation }) => {
-
+    const {currentTheme} = useContext(ThemeContext);
     const services = [
         {
             id: 1,
@@ -69,7 +70,7 @@ const Documents = ({ navigation }) => {
 
 
     return (
-        <SafeAreaView style={styles.container}>
+        <SafeAreaView style={[styles.container,{backgroundColor:currentTheme.background_v2}]}>
 
             <View
                 style={{
@@ -84,7 +85,7 @@ const Documents = ({ navigation }) => {
                     style={{
                         width: '100%',
                         height: '100%',
-                        backgroundColor: '#fff',
+                        backgroundColor:currentTheme.background,
                         borderTopLeftRadius: 40,
                         marginTop: responsiveHeight(3),
                         borderTopRightRadius: 40,

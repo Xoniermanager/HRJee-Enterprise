@@ -1,14 +1,16 @@
 
 import { Image, SafeAreaView, StyleSheet, Text, View, FlatList, TouchableOpacity, ScrollView, Platform } from 'react-native';
-import React, { useState } from 'react';
+import React, { useContext, useState } from 'react';
 import LinearGradient from 'react-native-linear-gradient';
 import {
     responsiveFontSize, responsiveHeight, responsiveWidth
 } from 'react-native-responsive-dimensions';
 import { NavigationContainer } from '@react-navigation/native';
 import Themes from '../Theme/Theme';
+import { ThemeContext } from '../../Store/ConetxtApi.jsx/ConextApi';
 
 const Services = ({ navigation }) => {
+    const {currentTheme} = useContext(ThemeContext);
 
     const services = [
         {
@@ -46,15 +48,15 @@ const Services = ({ navigation }) => {
     {/* This is Services card List */ }
 
     const renderServicesList = ({ item }) => (
-        <TouchableOpacity onPress={() => navigation.navigate(item.nav)} activeOpacity={1} style={styles.item}>
+        <TouchableOpacity onPress={() => navigation.navigate(item.nav)} activeOpacity={1} style={[styles.item,{borderColor: currentTheme.background_v2,backgroundColor: currentTheme.background,borderWidth:0.5}]}>
             <Image source={item.uri} style={styles.icon} />
-            <Text style={styles.title}>{item.name}</Text>
+            <Text  style={[styles.title,{color:currentTheme.text}]}>{item.name}</Text>
         </TouchableOpacity>
     );
 
 
     return (
-        <SafeAreaView style={styles.container}>
+        <SafeAreaView style={[styles.container,{backgroundColor:currentTheme.background_v2}]}>
 
             <View
                 style={{
@@ -63,7 +65,7 @@ const Services = ({ navigation }) => {
                 <Text style={styles.name}>Services</Text>
                 <View
                     style={{
-                        backgroundColor: '#fff',
+                        backgroundColor: currentTheme.background,
                         borderTopLeftRadius: 40,
                         borderTopRightRadius: 40,
                         height: "100%"

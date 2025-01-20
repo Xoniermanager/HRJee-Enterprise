@@ -13,14 +13,11 @@ const axiosGet = async (url, token, navigation) => {
         Authorization: `Bearer ${token}`,
       },
     });
-
     return data;
   } catch (error) {
-    // return (error)
     if (error.response) {
       const { status } = error.response;
       if (status === 401) {
-        // Handle token expired
         showMessage({
           message: 'Your session has expired. Please log in again.',
           type: "danger",

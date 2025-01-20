@@ -33,6 +33,7 @@ import Processing from '../../Component/Services/Location/ProcessingTask/Process
 import Done from '../../Component/Services/Location/DoneTask/Done';
 import Leaves from '../../Component/Services/Leave/Leaves';
 import PolicyDetails from '../../Component/DashBoard/Policy/PolicyDetails';
+import ProfileDetails from '../../Component/Skeleton/ProfileDetails';
 
 
 
@@ -189,6 +190,11 @@ const MyStack = () => {
       <Stack.Screen
         name="PolicyDetails"
         component={PolicyDetails}
+        options={{ headerShown: false }}
+      />
+        <Stack.Screen
+        name="ProfileDetails"
+        component={ProfileDetails}
         options={{ headerShown: false }}
       />
       

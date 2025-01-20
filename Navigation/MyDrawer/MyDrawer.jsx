@@ -1,5 +1,5 @@
 import { StyleSheet, Text, View, Image, TouchableOpacity, Button } from 'react-native';
-import React, { useState } from 'react';
+import React, { useContext, useState } from 'react';
 import { createDrawerNavigator } from '@react-navigation/drawer';
 import Account from '../../Component/Account/Account';
 import { responsiveFontSize } from 'react-native-responsive-dimensions';
@@ -11,10 +11,12 @@ import CustomDrawer from './CustomDrawer';
 import PunchIn from './MyDrawerScreens/PunchIn';
 import PunchOut from './MyDrawerScreens/PunchOut';
 import ChangePassword from '../../Component/Password/ChangePassword';
+import { ThemeContext } from '../../Store/ConetxtApi.jsx/ConextApi';
 
 const MyDrawer = () => {
   const Drawer = createDrawerNavigator();
   const navigation = useNavigation()
+  const {currentTheme} = useContext(ThemeContext);
   return (
     <Drawer.Navigator
     drawerContent={props => <CustomDrawer {...props} />}
@@ -27,7 +29,7 @@ const MyDrawer = () => {
           fontSize: 20,
         },
         drawerStyle: {
-          backgroundColor: '#0E0E64',
+          backgroundColor:currentTheme.background_v2,
         },
         headerShown: false,
 
@@ -110,6 +112,7 @@ const MyDrawer = () => {
           ),
         }}
       />
+      
 
     </Drawer.Navigator>
   );

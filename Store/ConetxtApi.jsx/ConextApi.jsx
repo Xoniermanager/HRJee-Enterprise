@@ -7,25 +7,27 @@ export const ThemeContext = createContext();
 const ConextApi = ({ children }) => {
   const [alrmNoti, setAlrmNoti] = useState([])
   const [viewMedi, setViewMedi] = useState(false)
-
-  const systemColorScheme = Appearance.getColorScheme(); // System theme
-  const [theme, setTheme] = useState(systemColorScheme); // State for theme
-  const [isManual, setIsManual] = useState(false); // Tracks manual override
+  const systemColorScheme = Appearance.getColorScheme();
+  const [theme, setTheme] = useState(systemColorScheme); 
+  const [isManual, setIsManual] = useState(false); 
   const [isEnabled, setIsEnabled] = useState(false);
-  // Load saved theme preference from storage
   useEffect(() => {
     const loadTheme = async () => {
       const savedTheme = await AsyncStorage.getItem('theme');
       if (savedTheme) {
-        setTheme(savedTheme);
-        setIsManual(true);
-        setIsEnabled(!isEnabled)
-      }
-    };
+        if(savedTheme=='dark'){
+          setTheme(savedTheme);
+          setIsManual(true);
+           setIsEnabled(!isEnabled)
+        }
+        else {
+          setTheme(savedTheme);
+          setIsManual(true);
+        }}};
     loadTheme();
   }, []);
   const toggle = () => {
-    setDarkTheme(!darkTheme);
+    // setDarkTheme(!darkTheme);
   };
   const saveTheme = async (theme) => {
     await AsyncStorage.setItem('theme', theme);

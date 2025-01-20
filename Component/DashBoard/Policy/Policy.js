@@ -15,9 +15,6 @@ import Reload from '../../../Reload';
 const Policy = ({ navigation }) => {
   const [getNewsApiData, setGetNewsApiData] = useState('')
   const [loader, setLoader] = useState(false);
-
-  console.log("getNewsApiData-------", getNewsApiData)
-
   useEffect(() => {
     async function check() {
       try {
@@ -45,15 +42,7 @@ const Policy = ({ navigation }) => {
     }
     check();
   }, []);
-
-  // if (getNewsApiData == "" || getNewsApiData == null || getNewsApiData == []) {
-  //   return <View>
-  //     <Text>There are no availabe data</Text>
-  //   </View>
-  // }
   const image = { uri: 'https://i.postimg.cc/zf8d0r7t/nodata-1.png' };
-
-
   return (
     <SafeAreaView style={styles.container}>
       <View

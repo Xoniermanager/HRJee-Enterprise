@@ -1,13 +1,15 @@
-import React, { useEffect, useState } from 'react';
+import React, { useContext, useEffect, useState } from 'react';
 import { View, Text, Image, StyleSheet, TouchableOpacity, SafeAreaView, ScrollView, FlatList } from 'react-native';
 import {
     responsiveFontSize, responsiveHeight, responsiveWidth
 } from 'react-native-responsive-dimensions';
 import AntDesign from 'react-native-vector-icons/AntDesign';
+import { ThemeContext } from '../../../Store/ConetxtApi.jsx/ConextApi';
 
 
 
 const Leaves = ({navigation}) => {
+    const {currentTheme} = useContext(ThemeContext);
     const showData = [
         {
             id: 1,
@@ -31,6 +33,27 @@ const Leaves = ({navigation}) => {
             backgroundcolor: '#BAAEFC',
         },
     ];
+
+    const LeaveData=[
+        {
+            id: 1,
+            status:'Approved',
+            date: '12 May 2024',
+            title: '1 Day - Vacation Leave',
+        },
+        {
+            id: 2,
+            status:'Applied',
+            date: '12 May 2024',
+            title: '1 Day - Vacation Leave',
+        },
+        {
+            id: 3,
+            status:'Rejected',
+            date: '12 May 2024',
+            title: '1 Day - Vacation Leave',
+        }
+    ]
     const renderServicesList = ({ item }) => (
         <View
             style={{
@@ -53,15 +76,45 @@ const Leaves = ({navigation}) => {
             </View>
         </View>
     );
+    const getColor = (status) => {
+        switch (status) {
+          case "Approved":
+            return "#0CD533";
+          case "Applied":
+            return "#0000ff";
+          case "Rejected":
+            return "red";
+          default:
+            return "grey";
+        }
+      };
+const renderLeaveList=({item})=>{
     return (
-        <SafeAreaView style={styles.container}>
+        <View style={[styles.leaveStatus,]}>
+        <View style={[styles.leaveItem, styles.approved,{   borderLeftColor: getColor(item.status),backgroundColor:currentTheme.background,borderWidth:0.5,borderColor:currentTheme.background_v2}]}>
+        <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center" }}>
+            <AntDesign style={{ backgroundColor: getColor(item.status), padding: 12, borderRadius: 30 }} name="calendar" size={30} color="#fff" />
+            <View>
+                <Text style={[styles.leaveText,{color:currentTheme.text}]}>12 May 2024</Text>
+                <Text style={[styles.leaveText,{color:currentTheme.text}]}>1 Day - Vacation Leave</Text>
+            </View>
+            <View style={{ backgroundColor:getColor(item.status), borderRadius: 10 }}>
+                <Text style={styles.statusText}>{item?.status}</Text>
+            </View>
+        </View>
+    </View>
+    </View>
+    )
+}
+    return (
+        <SafeAreaView style={[styles.container,{backgroundColor:currentTheme.background_v2}]}>
             <View style={{ alignSelf: "center", marginTop: 15, }}>
                 <Text style={styles.name}>Leaves</Text>
             </View>
             <ScrollView style={{
                 width: '100%',
                 height: '100%',
-                backgroundColor: '#fff',
+                backgroundColor:currentTheme.background,
                 borderTopLeftRadius: 40,
                 marginTop: responsiveHeight(3),
                 borderTopRightRadius: 40
@@ -77,47 +130,16 @@ const Leaves = ({navigation}) => {
                             keyExtractor={item => item.id}
                         />
                     </View>
-                    <View style={styles.leaveStatus}>
-                        <View style={[styles.leaveItem, styles.approved]}>
-                            <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center" }}>
-                                <AntDesign style={{ backgroundColor: "#0CD533", padding: 12, borderRadius: 30 }} name="calendar" size={30} color="#fff" />
-                                <View>
-                                    <Text style={styles.leaveText}>12 May 2024</Text>
-                                    <Text style={styles.leaveText}>1 Day - Vacation Leave</Text>
-                                </View>
-                                <View style={{ backgroundColor: "#0CD533", borderRadius: 10 }}>
-                                    <Text style={styles.statusText}>Approved</Text>
-                                </View>
-                            </View>
-                        </View>
-
-                        <View style={[styles.leaveItem, styles.applied]}>
-                            <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center" }}>
-                                <AntDesign style={{ backgroundColor: "#0000ff", padding: 12, borderRadius: 30 }} name="calendar" size={30} color="#fff" />
-                                <View>
-                                    <Text style={styles.leaveText}>12 May 2024</Text>
-                                    <Text style={styles.leaveText}>1 Day - Vacation Leave</Text>
-                                </View>
-                                <View style={{ backgroundColor: "#0000ff", borderRadius: 10 }}>
-                                    <Text style={styles.statusText}>Applied  </Text>
-                                </View>
-                            </View>
-                        </View>
-
-                        <View style={[styles.leaveItem, styles.rejected]}>
-                            <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center" }}>
-                                <AntDesign style={{ backgroundColor: "red", padding: 12, borderRadius: 30 }} name="calendar" size={30} color="#fff" />
-                                <View style={{width:responsiveWidth(40)}}>
-                                    <Text style={styles.leaveText}>12 May 2024</Text>
-                                    <Text style={styles.leaveText}>1 Day - Vacation Leave</Text>
-                                </View>
-                                <View style={{ backgroundColor: "red", borderRadius: 10 }}>
-                                    <Text style={styles.statusText}>Rejected</Text>
-                                </View>
-                            </View>
-                        </View>
+                    <View style={styles.menu}>
+                        <FlatList
+                            style={{ alignSelf: 'center' }}
+                            data={LeaveData}
+                            renderItem={renderLeaveList}
+                            keyExtractor={item => item.id}
+                        />
                     </View>
-                    <TouchableOpacity onPress={()=> navigation.navigate('ApplyLeave')} style={styles.applyButton}>
+                 
+                    <TouchableOpacity onPress={()=> navigation.navigate('ApplyLeave')} style={[styles.applyButton,{backgroundColor:currentTheme.background_v2}]}>
                         <Text style={styles.applyButtonText}>Apply Leave</Text>
                     </TouchableOpacity>
                 </View>

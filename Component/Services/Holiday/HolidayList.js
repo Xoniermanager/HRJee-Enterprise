@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useContext, useEffect, useState } from 'react';
 import axios from 'axios';
 import {
     Image, SafeAreaView, StyleSheet, Text, View, TouchableOpacity, ScrollView, TextInput
@@ -15,9 +15,11 @@ import Reload from '../../../Reload';
 import { showMessage } from "react-native-flash-message";
 import HolidayListSkeleton from '../../Skeleton/HolidayListSkeleton';
 import CardSkeletonTextFieldBorderRadious from '../../Skeleton/CardStyle/CardSkeletonTextFieldBorderRadious';
+import { ThemeContext } from '../../../Store/ConetxtApi.jsx/ConextApi';
 
 
 const HolidayList = ({ navigation }) => {
+    const {currentTheme} = useContext(ThemeContext);
     const [selected, setSelected] = useState('');
     const [toggleCheckBox, setToggleCheckBox] = useState(false);
     const [holidays, setHolidays] = useState([]);
@@ -60,7 +62,7 @@ const HolidayList = ({ navigation }) => {
     }, []);
 
     return ( 
-        <SafeAreaView style={styles.container}>
+        <SafeAreaView style={[styles.container,{backgroundColor:currentTheme.background_v2}]}>
             <View style={{ marginTop: 15 }}>
                 <View style={{ alignSelf: "center" }}>
                     <Text style={styles.name}>Holiday List</Text>
@@ -69,7 +71,7 @@ const HolidayList = ({ navigation }) => {
                         style={{
                             width: '100%',
                             height: '100%',
-                            backgroundColor: '#fff',
+                            backgroundColor:currentTheme.background,
                             borderTopLeftRadius: 40,
                             marginTop: responsiveHeight(3),
                             borderTopRightRadius: 40,  

@@ -1,9 +1,10 @@
-import React, { useState } from 'react';
+import React, { useContext, useState } from 'react';
 import { View, Text, FlatList, StyleSheet, TouchableOpacity, ImageBackground } from 'react-native';
 import { ScrollView } from 'react-native-gesture-handler';
 import LinearGradient from 'react-native-linear-gradient';
 import { responsiveHeight } from 'react-native-responsive-dimensions';
 import AntDesign from 'react-native-vector-icons/AntDesign';
+import { ThemeContext } from '../../../../Store/ConetxtApi.jsx/ConextApi';
 
 
 const data = [
@@ -39,6 +40,7 @@ const image = { uri: 'https://i.postimg.cc/zf8d0r7t/nodata-1.png' };
 
 const TaskScreen = () => {
   const [expanded, setExpanded] = useState(null);
+  const {currentTheme} = useContext(ThemeContext);
 
   const renderItem = ({ item }) => {
     const isExpanded = expanded === item.id;
@@ -93,12 +95,14 @@ const TaskScreen = () => {
   };
 
   return (
-    <FlatList
+   <View style={{backgroundColor:currentTheme.background,flex:1}}>
+     <FlatList
       data={data}
       renderItem={renderItem}
       keyExtractor={item => item.id}
       contentContainerStyle={styles.container}
     />
+   </View>
   );
 };
 

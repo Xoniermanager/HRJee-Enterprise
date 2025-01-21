@@ -7,7 +7,10 @@ export const lightTheme = {
     text_v2: '#00f0ff',
     attendance_background_v2:'#fff',
     inputText_color:'#E0F7FE',
-    modalBack:'#fff'
+    modalBack:'#fff',
+    newsText:'#0E0E64',
+    news_background_v2:'#fff',
+    news_background:'#0E0E64'
 
   };
   export const darkTheme = {
@@ -19,6 +22,9 @@ export const lightTheme = {
     text_v2: '#ABABAB',
     attendance_background_v2:'#242B3A',
     inputText_color:'#242B3A',
-    modalBack:'#242B3A'
+    modalBack:'#242B3A',
+    newsText:'#ABABAB',
+    news_background_v2:'#242B3A',
+    news_background:'#000'
 
   };

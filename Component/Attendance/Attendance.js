@@ -545,7 +545,7 @@ const Attendance = () => {
                   </Text>
                   <View
                     style={{
-                      backgroundColor: currentTheme.background_v2,
+                      backgroundColor: currentTheme.inputText_color,
                       flexDirection: 'row',
                       marginTop: 5,
                       borderRadius: 10,

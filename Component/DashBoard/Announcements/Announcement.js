@@ -1,21 +1,32 @@
-
-import { Image, SafeAreaView, StyleSheet, Text, View, FlatList, ImageBackground, TouchableOpacity, ScrollView } from 'react-native';
-import React, { useState, useEffect } from 'react';
+import {
+  Image,
+  SafeAreaView,
+  StyleSheet,
+  Text,
+  View,
+  FlatList,
+  ImageBackground,
+  TouchableOpacity,
+  ScrollView,
+} from 'react-native';
+import React, {useState, useEffect, useContext} from 'react';
 import LinearGradient from 'react-native-linear-gradient';
 import {
-  responsiveFontSize, responsiveHeight, responsiveWidth
+  responsiveFontSize,
+  responsiveHeight,
+  responsiveWidth,
 } from 'react-native-responsive-dimensions';
-import { NavigationContainer } from '@react-navigation/native';
-import { getAnnouncement, getNews } from '../../../APINetwork/ComponentApi';
+import {NavigationContainer} from '@react-navigation/native';
+import {getAnnouncement, getNews} from '../../../APINetwork/ComponentApi';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { BASE_URL } from '../../../utils';
-import { showMessage } from "react-native-flash-message";
+import {BASE_URL} from '../../../utils';
+import {showMessage} from 'react-native-flash-message';
 import Reload from '../../../Reload';
+import {ThemeContext} from '../../../Store/ConetxtApi.jsx/ConextApi';
 
-
-const Announcement = ({ navigation }) => {
-
-  const [getAnnouncementApiData, setGetAnnouncementApiData] = useState('')
+const Announcement = ({navigation}) => {
+  const {currentTheme} = useContext(ThemeContext);
+  const [getAnnouncementApiData, setGetAnnouncementApiData] = useState('');
   const [loader, setLoader] = useState(false);
 
   useEffect(() => {
@@ -28,7 +39,7 @@ const Announcement = ({ navigation }) => {
         if (response?.data?.status === true) {
           showMessage({
             message: `${response?.data?.message}`,
-            type: "success",
+            type: 'success',
           });
           setGetAnnouncementApiData(response?.data?.data);
           setLoader(false);
@@ -43,22 +54,42 @@ const Announcement = ({ navigation }) => {
     check();
   }, []);
 
-  const renderItem = ({ item }) => (
-    <View style={styles.card}>
+  const renderItem = ({item}) => (
+    <View
+      style={[
+        styles.card,
+        {
+          backgroundColor: currentTheme.background_v2,
+          borderWidth: 1,
+          borderColor: currentTheme.text,
+        },
+      ]}>
       <View style={{}}>
-        <Image source={{ uri: item.image }} style={styles.image} />
+        <Image source={{uri: item.image}} style={styles.image} />
       </View>
-      <Text numberOfLines={2} style={styles.title}>{item.title}</Text>
-      <TouchableOpacity onPress={() => navigation.navigate('AnnouncementDetails', { newsId: item?.id })} style={styles.button}>
+      <Text
+        numberOfLines={2}
+        style={[styles.title, {color: currentTheme.newsText}]}>
+        {item.title}
+      </Text>
+      <TouchableOpacity
+        onPress={() =>
+          navigation.navigate('AnnouncementDetails', {newsId: item?.id})
+        }
+        style={[
+          styles.button,
+          {backgroundColor: currentTheme.news_background},
+        ]}>
         <Text style={styles.buttonText}>Read more</Text>
       </TouchableOpacity>
     </View>
   );
 
-  const image = { uri: 'https://i.postimg.cc/zf8d0r7t/nodata-1.png' };
+  const image = {uri: 'https://i.postimg.cc/zf8d0r7t/nodata-1.png'};
 
   return (
-    <SafeAreaView style={styles.container}>
+    <SafeAreaView
+      style={[styles.container, {backgroundColor: currentTheme.background_v2}]}>
       <View
         style={{
           marginTop: 15,
@@ -66,45 +97,48 @@ const Announcement = ({ navigation }) => {
         <Text style={styles.name}>Announcement</Text>
         <View
           style={{
-            backgroundColor: '#fff',
+            backgroundColor: currentTheme.background,
             borderTopLeftRadius: 40,
             borderTopRightRadius: 40,
-            height: "100%"
+            height: '100%',
           }}>
-          {
-            loader ?
-              <Reload />
-              :
-              <>
-                {
-                  getAnnouncementApiData == "" || getAnnouncementApiData == null || getAnnouncementApiData == [] ?
-                    <View style={[styles.container_imagebackground, { overflow: 'hidden', borderRadius: 20 }]}>
-                      <ImageBackground source={image} resizeMode="cover" style={[styles.image, { borderRadius: 20 }]}>
-                        <View style={styles.textContainer}>
-                          <Text style={styles.text}>No Data Available</Text>
-                        </View>
-                      </ImageBackground>
+          {loader ? (
+            <Reload />
+          ) : (
+            <>
+              {getAnnouncementApiData == '' ||
+              getAnnouncementApiData == null ||
+              getAnnouncementApiData == [] ? (
+                <View
+                  style={[
+                    styles.container_imagebackground,
+                    {overflow: 'hidden', borderRadius: 20},
+                  ]}>
+                  <ImageBackground
+                    source={image}
+                    resizeMode="cover"
+                    style={[styles.image, {borderRadius: 20}]}>
+                    <View style={styles.textContainer}>
+                      <Text style={styles.text}>No Data Available</Text>
                     </View>
-
-                    :
-                    <View style={{ margin: 20, }}>
-                      <FlatList
-                        data={getAnnouncementApiData}
-                        renderItem={renderItem}
-                        keyExtractor={item => item.id}
-                        numColumns={2}
-                        columnWrapperStyle={styles.row}
-                        contentContainerStyle={styles.listContent}
-                      />
-                    </View>
-                }
-              </>
-          }
-
-
+                  </ImageBackground>
+                </View>
+              ) : (
+                <View style={{margin: 20}}>
+                  <FlatList
+                    data={getAnnouncementApiData}
+                    renderItem={renderItem}
+                    keyExtractor={item => item.id}
+                    numColumns={2}
+                    columnWrapperStyle={styles.row}
+                    contentContainerStyle={styles.listContent}
+                  />
+                </View>
+              )}
+            </>
+          )}
         </View>
       </View>
-
     </SafeAreaView>
   );
 };
@@ -119,24 +153,26 @@ const styles = StyleSheet.create({
     color: '#fff',
     fontSize: responsiveFontSize(3),
     fontWeight: 'bold',
-    textAlign: "center",
-    marginBottom: responsiveHeight(3)
+    textAlign: 'center',
+    marginBottom: responsiveHeight(3),
   },
   textContainer: {
-    alignSelf: "center", alignItems: "center", justifyContent: "center",
+    alignSelf: 'center',
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   text: {
     color: '#000',
     fontSize: 18,
     textAlign: 'center',
-    marginTop: responsiveHeight(50)
+    marginTop: responsiveHeight(50),
   },
   container_imagebackground: {
-    flex: 1
+    flex: 1,
   },
   image: {
     flex: 1,
-    height: 130, resizeMode: "contain", marginVertical: 5
+    height: 130,
   },
   header: {
     fontSize: 24,
@@ -161,7 +197,8 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 16,
     color: '#000',
-    textAlign: "center", marginVertical:5
+    textAlign: 'center',
+    marginVertical: 5,
   },
   button: {
     backgroundColor: '#0E0E64',
@@ -173,4 +210,3 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
   },
 });
-

@@ -45,17 +45,11 @@ import Themes from '../Theme/Theme';
 import {ThemeContext} from '../../Store/ConetxtApi.jsx/ConextApi';
 
 const HomePage = ({navigation}) => {
-  ///////////
-
-  // const [selected, setSelected] = useState('');
   const [monthDay, setMonth] = useState('');
   const date = new Date(selected);
-  const month = date.toLocaleString('default', {month: 'long'}); // Get full month name
-  // const month = date.getMonth() + 1; // Get month number (1-12)
+  const month = date.toLocaleString('default', {month: 'long'});
   const {toggleTheme, currentTheme, theme, isEnabled} =
     useContext(ThemeContext);
-
-  // const [toggleCheckBox, setToggleCheckBox] = useState(false)
   const [getleavetypeapidata, setGetLeaveTypeApiData] = useState([]);
   const [loader, setLoader] = useState(false);
   const [value1, setValue1] = useState();
@@ -290,16 +284,16 @@ const HomePage = ({navigation}) => {
   const radioButtons1: RadioButtonProps[] = useMemo(
     () => [
       {
-        id: '1', // acts as primary key, should be unique and non-empty string
+        id: '1',
         label: 'Morning',
         value: 'option1',
-        labelStyle: {color: currentTheme.text}, // Customize label style here
+        labelStyle: {color: currentTheme.text}, 
       },
       {
         id: '2',
         label: 'Afternoon',
         value: 'option2',
-        labelStyle: {color: currentTheme.text}, // Customize label style here
+        labelStyle: {color: currentTheme.text},
       },
     ],
     [],
@@ -321,11 +315,7 @@ const HomePage = ({navigation}) => {
     ],
     [],
   );
-
-  // Get the current date
   const currentDate = new Date();
-
-  // Format the date as "Friday, 5 April 2024"
   const options = {
     weekday: 'long',
     day: 'numeric',
@@ -352,8 +342,6 @@ const HomePage = ({navigation}) => {
 
     return daysDifference;
   };
-
-  // Example usage
   const daysBetween = calculateDaysBetweenDates();
 
   const handlePress = type => {
@@ -504,8 +492,6 @@ const HomePage = ({navigation}) => {
       setLoader(false);
     }
   };
-
-  //////////
   const services = [
     {
       id: '1',
@@ -532,11 +518,6 @@ const HomePage = ({navigation}) => {
       nav: 'Announcement',
     },
   ];
-
-  {
-    /* This is Services card List */
-  }
-
   const renderServicesList = ({item}) => (
     <TouchableOpacity onPress={() => navigation.navigate(item.nav)}>
       <Image
@@ -580,20 +561,13 @@ const HomePage = ({navigation}) => {
   const toggleExpanded = () => {
     setExpanded(!expanded);
   };
-
   const [selected, setSelected] = useState('');
   const [toggleCheckBox, setToggleCheckBox] = useState(false);
-
-  {
-    /* THis code is less more */
-  }
-
   const [expandedprofile, setExpandedProfile] = useState(false);
 
   const toggleExpandedProfile = () => {
     setExpandedProfile(!expandedprofile);
   };
-
   const handleLogout = () => {
     Alert.alert('Are you sure?', 'Do you really want to log out?', [
       {
@@ -608,7 +582,6 @@ const HomePage = ({navigation}) => {
   if (loader) {
     return <HomeSkeleton />;
   }
-
   return (
     <>
       <View style={{flex: 1, backgroundColor: currentTheme.background}}>
@@ -1576,9 +1549,7 @@ const HomePage = ({navigation}) => {
     </>
   );
 };
-
 export default HomePage;
-
 const styles = StyleSheet.create({
   parent: {
     height: '25%',

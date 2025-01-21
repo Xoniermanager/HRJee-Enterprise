@@ -1,6 +1,6 @@
-import { StyleSheet, Text, View } from 'react-native';
-import React from 'react';
-import { createStackNavigator } from '@react-navigation/stack';
+import {StyleSheet, Text, View} from 'react-native';
+import React, {useContext} from 'react';
+import {createStackNavigator} from '@react-navigation/stack';
 import SignUpScreen from '../../Component/SignUpScreen/SignUpScreen';
 import OnboardingScreen from '../../Component/Onboarding/OnboardingScreen';
 import Splash from '../../Component/Splashscreen/Splash';
@@ -34,10 +34,10 @@ import Done from '../../Component/Services/Location/DoneTask/Done';
 import Leaves from '../../Component/Services/Leave/Leaves';
 import PolicyDetails from '../../Component/DashBoard/Policy/PolicyDetails';
 import ProfileDetails from '../../Component/Skeleton/ProfileDetails';
-
-
+import {ThemeContext} from '../../Store/ConetxtApi.jsx/ConextApi';
 
 const MyStack = () => {
+  const {currentTheme} = useContext(ThemeContext);
   const Stack = createStackNavigator();
 
   return (
@@ -45,159 +45,232 @@ const MyStack = () => {
       <Stack.Screen
         name="MyTabbar"
         component={MyTabbar}
-        options={{ headerShown: false }}
+        options={{headerShown: false}}
       />
       <Stack.Screen
         name="LoginScreen"
         component={LoginScreen}
-        options={{ headerShown: false }}
+        options={{headerShown: false}}
       />
       <Stack.Screen
         name="SignUpScreen"
         component={SignUpScreen}
-        options={{ headerShown: false }}
+        options={{headerShown: false}}
       />
       <Stack.Screen
         name="OnboardingScreen"
         component={OnboardingScreen}
-        options={{ headerShown: false }}
+        options={{headerShown: false}}
       />
       <Stack.Screen
         name="Splash"
         component={Splash}
-        options={{ headerShown: false }}
+        options={{headerShown: false}}
       />
       <Stack.Screen
         name="LandingPage"
         component={LandingPage}
-        options={{ headerShown: false }}
+        options={{headerShown: false}}
       />
       <Stack.Screen
         name="HomePage"
         component={HomePage}
-        options={{ headerShown: false }}
+        options={{headerShown: false}}
       />
       <Stack.Screen
         name="Salary"
         component={Salary}
-        options={{ headerShown: false }}
+        options={{headerShown: false}}
       />
       <Stack.Screen
         name="Account"
         component={Account}
-        options={{ headerShown: false }}
+        options={{headerShown: false}}
       />
       <Stack.Screen
         name="Services"
         component={Services}
-        options={{ headerShown: false }}
+        options={{headerShown: false}}
       />
       <Stack.Screen
         name="ApplyLeave"
         component={ApplyLeave}
-        options={{ headerShown: false }}
+        options={{headerShown: false}}
       />
       <Stack.Screen
         name="Holiday"
         component={Holiday}
-        options={{ headerShown: false }}
+        options={{
+          title: 'Holiday',
+
+          headerBackTitleVisible: false,
+          headerStyle: {
+            backgroundColor: currentTheme.background_v2,
+          },
+          headerTintColor: '#fff',
+          headerTitleStyle: {
+            fontWeight: '500',
+          },
+        }}
       />
       <Stack.Screen
         name="Documents"
         component={Documents}
-        options={{ headerShown: false }}
+        options={{headerShown: false}}
       />
       <Stack.Screen
         name="Resign"
         component={Resign}
-        options={{ headerShown: false }}
+        options={{headerShown: false}}
       />
       <Stack.Screen
         name="ResignStatus"
         component={ResignStatus}
-        options={{ headerShown: false }}
+        options={{headerShown: false}}
       />
       <Stack.Screen
         name="Verification"
         component={TwoFectorVerification}
-        options={{ headerShown: false }}
+        options={{headerShown: false}}
       />
       <Stack.Screen
         name="ForgetPassword"
         component={ForgetPassword}
-        options={{ headerShown: false }}
+        options={{headerShown: false}}
       />
       <Stack.Screen
         name="ChangePassword"
         component={ChangePassword}
-        options={{ headerShown: false }}
+        options={{headerShown: false}}
       />
       <Stack.Screen
         name="HolidayList"
         component={HolidayList}
-        options={{ headerShown: false }}
+        options={{headerShown: false}}
       />
       <Stack.Screen
         name="Announcement"
         component={Announcement}
-        options={{ headerShown: false }}
+        options={{
+          title: 'Announcement',
+
+          headerBackTitleVisible: false,
+          headerStyle: {
+            backgroundColor: currentTheme.background_v2,
+          },
+          headerTintColor: '#fff',
+          headerTitleStyle: {
+            fontWeight: '500',
+          },
+        }}
       />
       <Stack.Screen
         name="News"
         component={News}
-        options={{ headerShown: false }}
+        options={{
+          title: 'News',
+          headerBackTitleVisible: false,
+          headerStyle: {
+            backgroundColor: currentTheme.background_v2,
+          },
+          headerTintColor: '#fff',
+          headerTitleStyle: {
+            fontWeight: '500',
+          },
+        }}
       />
       <Stack.Screen
         name="NewsDetails"
         component={NewsDetails}
-        options={{ headerShown: false }}
+        options={{
+          title: 'News Details',
+          headerBackTitleVisible: false,
+          headerStyle: {
+            backgroundColor: currentTheme.background_v2,
+          },
+          headerTintColor: '#fff',
+          headerTitleStyle: {
+            fontWeight: '500',
+          },
+        }}
       />
       <Stack.Screen
         name="Policy"
         component={Policy}
-        options={{ headerShown: false }}
+        options={{
+          title: 'Policy',
+
+          headerBackTitleVisible: false,
+          headerStyle: {
+            backgroundColor: currentTheme.background_v2,
+          },
+          headerTintColor: '#fff',
+          headerTitleStyle: {
+            fontWeight: '500',
+          },
+        }}
       />
       <Stack.Screen
         name="AnnouncementDetails"
         component={AnnouncementDetails}
-        options={{ headerShown: false }}
+        options={{
+          title: 'Announcement Details',
+
+          headerBackTitleVisible: false,
+          headerStyle: {
+            backgroundColor: currentTheme.background_v2,
+          },
+          headerTintColor: '#fff',
+          headerTitleStyle: {
+            fontWeight: '500',
+          },
+        }}
       />
       <Stack.Screen
         name="LocationList"
         component={LocationList}
-        options={{ headerShown: false }}
+        options={{headerShown: false}}
       />
       <Stack.Screen
         name="Pending"
         component={Pending}
-        options={{ headerShown: false }}
+        options={{headerShown: false}}
       />
       <Stack.Screen
         name="Processing"
         component={Processing}
-        options={{ headerShown: false }}
+        options={{headerShown: false}}
       />
       <Stack.Screen
         name="Done"
         component={Done}
-        options={{ headerShown: false }}
+        options={{headerShown: false}}
       />
       <Stack.Screen
         name="Leaves"
         component={Leaves}
-        options={{ headerShown: false }}
+        options={{headerShown: false}}
       />
       <Stack.Screen
         name="PolicyDetails"
         component={PolicyDetails}
-        options={{ headerShown: false }}
+        options={{
+          title: 'Policy Details',
+          headerBackTitleVisible: false,
+          headerStyle: {
+            backgroundColor: currentTheme.background_v2,
+          },
+          headerTintColor: '#fff',
+          headerTitleStyle: {
+            fontWeight: '500',
+          },
+        }}
       />
-        <Stack.Screen
+      <Stack.Screen
         name="ProfileDetails"
         component={ProfileDetails}
-        options={{ headerShown: false }}
+        options={{headerShown: false}}
       />
-      
     </Stack.Navigator>
   );
 };

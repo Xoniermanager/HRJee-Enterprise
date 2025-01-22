@@ -27,6 +27,7 @@ import CheckBox from '@react-native-community/checkbox';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import {BASE_URL} from '../../utils';
 import axios from 'axios';
+import Modal from 'react-native-modal';
 import {
   LeaveApply,
   getHoliday,
@@ -48,7 +49,7 @@ const HomePage = ({navigation}) => {
   const [monthDay, setMonth] = useState('');
   const date = new Date(selected);
   const month = date.toLocaleString('default', {month: 'long'});
-  const {toggleTheme, currentTheme, theme, isEnabled} =
+  const {toggleTheme, currentTheme, theme, isModalVisible,setModalVisible,setTheme} =
     useContext(ThemeContext);
   const [getleavetypeapidata, setGetLeaveTypeApiData] = useState([]);
   const [loader, setLoader] = useState(false);
@@ -71,6 +72,11 @@ const HomePage = ({navigation}) => {
   const [fullTime, setfullTime] = useState(null);
   const [disabledBtn, setDisabledBtn] = useState(false);
   const [loading, setloading] = useState(false);
+  const toggleModal = () => {
+    setModalVisible(!isModalVisible);
+  
+  };
+
   const monthNames = [
     'Jan',
     'Feb',
@@ -582,6 +588,9 @@ const HomePage = ({navigation}) => {
   if (loader) {
     return <HomeSkeleton />;
   }
+  function capitalizeFirstLetter(string) {
+    return string.charAt(0).toUpperCase() + string.slice(1);
+  }
   return (
     <>
       <View style={{flex: 1, backgroundColor: currentTheme.background}}>
@@ -621,13 +630,13 @@ const HomePage = ({navigation}) => {
                 />
               )}
               <View style={{marginHorizontal: 15}}>
-                <Switch
+                {/* <Switch
                   trackColor={{false: '#767577', true: '#81B0FF'}}
                   thumbColor={isEnabled ? '#F5DD4B' : '#F4F3F4'}
                   ios_backgroundColor="#3E3E3E"
                   onValueChange={toggleTheme}
                   value={isEnabled}
-                />
+                /> */}
                 <Text style={{color: '#fff', fontSize: 15, fontWeight: 'bold'}}>
                   {getProfileApiData?.name}
                 </Text>
@@ -1545,6 +1554,44 @@ const HomePage = ({navigation}) => {
             </View>
           </View>
         </ScrollView>
+        <Modal
+        isVisible={isModalVisible}
+        onBackdropPress={toggleModal}
+        style={styles.modal}
+        animationIn="slideInUp" // Animation when showing the modal
+        animationOut="slideOutDown" // Animation when hiding the modal
+        animationInTiming={500} // Duration for animation in (milliseconds)
+        animationOutTiming={500} // Duration for animation out (milliseconds)
+      >
+        <View style={styles.bottomSheet}>
+          <Text style={styles.title}>Introducing</Text>
+          <Text style={styles.subTitle}>Dark Mode</Text>
+          <Text style={styles.description}>
+            Choose your preferred app theme. You can also change this later
+            from your profile.
+          </Text>
+
+          {['light', 'dark', 'Use device theme'].map((val) => (
+            <TouchableOpacity
+              key={val}
+              style={styles.option}
+              onPress={() =>[ setTheme(val),toggleTheme()]}
+            >
+              <Text style={styles.optionText}>{ capitalizeFirstLetter(val)}</Text>
+              <View
+                style={[
+                  styles.radioCircle,
+                  theme === val && styles.selectedRadio,
+                ]}
+              />
+            </TouchableOpacity>
+          ))}
+
+          <TouchableOpacity onPress={toggleModal} style={styles.saveButton}>
+            <Text style={styles.saveButtonText}>Save Preference</Text>
+          </TouchableOpacity>
+        </View>
+      </Modal>
       </View>
     </>
   );
@@ -1564,5 +1611,67 @@ const styles = StyleSheet.create({
     transform: [{scaleX: 0.5}],
     backgroundColor: '#0E0E64',
     justifyContent: 'center',
+  },
+  modal: {
+    justifyContent: 'flex-end',
+    margin: 0,
+  },
+  bottomSheet: {
+    backgroundColor: '#1C1C1E',
+    borderTopLeftRadius: 20,
+    borderTopRightRadius: 20,
+    padding: 20,
+  },
+  title: {
+    fontSize: 16,
+    color: '#B5B5B5',
+    textAlign: 'center',
+  },
+  subTitle: {
+    fontSize: 24,
+    color: '#FFFFFF',
+    fontWeight: 'bold',
+    textAlign: 'center',
+    marginVertical: 10,
+  },
+  description: {
+    fontSize: 14,
+    color: '#B5B5B5',
+    textAlign: 'center',
+    marginBottom: 20,
+  },
+  option: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingVertical: 10,
+  },
+  optionText: {
+    fontSize: 16,
+    color: '#FFFFFF',
+  },
+  radioCircle: {
+    height: 20,
+    width: 20,
+    borderRadius: 10,
+    borderWidth: 2,
+    borderColor: '#FFFFFF',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  selectedRadio: {
+    backgroundColor: '#FF3D71',
+  },
+  saveButton: {
+    backgroundColor: '#FF3D71',
+    paddingVertical: 15,
+    borderRadius: 10,
+    marginTop: 20,
+  },
+  saveButtonText: {
+    color: 'white',
+    textAlign: 'center',
+    fontSize: 16,
+    fontWeight: 'bold',
   },
 });

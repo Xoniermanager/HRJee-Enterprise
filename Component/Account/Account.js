@@ -138,33 +138,32 @@ const Account = ({title, description}) => {
   //     }
   //   }
   // };
+  async function check() {
+    try {
+      setLoader(true);
+      let token = await AsyncStorage.getItem('TOKEN');
+      const url = `${BASE_URL}/user/details`;
+      const response = await getProfile(url, token);
 
-  useEffect(() => {
-    async function check() {
-      try {
-        setLoader(true);
-        let token = await AsyncStorage.getItem('TOKEN');
-        const url = `${BASE_URL}/user/details`;
-        const response = await getProfile(url, token);
-
-        if (response?.data?.status === true) {
-          // showMessage({
-          //   message: `${response?.data?.message}`,
-          //   type: "success",
-          // });
-          setGetProfileApiData(response?.data?.data);
-          setBankDetailsData(response?.data?.data?.bank_details);
-          setGetDocumentApiData(response?.data?.data?.document_details);
-          setGetAssetsApiData(response?.data?.data?.asset_details);
-          setLoader(false);
-        } else {
-          setLoader(false);
-        }
-      } catch (error) {
-        console.error('Error making POST request:', error);
+      if (response?.data?.status === true) {
+        // showMessage({
+        //   message: `${response?.data?.message}`,
+        //   type: "success",
+        // });
+        setGetProfileApiData(response?.data?.data);
+        setBankDetailsData(response?.data?.data?.bank_details);
+        setGetDocumentApiData(response?.data?.data?.document_details);
+        setGetAssetsApiData(response?.data?.data?.asset_details);
+        setLoader(false);
+      } else {
         setLoader(false);
       }
+    } catch (error) {
+      console.error('Error making POST request:', error);
+      setLoader(false);
     }
+  }
+  useEffect(() => {
     check();
   }, []);
 

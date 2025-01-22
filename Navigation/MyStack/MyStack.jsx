@@ -146,7 +146,18 @@ const MyStack = () => {
       <Stack.Screen
         name="HolidayList"
         component={HolidayList}
-        options={{headerShown: false}}
+        options={{
+          title: 'Holiday List',
+
+          headerBackTitleVisible: false,
+          headerStyle: {
+            backgroundColor: currentTheme.background_v2,
+          },
+          headerTintColor: '#fff',
+          headerTitleStyle: {
+            fontWeight: '500',
+          },
+        }}
       />
       <Stack.Screen
         name="Announcement"

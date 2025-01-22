@@ -185,7 +185,7 @@ const Attendance = () => {
       data.from_date = formatDate(data.from_date);
       data.to_date = formatDate(data.to_date);
 
-      console.log(data);
+      console.log(data,'hellodata');
 
       setLoading(true);
       const url = `${BASE_URL}/search/filter/attendance`;
@@ -616,7 +616,7 @@ const Attendance = () => {
                                 height: 50,
                                 width: 2,
                                 elevation: 7,
-                                backgroundColor: currentTheme.background,
+                                backgroundColor: currentTheme.text,
                                 opacity: 0.3,
                               }}></View>
                             <Image
@@ -642,7 +642,7 @@ const Attendance = () => {
                               padding: 15,
                               borderRadius: 20,
                               marginLeft: 10,
-                              backgroundColor: '#EDFBFE',
+                              backgroundColor: currentTheme.inputText_color,
                             }}>
                             <Text
                               style={{fontSize: 16, color: currentTheme.text}}>

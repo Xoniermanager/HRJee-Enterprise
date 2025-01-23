@@ -16,6 +16,7 @@ import {
 } from 'react-native-responsive-dimensions';
 import DateTimePickerModal from 'react-native-modal-datetime-picker';
 import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
+import Ionicons from 'react-native-vector-icons/Ionicons';
 import ImagePicker from 'react-native-image-crop-picker';
 import {ThemeContext} from '../../../Store/ConetxtApi.jsx/ConextApi';
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -24,7 +25,9 @@ import {BASE_URL} from '../../../utils';
 import CheckBox from 'react-native-check-box';
 import axios from 'axios';
 import {showMessage} from 'react-native-flash-message';
+import { useNavigation } from '@react-navigation/native';
 const Person_Detils = () => {
+  const navigation=useNavigation()
   const {currentTheme} = useContext(ThemeContext);
   const [loader, setLoader] = useState(false);
   const [isFromDatePickerVisible, setFromDatePickerVisibility] =
@@ -166,8 +169,13 @@ const Person_Detils = () => {
   return (
     <SafeAreaView
       style={[styles.container, {backgroundColor: currentTheme.background_v2}]}>
+        <View style={[styles.headerContainer,{backgroundColor: currentTheme.background_v2}]}>
+      <TouchableOpacity onPress={()=>navigation.goBack()} style={styles.backButton}>
+        <Ionicons name="arrow-back" size={24} color="#fff" />
+      </TouchableOpacity>
+      <Text style={styles.title}>Basic Details</Text>
+    </View>
       <ScrollView showsVerticalScrollIndicator={false}>
-        <Text style={styles.headers}>Basic Details</Text>
         <View
           style={{
             marginBottom: responsiveHeight(10),
@@ -487,5 +495,20 @@ const styles = StyleSheet.create({
     fontSize: 18,
     marginBottom: 10,
     fontWeight: 'bold',
+  },
+  headerContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    padding: 16,
+    backgroundColor: '#f8f8f8', // Change as per design
+   
+  },
+  backButton: {
+    marginRight: 16,
+  },
+  title: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: '#fff',
   },
 });

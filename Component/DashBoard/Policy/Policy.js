@@ -16,6 +16,7 @@ import {
   responsiveHeight,
   responsiveWidth,
 } from 'react-native-responsive-dimensions';
+import Ionicons from 'react-native-vector-icons/Ionicons';
 import {NavigationContainer} from '@react-navigation/native';
 import {getNews} from '../../../APINetwork/ComponentApi';
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -23,8 +24,9 @@ import {BASE_URL} from '../../../utils';
 import {showMessage} from 'react-native-flash-message';
 import Reload from '../../../Reload';
 import {ThemeContext} from '../../../Store/ConetxtApi.jsx/ConextApi';
-
-const Policy = ({navigation}) => {
+import {useNavigation} from '@react-navigation/native';
+const Policy = () => {
+  const navigation = useNavigation();
   const [getNewsApiData, setGetNewsApiData] = useState('');
   const {currentTheme} = useContext(ThemeContext);
   const [loader, setLoader] = useState(false);
@@ -63,7 +65,18 @@ const Policy = ({navigation}) => {
         style={{
           marginTop: 15,
         }}>
-        <Text style={styles.name}>Policy</Text>
+        <View
+          style={[
+            styles.headerContainer,
+            {backgroundColor: currentTheme.background_v2},
+          ]}>
+          <TouchableOpacity
+            onPress={() => navigation.goBack()}
+            style={styles.backButton}>
+            <Ionicons name="arrow-back" size={24} color="#fff" />
+          </TouchableOpacity>
+          <Text style={styles.title}>Policy</Text>
+        </View>
         <View
           style={{
             backgroundColor: currentTheme.background,
@@ -88,130 +101,130 @@ const Policy = ({navigation}) => {
                     resizeMode="cover"
                     style={[styles.image, {borderRadius: 20}]}>
                     <View style={styles.textContainer}>
-                      <Text style={[styles.text,{color:currentTheme.text}]}>No Data Available</Text>
+                      <Text style={[styles.text, {color: currentTheme.text}]}>
+                        No Data Available
+                      </Text>
                     </View>
                   </ImageBackground>
                 </View>
               ) : (
                 <View style={{margin: 20}}>
                   <FlatList
-                  data={getNewsApiData}
-                  keyExtractor={(index) => index.toString()}
-                  renderItem={({item, index})=>{
-                    console.log(item,'item')
-                    return (
-                      <View
-                        key={index}
-                        style={{
-                          marginTop: 8,
-                          marginBottom: responsiveHeight(2.5),
-                          elevation: 7,
-                          opacity: 1,
-                          borderRadius: 10,
-                          backgroundColor: currentTheme.news_background_v2,
-                          borderWidth: 0.5,
-                          borderColor: currentTheme.text,
-                        }}>
-                        <View style={{flexDirection: 'row'}}>
-                          <View
-                            style={{
-                              alignSelf: 'flex-start',
-                              borderTopLeftRadius: 10,
-                              borderBottomLeftRadius: 10,
-                            }}>
-                            <Image
+                    data={getNewsApiData}
+                    keyExtractor={index => index.toString()}
+                    renderItem={({item, index}) => {
+                      console.log(item, 'item');
+                      return (
+                        <View
+                          key={index}
+                          style={{
+                            marginTop: 8,
+                            marginBottom: responsiveHeight(2.5),
+                            elevation: 7,
+                            opacity: 1,
+                            borderRadius: 10,
+                            backgroundColor: currentTheme.news_background_v2,
+                            borderWidth: 0.5,
+                            borderColor: currentTheme.text,
+                          }}>
+                          <View style={{flexDirection: 'row'}}>
+                            <View
                               style={{
-                                height: responsiveHeight(15),
-                                width: responsiveWidth(30)
-                              }}
-                              source={{uri: item?.image}}
-                            />
+                                alignSelf: 'flex-start',
+                                borderTopLeftRadius: 10,
+                                borderBottomLeftRadius: 10,
+                              }}>
+                              <Image
+                                style={{
+                                  height: responsiveHeight(15),
+                                  width: responsiveWidth(30),
+                                }}
+                                source={{uri: item?.image}}
+                              />
+                            </View>
+                            <View
+                              style={{
+                                height: 130,
+                                width: '60%',
+                                marginHorizontal: 15,
+                                justifyContent: 'center',
+                                alignSelf: 'flex-end',
+                              }}>
+                              <Text
+                                style={{
+                                  color: currentTheme.newsText,
+                                  width: '90%',
+                                  fontSize: 16,
+                                  marginTop: 10,
+                                }}>
+                                {item?.title}
+                              </Text>
+                              <View
+                                style={{
+                                  flexDirection: 'row',
+                                  justifyContent: 'space-between',
+                                  marginVertical: 5,
+                                  alignItems: 'center',
+                                }}>
+                                <TouchableOpacity
+                                  onPress={() =>
+                                    navigation.navigate('PolicyDetails', {
+                                      newsId: item?.id,
+                                    })
+                                  }
+                                  style={{
+                                    backgroundColor:
+                                      currentTheme.news_background,
+                                    borderRadius: 10,
+                                    width: 100,
+                                  }}>
+                                  <Text
+                                    style={{
+                                      color: '#fff',
+                                      padding: 8,
+                                      textAlign: 'center',
+                                    }}>
+                                    Read more
+                                  </Text>
+                                </TouchableOpacity>
+                                <Text
+                                  style={{
+                                    marginRight: 10,
+                                    color: currentTheme.newsText,
+                                    fontSize: 16,
+                                  }}>
+                                  {item?.date}
+                                </Text>
+                              </View>
+                            </View>
                           </View>
                           <View
                             style={{
-                              height: 130,
-                              width: '60%',
-                              marginHorizontal: 15,
-                              justifyContent: 'center',
+                              marginTop: -17,
+                              backgroundColor: '#F1416C',
+                              borderTopRightRadius: 30,
+                              borderBottomLeftRadius: 30,
+                              padding: 10,
+                              width: '50%',
                               alignSelf: 'flex-end',
+                              marginRight: 0,
+                              position: 'absolute',
                             }}>
                             <Text
                               style={{
-                                color:currentTheme.newsText,
-                                width: '90%',
-                                fontSize: 16,
-                                marginTop:10
+                                fontSize: 15,
+                                color: '#fff',
+                                fontWeight: 'bold',
+                                textAlign: 'center',
                               }}>
-                              {item?.title}
+                              {item?.policy_Category}
                             </Text>
-                            <View
-                              style={{
-                                flexDirection: 'row',
-                                justifyContent: 'space-between',
-                                marginVertical: 5,
-                                alignItems: 'center',
-                              }}>
-                              <TouchableOpacity
-                                onPress={() =>
-                                  navigation.navigate('PolicyDetails', {
-                                    newsId: item?.id,
-                                  })
-                                }
-                                style={{
-                                  backgroundColor:currentTheme.news_background,
-                                  borderRadius: 10,
-                                  width: 100,
-                                }}>
-                                <Text
-                                  style={{
-                                    color: '#fff',
-                                    padding: 8,
-                                    textAlign: 'center',
-                                  }}>
-                                  Read more
-                                </Text>
-                              </TouchableOpacity>
-                              <Text
-                                style={{
-                                  marginRight: 10,
-                                  color:currentTheme.newsText,
-                                  fontSize: 16,
-                                }}>
-                                {item?.date}
-                              </Text>
-                              
-                            </View>
-                         
                           </View>
-                         
                         </View>
-                        <View
-                          style={{
-                            marginTop:-17,
-                            backgroundColor: '#F1416C',
-                            borderTopRightRadius: 30,
-                            borderBottomLeftRadius: 30,
-                            padding: 10,
-                            width: '50%',
-                            alignSelf: 'flex-end',
-                            marginRight: 0,
-                            position:'absolute'
-                          }}>
-                          <Text
-                            style={{
-                              fontSize: 15,
-                              color: '#fff',
-                              fontWeight: 'bold',
-                              textAlign: 'center',
-                            }}>
-                            {item?.policy_Category}
-                          </Text>
-                        </View>
-                      </View>
-                    );
-                  }}
+                      );
+                    }}
                   />
-                {/* {getNewsApiData?.map((elements, index) => {
+                  {/* {getNewsApiData?.map((elements, index) => {
                     return (
                       <View
                         key={index}
@@ -360,5 +373,19 @@ const styles = StyleSheet.create({
   image: {
     flex: 1,
     height: responsiveHeight(65),
+  },
+  headerContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    padding: 16,
+    backgroundColor: '#f8f8f8', // Change as per design
+  },
+  backButton: {
+    marginRight: 16,
+  },
+  title: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: '#fff',
   },
 });

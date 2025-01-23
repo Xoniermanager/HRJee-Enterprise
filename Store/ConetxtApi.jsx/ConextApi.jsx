@@ -33,6 +33,9 @@ const ConextApi = ({children}) => {
           setModalVisible(true);
         }
       }
+      else{
+        setModalVisible(true);
+      }
     };
     loadTheme();
   }, []);

@@ -32,17 +32,7 @@ const MyDrawer = () => {
           backgroundColor:currentTheme.background_v2,
         },
         headerShown: false,
-
-
         drawerPosition: 'right',
-        //   headerLeft:()=>{
-        //     return (
-        //       <TouchableOpacity onPress={() => navigation.dispatch(DrawerActions.openDrawer('MyDrawer'))} style={{marginLeft:5}}>
-        //       <FontAwesome style={{}} name="edit" size={30} color="#000" />
-        //   </TouchableOpacity>
-        //     )
-        // }
-
       })}>
 
       <Drawer.Screen
@@ -57,18 +47,27 @@ const MyDrawer = () => {
         }}
       />
 
-      <Drawer.Screen
-        name="Person_Detils"
-        component={Person_Detils}
-        options={{
-          drawerIcon: ({}) => (
-            <View style={styles.drawerBox}>
-              <Text style={styles.drawerText}>Person Details</Text>
-            </View>
-          ),
-        }}
-      />
-      <Drawer.Screen
+<Drawer.Screen
+  name="Person_Detils"
+  component={Person_Detils}
+  options={{
+    title: 'Person Details',
+          headerBackTitleVisible: false,
+          headerStyle: {
+            backgroundColor: currentTheme.background_v2,
+          },
+          headerTintColor: '#fff',
+          headerTitleStyle: {
+            fontWeight: '500',
+          },
+    drawerIcon: ({}) => (
+      <View style={styles.drawerBox}>
+        <Text style={styles.drawerText}>Person Details</Text>
+      </View>
+    ),
+  }}
+/>
+      {/* <Drawer.Screen
         name="Address"
         component={Address}
         options={{
@@ -78,7 +77,7 @@ const MyDrawer = () => {
             </View>
           ),
         }}
-      />
+      /> */}
       <Drawer.Screen
         name="PunchIn"
         component={PunchIn}

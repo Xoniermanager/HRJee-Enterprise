@@ -9,6 +9,7 @@ import {
   ScrollView,
   FlatList,
 } from 'react-native';
+import Ionicons from 'react-native-vector-icons/Ionicons';
 import {
   responsiveFontSize,
   responsiveHeight,
@@ -18,15 +19,21 @@ import AntDesign from 'react-native-vector-icons/AntDesign';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 import SimpleLineIcons from 'react-native-vector-icons/SimpleLineIcons';
 import {ThemeContext} from '../../../Store/ConetxtApi.jsx/ConextApi';
+import { useNavigation } from '@react-navigation/native';
 
 const PunchOut = () => {
+  const navigation=useNavigation()
   const {currentTheme} = useContext(ThemeContext);
   return (
     <SafeAreaView
       style={[styles.container, {backgroundColor: currentTheme.background_v2}]}>
-      <View style={{alignSelf: 'center', marginTop: 15}}>
-        <Text style={styles.name}>Punch Out</Text>
-      </View>
+    
+      <View style={[styles.headerContainer,{backgroundColor: currentTheme.background_v2}]}>
+      <TouchableOpacity onPress={()=>navigation.goBack()} style={styles.backButton}>
+        <Ionicons name="arrow-back" size={24} color="#fff" />
+      </TouchableOpacity>
+      <Text style={styles.title}>Punch Out</Text>
+    </View>
       <ScrollView
         style={{
           width: '100%',
@@ -308,6 +315,21 @@ const styles = StyleSheet.create({
   punchInButtonText: {
     color: '#fff',
     fontSize: 18,
+  },
+  headerContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    padding: 16,
+    backgroundColor: '#f8f8f8', // Change as per design
+   
+  },
+  backButton: {
+    marginRight: 16,
+  },
+  title: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: '#fff',
   },
 });
 export default PunchOut;

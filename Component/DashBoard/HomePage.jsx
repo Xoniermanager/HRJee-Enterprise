@@ -49,8 +49,14 @@ const HomePage = ({navigation}) => {
   const [monthDay, setMonth] = useState('');
   const date = new Date(selected);
   const month = date.toLocaleString('default', {month: 'long'});
-  const {toggleTheme, currentTheme, theme, isModalVisible,setModalVisible,setTheme} =
-    useContext(ThemeContext);
+  const {
+    toggleTheme,
+    currentTheme,
+    theme,
+    isModalVisible,
+    setModalVisible,
+    setTheme,
+  } = useContext(ThemeContext);
   const [getleavetypeapidata, setGetLeaveTypeApiData] = useState([]);
   const [loader, setLoader] = useState(false);
   const [value1, setValue1] = useState();
@@ -74,7 +80,6 @@ const HomePage = ({navigation}) => {
   const [loading, setloading] = useState(false);
   const toggleModal = () => {
     setModalVisible(!isModalVisible);
-  
   };
 
   const monthNames = [
@@ -130,12 +135,8 @@ const HomePage = ({navigation}) => {
         let token = await AsyncStorage.getItem('TOKEN');
         const url = `${BASE_URL}/holiday/list`;
         const response = await getHoliday(url, token);
-        // showMessage({
-        //   message: `${response?.data?.message}`,
-        //   type: "success",
-        // });
         setHolidays(response?.data?.data);
-        getMonthlyHolidays(new Date().toISOString().split('T')[0]); // Initialize with current month's holidays
+        getMonthlyHolidays(new Date().toISOString().split('T')[0]);
       } catch (error) {
         console.error('Error fetching holiday data:', error?.response?.data);
       }
@@ -293,7 +294,7 @@ const HomePage = ({navigation}) => {
         id: '1',
         label: 'Morning',
         value: 'option1',
-        labelStyle: {color: currentTheme.text}, 
+        labelStyle: {color: currentTheme.text},
       },
       {
         id: '2',
@@ -621,12 +622,13 @@ const HomePage = ({navigation}) => {
               ) : (
                 <Image
                   style={{
-                    height: 120,
-                    width: 120,
-                    resizeMode: 'contain',
+                    height: 90,
+                    width: 90,
+                    // resizeMode: 'contain',
                     alignSelf: 'center',
+                    borderRadius: 50,
                   }}
-                  source={{uri: 'https://i.postimg.cc/L69jybXV/512.png'}} // Replace with the actual image URL
+                  source={{uri: getProfileApiData?.profile_image}}
                 />
               )}
               <View style={{marginHorizontal: 15}}>
@@ -1104,14 +1106,6 @@ const HomePage = ({navigation}) => {
                           borderTopRightRadius: 10,
                           borderBottomRightRadius: 10,
                         }}>
-                        {/* {
-                            getleavetypeapidata?.map((item, index) => {
-                              return (
-                                
-
-                              )
-                            })
-                          } */}
                         <View
                           style={{
                             backgroundColor: currentTheme.background_v2,
@@ -1122,7 +1116,7 @@ const HomePage = ({navigation}) => {
                           <Dropdown
                             selectedTextProps={{
                               style: {
-                                color: currentTheme.text,
+                                color: '#fff',
                               },
                             }}
                             data={getleavetypeapidata && getleavetypeapidata}
@@ -1135,10 +1129,10 @@ const HomePage = ({navigation}) => {
                               setValue1(item.id);
                             }}
                             placeholderStyle={{
-                              color: currentTheme.text,
+                              color: '#fff',
                             }}
                             itemTextStyle={{
-                              color: currentTheme.text,
+                              color: '#000',
                             }}
                           />
                         </View>
@@ -1158,8 +1152,8 @@ const HomePage = ({navigation}) => {
                             textAlignVertical={'top'}
                             onChangeText={text => setReason(text)}
                             style={{height: 120}} // Adjust height as needed
-                            placeholderTextColor={currentTheme.text}
-                            color={currentTheme.text}
+                            placeholderTextColor={'#fff'}
+                            color={'#fff'}
                           />
                         </View>
                       </View>
@@ -1555,43 +1549,44 @@ const HomePage = ({navigation}) => {
           </View>
         </ScrollView>
         <Modal
-        isVisible={isModalVisible}
-        onBackdropPress={toggleModal}
-        style={styles.modal}
-        animationIn="slideInUp" // Animation when showing the modal
-        animationOut="slideOutDown" // Animation when hiding the modal
-        animationInTiming={500} // Duration for animation in (milliseconds)
-        animationOutTiming={500} // Duration for animation out (milliseconds)
-      >
-        <View style={styles.bottomSheet}>
-          <Text style={styles.title}>Introducing</Text>
-          <Text style={styles.subTitle}>Dark Mode</Text>
-          <Text style={styles.description}>
-            Choose your preferred app theme. You can also change this later
-            from your profile.
-          </Text>
+          isVisible={isModalVisible}
+          onBackdropPress={toggleModal}
+          style={styles.modal}
+          animationIn="slideInUp" // Animation when showing the modal
+          animationOut="slideOutDown" // Animation when hiding the modal
+          animationInTiming={500} // Duration for animation in (milliseconds)
+          animationOutTiming={500} // Duration for animation out (milliseconds)
+        >
+          <View style={styles.bottomSheet}>
+            <Text style={styles.title}>Introducing</Text>
+            <Text style={styles.subTitle}>Dark Mode</Text>
+            <Text style={styles.description}>
+              Choose your preferred app theme. You can also change this later
+              from your profile.
+            </Text>
 
-          {['light', 'dark', 'Use device theme'].map((val) => (
-            <TouchableOpacity
-              key={val}
-              style={styles.option}
-              onPress={() =>[ setTheme(val),toggleTheme()]}
-            >
-              <Text style={styles.optionText}>{ capitalizeFirstLetter(val)}</Text>
-              <View
-                style={[
-                  styles.radioCircle,
-                  theme === val && styles.selectedRadio,
-                ]}
-              />
+            {['light', 'dark', 'Use device theme'].map(val => (
+              <TouchableOpacity
+                key={val}
+                style={styles.option}
+                onPress={() => [setTheme(val), toggleTheme()]}>
+                <Text style={styles.optionText}>
+                  {capitalizeFirstLetter(val)}
+                </Text>
+                <View
+                  style={[
+                    styles.radioCircle,
+                    theme === val && styles.selectedRadio,
+                  ]}
+                />
+              </TouchableOpacity>
+            ))}
+
+            <TouchableOpacity onPress={toggleModal} style={styles.saveButton}>
+              <Text style={styles.saveButtonText}>Save Preference</Text>
             </TouchableOpacity>
-          ))}
-
-          <TouchableOpacity onPress={toggleModal} style={styles.saveButton}>
-            <Text style={styles.saveButtonText}>Save Preference</Text>
-          </TouchableOpacity>
-        </View>
-      </Modal>
+          </View>
+        </Modal>
       </View>
     </>
   );
@@ -1663,7 +1658,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#FF3D71',
   },
   saveButton: {
-    backgroundColor: '#FF3D71',
+    backgroundColor: '#242B3A',
     paddingVertical: 15,
     borderRadius: 10,
     marginTop: 20,

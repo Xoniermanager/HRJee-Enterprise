@@ -62,7 +62,7 @@ const News = ({navigation}) => {
         style={{
           marginTop: 15,
         }}>
-        <Text style={styles.name}>News</Text>
+        {/* <Text style={styles.name}>News</Text> */}
         <View
           style={{
             backgroundColor: currentTheme.background,

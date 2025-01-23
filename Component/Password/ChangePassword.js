@@ -10,6 +10,7 @@ import {
   StyleSheet,
   Alert,
 } from 'react-native';
+import Ionicons from 'react-native-vector-icons/Ionicons';
 import {BASE_URL} from '../../utils';
 import {changePasswords} from '../../APINetwork/ComponentApi';
 import LoginGuestStyle from '../LoginScreen/LoginGuestStyle';
@@ -21,7 +22,9 @@ import {
 } from 'react-native-responsive-dimensions';
 import Themes from '../Theme/Theme';
 import {ThemeContext} from '../../Store/ConetxtApi.jsx/ConextApi';
-const ChangePassword = ({navigation}) => {
+import { useNavigation } from '@react-navigation/native';
+const ChangePassword = () => {
+  const navigation=useNavigation()
   const {currentTheme} = useContext(ThemeContext);
   const [oldPassword, setOldPassword] = useState('');
   const [newPassword, setNewPassword] = useState('');
@@ -66,9 +69,12 @@ const ChangePassword = ({navigation}) => {
   return (
     <SafeAreaView
       style={[styles.container, {backgroundColor: currentTheme.background_v2}]}>
-      <View style={{alignSelf: 'center', marginTop: 15}}>
-        <Text style={styles.name}>Change Password</Text>
-      </View>
+      <View style={[styles.headerContainer,{backgroundColor: currentTheme.background_v2}]}>
+      <TouchableOpacity onPress={()=>navigation.goBack()} style={styles.backButton}>
+        <Ionicons name="arrow-back" size={24} color="#fff" />
+      </TouchableOpacity>
+      <Text style={styles.title}>Change Password</Text>
+    </View>
       <ScrollView
         style={{
           width: '100%',
@@ -199,6 +205,21 @@ const styles = StyleSheet.create({
   },
   sameAddressText: {
     fontSize: 16,
+  },
+  headerContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    padding: 16,
+    backgroundColor: '#f8f8f8', // Change as per design
+   
+  },
+  backButton: {
+    marginRight: 16,
+  },
+  title: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: '#fff',
   },
 });
 

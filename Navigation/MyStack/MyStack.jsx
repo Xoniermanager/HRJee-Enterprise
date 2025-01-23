@@ -208,18 +208,7 @@ const MyStack = () => {
       <Stack.Screen
         name="Policy"
         component={Policy}
-        options={{
-          title: 'Policy',
-
-          headerBackTitleVisible: false,
-          headerStyle: {
-            backgroundColor: currentTheme.background_v2,
-          },
-          headerTintColor: '#fff',
-          headerTitleStyle: {
-            fontWeight: '500',
-          },
-        }}
+        options={{headerShown: false}}
       />
       <Stack.Screen
         name="AnnouncementDetails"

@@ -266,13 +266,14 @@ const Account = ({title, description}) => {
             ) : (
               <Image
                 style={{
-                  height: 100,
-                  width: 100,
-                  resizeMode: 'contain',
+                  height:90,
+                  width: 90,
+                  // resizeMode: 'contain',
                   marginVertical: 5,
+                  borderRadius: 50,
                   alignSelf: 'center',
                 }}
-                source={{uri: 'https://i.postimg.cc/L69jybXV/512.png'}} // Replace with the actual image URL
+                source={{uri: getProfileApiData?.profile_image}} // Replace with the actual image URL
               />
             )}
             <Text style={styles.name}>{getProfileApiData.name}</Text>

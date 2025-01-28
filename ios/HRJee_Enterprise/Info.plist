@@ -32,13 +32,17 @@
 		<true/>
 	</dict>
 	<key>NSCameraUsageDescription</key>
-	<string>$(PRODUCT_NAME) needs access to your camera</string>
+	<string>This will allow you to choose the picture to set your profile image</string>
 	<key>NSLocationWhenInUseUsageDescription</key>
 	<string></string>
 	<key>NSMicrophoneUsageDescription</key>
-	<string>$(PRODUCT_NAME) needs access to your microphone</string>
+	<string>Your message to user when the microphone is accessed for the first time</string>
+		<key>NSPhotoLibraryAddUsageDescription</key>
+	<string>Your message to user when the photo library is accessed for the first time</string>
+	<key>NSContactsUsageDescription</key>
+	<string>We access your contacts to help you invite friends to join the app. For example, you can send them a personalized invitation.</string>
 	<key>NSPhotoLibraryUsageDescription</key>
-	<string>$(PRODUCT_NAME) needs access to your photo library</string>
+		<string>This will allow you to choose the picture to set your profile image</string>
 	<key>UIAppFonts</key>
 	<array>
 		<string>AntDesign.ttf</string>

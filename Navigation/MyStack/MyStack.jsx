@@ -15,7 +15,6 @@ import Holiday from '../../Component/Services/Holiday/Holiday';
 import Salary from '../../Component/Services/Salary Slip/Salary';
 import Documents from '../../Component/Services/Documents/Documents';
 import Resign from '../../Component/Services/Resign/Resign';
-import ResignStatus from '../../Component/Services/Resign/ResignStatus';
 import TwoFectorVerification from '../../Component/LoginScreen/TwoFectorVerification';
 import ForgetPassword from '../../Component/ForgetPassword/ForgetPassword';
 import MyDrawer from '../MyDrawer/MyDrawer';
@@ -35,6 +34,8 @@ import Leaves from '../../Component/Services/Leave/Leaves';
 import PolicyDetails from '../../Component/DashBoard/Policy/PolicyDetails';
 import ProfileDetails from '../../Component/Skeleton/ProfileDetails';
 import {ThemeContext} from '../../Store/ConetxtApi.jsx/ConextApi';
+import ApplyResign from '../../Component/Services/Resign/ApplyResign';
+import WithdrawResign from '../../Component/Services/Resign/WithdrawResign';
 
 const MyStack = () => {
   const {currentTheme} = useContext(ThemeContext);
@@ -121,12 +122,50 @@ const MyStack = () => {
       <Stack.Screen
         name="Resign"
         component={Resign}
-        options={{headerShown: false}}
+        options={{
+          title: 'Resign',
+
+          headerBackTitleVisible: false,
+          headerStyle: {
+            backgroundColor: currentTheme.background_v2,
+          },
+          headerTintColor: '#fff',
+          headerTitleStyle: {
+            fontWeight: '500',
+          },
+        }}
       />
       <Stack.Screen
-        name="ResignStatus"
-        component={ResignStatus}
-        options={{headerShown: false}}
+        name="ApplyResign"
+        component={ApplyResign}
+        options={{
+          title: 'Apply Resign',
+
+          headerBackTitleVisible: false,
+          headerStyle: {
+            backgroundColor: currentTheme.background_v2,
+          },
+          headerTintColor: '#fff',
+          headerTitleStyle: {
+            fontWeight: '500',
+          },
+        }}
+      />
+      <Stack.Screen
+        name="WithdrawResign"
+        component={WithdrawResign}
+        options={{
+          title: 'Withdraw Resign',
+
+          headerBackTitleVisible: false,
+          headerStyle: {
+            backgroundColor: currentTheme.background_v2,
+          },
+          headerTintColor: '#fff',
+          headerTitleStyle: {
+            fontWeight: '500',
+          },
+        }}
       />
       <Stack.Screen
         name="Verification"

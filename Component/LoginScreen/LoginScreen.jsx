@@ -32,10 +32,6 @@ const LoginScreen = () => {
   const [emailError, setEmailError] = useState('');
   const [passwordError, setPasswordError] = useState('');
   const [showPassword, setShowPassword] = useState(false);
-  const [tok, setTok] = useState();
-
-
-
   const toggleShowPassword = () => {
     setShowPassword(!showPassword);
   };
@@ -70,18 +66,35 @@ const LoginScreen = () => {
         const url = `${BASE_URL}/login`;
         console.log(data,'response')
         const response = await login(url, data);
-      
         if (response?.data?.status == true) {
-          showMessage({
-            message: `${response?.data?.message}`,
-            type: "success",
-          });
-          setEmail('');
-          setPassword('');
-          setEmailError('');
-          setPasswordError('');
-          navigation.navigate('Verification', { email: email, password: password, token: response?.data?.data?.access_token });
-          setLoader(false);
+            if(response.data.data.id==2){
+              setEmail('');
+              setPassword('');
+              setEmailError('');
+              setPasswordError('');
+              setLoader(false);
+              if (response && response.data && response?.data?.data?.access_token) {
+                await AsyncStorage.setItem('TOKEN', response?.data?.data?.access_token);
+              }
+              showMessage({
+                message: `${response?.data?.message}`,
+                type: "success",
+              });
+              navigation.navigate('MyTabbar');
+            }
+            else{
+              showMessage({
+                message: `${response?.data?.message}`,
+                type: "success",
+              });
+              setEmail('');
+              setPassword('');
+              setEmailError('');
+              setPasswordError('');
+              navigation.navigate('Verification', { email: email, password: password, token: response?.data?.data?.access_token });
+              setLoader(false);
+            }
+         
         }
         else {
           setLoader(false);

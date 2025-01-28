@@ -533,6 +533,7 @@ const HomePage = ({navigation}) => {
           width: responsiveWidth(35),
           resizeMode: 'contain',
           overflow: 'hidden',
+       
         }}
         source={item.uri}
       />
@@ -627,6 +628,7 @@ const HomePage = ({navigation}) => {
                     // resizeMode: 'contain',
                     alignSelf: 'center',
                     borderRadius: 50,
+                 
                   }}
                   source={{uri: getProfileApiData?.profile_image}}
                 />

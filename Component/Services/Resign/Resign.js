@@ -1,124 +1,246 @@
-import { Image, SafeAreaView, StyleSheet, TextInput, Text, View, FlatList, TouchableOpacity, ScrollView } from 'react-native';
-import React, { useContext, useState } from 'react';
-import LinearGradient from 'react-native-linear-gradient';
+import React, {useContext, useEffect, useState} from 'react';
 import {
-    responsiveFontSize, responsiveHeight, responsiveWidth
-} from 'react-native-responsive-dimensions';
-import { NavigationContainer } from '@react-navigation/native';
-import Themes from '../../Theme/Theme';
-import { ThemeContext } from '../../../Store/ConetxtApi.jsx/ConextApi';
+  View,
+  Text,
+  FlatList,
+  StyleSheet,
+  TouchableOpacity,
+  Modal,
+  ScrollView,
+} from 'react-native';
+import {ThemeContext} from '../../../Store/ConetxtApi.jsx/ConextApi';
+import {useIsFocused, useNavigation} from '@react-navigation/native';
+import {DetailsResign, getResginList} from '../../../APINetwork/ComponentApi';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import {BASE_URL} from '../../../utils';
+const Resign = () => {
+  const navigation = useNavigation();
+  const IsFocused = useIsFocused();
+  const {currentTheme} = useContext(ThemeContext);
+  const [list, setList] = useState();
+  const [selectedResign, setSelectedResign] = useState(null);
+  const [modalVisible, setModalVisible] = useState(false);
 
-const Resign = ({ navigation }) => {
-    {/* THis code is less more */ }
+  const getStatusColor = status => {
+    switch (status) {
+      case 'pending':
+        return 'orange';
+      case 'approved':
+        return 'green';
+      case 'rejected':
+        return 'red';
+      case 'withdrawn':
+        return 'gray';
+      default:
+        return 'gray';
+    }
+  };
 
-    const [expandedprofile, setExpandedProfile] = useState(false);
-    const {currentTheme} = useContext(ThemeContext);
-    const toggleExpandedProfile = () => {
-        setExpandedProfile(!expandedprofile);
-    };
+  async function check() {
+    try {
+      let token = await AsyncStorage.getItem('TOKEN');
+      const url = `${BASE_URL}/resignation`;
+      const response = await getResginList(url, token);
+      if (response?.data?.status === true) {
+        setList(response.data.data.resignations);
+      } else {
+      }
+    } catch (error) {
+      console.error('Error making POST request:', error);
+    }
+  }
+  useEffect(() => {
+    check();
+  }, [IsFocused]);
 
-    return (
-        <SafeAreaView style={[styles.container,{backgroundColor:currentTheme.background_v2}]}>
+  const closeModal = () => {
+    setSelectedResign(null);
+    setModalVisible(false);
+  };
+  async function Details(id) {
+    try {
+      let token = await AsyncStorage.getItem('TOKEN');
+      const url = `${BASE_URL}/resignation/${id}`;
+      const response = await DetailsResign(url, token);
+      if (response?.data?.status === true) {
+        setSelectedResign(response.data.data);
+        setModalVisible(true);
+      } else {
+      }
+    } catch (error) {
+      console.error('Error making POST request:', error);
+    }
+  }
 
-            <View
-                style={{
-                    marginTop: 15,
-                }}>
+  return (
+    <View
+      style={[styles.container, {backgroundColor: currentTheme.background}]}>
+      {/* Add Button */}
+      <TouchableOpacity
+        style={[
+          styles.addButton,
+          {backgroundColor: currentTheme.background_v2},
+        ]}
+        onPress={() => navigation.navigate('ApplyResign')}>
+        <Text style={styles.addButtonText}>Add Resignation</Text>
+      </TouchableOpacity>
 
-                <View style={{ alignSelf: "center" }}>
-                    <Text style={styles.name}>Resign</Text>
-                </View>
-
-                <View
-                    style={{
-                        width: '100%',
-                        height: '100%',
-                        backgroundColor:currentTheme.background,
-                        borderTopLeftRadius: 40,
-                        borderTopRightRadius: 40,
-                    }}>
-                    <ScrollView showsVerticalScrollIndicator={false}>
-
-                        {/* This is profile details */}
-                        <View style={{ marginTop: 10, alignSelf: "center", marginTop: responsiveHeight(1), borderTopLeftRadius: 10, borderBottomLeftRadius: expandedprofile == true ? 0 : 10, borderTopRightRadius: 10, borderBottomRightRadius: 10 }}>
-
-                            <Image style={{ height: 150, width: 150, alignSelf: "center", marginVertical: 20, resizeMode: "contain" }}
-                                source={require('../../../assets/regin.png')}
-                            />
-
-                            <View style={{ borderRadius: 30, marginBottom: 8, padding: 5, backgroundColor: "#EDFBFE", opacity: 1, elevation: 10, }}>
-                                <TextInput
-                                    placeholder='Subject'
-                                    placeholderTextColor={Themes == 'dark' ? '#000' : '#000'}
-                                    color= {Themes == 'dark' ? '#000' : '#000'}
-                                />
-                            </View>
-                            <View style={{ marginBottom: expandedprofile == true ? 0 : 8, width: "95%", backgroundColor: "#EDFBFE", opacity: 1, elevation: 10, borderTopLeftRadius: 50, borderBottomLeftRadius: expandedprofile == true ? 0 : 50, borderTopRightRadius: 50, borderBottomRightRadius: expandedprofile == true ? 0 : 50, padding: 15, flexDirection: "row", justifyContent: "space-between", alignItems: "center" }}>
-                                <Text style={{ color: "#000", fontSize: responsiveFontSize(2.3) }}>Send To</Text>
-                                <TouchableOpacity onPress={toggleExpandedProfile}>
-                                    {
-                                        expandedprofile ?
-                                            <Image style={{ height: 30, width: 30, resizeMode: "contain" }} source={require('../../../assets/HomeScreen/up.png')} />
-                                            :
-                                            <>
-                                                <Image style={{ height: 30, width: 30, resizeMode: "contain" }} source={require('../../../assets/HomeScreen/down.png')} />
-                                            </>
-                                    }
-                                </TouchableOpacity>
-                            </View>
-                            {
-                                expandedprofile ?
-                                    <View style={{ marginBottom: expandedprofile == true ? 8 : 0, borderBottomLeftRadius: 10, borderBottomRightRadius: 10 }}>
-                                        <View style={{ borderTopWidth: expandedprofile == true ? 0 : 2, backgroundColor: "#EDFBFE", borderTopLeftRadius: 0, borderBottomLeftRadius: 10, borderBottomRightRadius: 10 }}>
-                                            <TouchableOpacity activeOpacity={0.8} style={{ borderColor: "gray", borderWidth: 0.5, marginVertical: 5 }}>
-                                                <Text style={{ textAlign: "center", fontSize: 15, color: "#000", fontWeight: "bold" }}>Ashraf Ali</Text>
-                                            </TouchableOpacity>
-                                            <TouchableOpacity activeOpacity={0.8} style={{ borderColor: "gray", borderWidth: 0.5, marginVertical: 5 }}>
-                                                <Text style={{ textAlign: "center", fontSize: 15, color: "#000", fontWeight: "bold" }}>Shibli Sone</Text>
-                                            </TouchableOpacity>
-                                            <TouchableOpacity activeOpacity={0.8} style={{ borderColor: "gray", borderWidth: 0.5, marginVertical: 5 }}>
-                                                <Text style={{ textAlign: "center", fontSize: 15, color: "#000", fontWeight: "bold" }}>Vishnu</Text>
-                                            </TouchableOpacity>
-                                        </View>
-                                    </View> :
-                                    null
-                            }
-
-                            <View style={{ borderRadius: 30, marginBottom: 8, padding: 5, backgroundColor: "#EDFBFE", opacity: 1, elevation: 10, }}>
-                                <TextInput
-                                    placeholder='Type Resignation'
-                                    numberOfLines={6}
-                                    textAlignVertical={'top'}
-                                    placeholderTextColor={Themes == 'dark' ? '#000' : '#000'}
-                                    color= {Themes == 'dark' ? '#000' : '#000'}
-                                />
-                            </View>
-
-                        </View>
-
-                        <TouchableOpacity onPress={() => navigation.navigate('ResignStatus')} style={{ marginBottom: 5, backgroundColor: currentTheme.background_v2, padding: 18, width: "90%", alignSelf: "center", borderRadius: 50 }}>
-                            <Text style={{ textAlign: "center", color: "#fff", fontSize: 18, fontWeight: "bold" }}>Submit</Text>
-                        </TouchableOpacity>
-                    </ScrollView>
-
-                </View>
+      {/* Resignation List */}
+      <FlatList
+        data={list?.data}
+        keyExtractor={item => item.id}
+        renderItem={({item}) => (
+          <View
+            style={[
+              styles.card,
+              {backgroundColor: currentTheme.background_v2},
+            ]}>
+            <View>
+              <Text style={styles.date}>28-01-2025</Text>
+              <Text style={styles.reason}>Reason: {item.remark}</Text>
+              <Text
+                style={[styles.status, {color: getStatusColor(item.status)}]}>
+                {item.status.toUpperCase()}
+              </Text>
+              {/* <Text style={styles.lastDay}>Last Day: {item.release_date}</Text> */}
             </View>
 
-        </SafeAreaView>
-    );
-};
-export default Resign;
-const styles = StyleSheet.create({
-    container: {
-        flex: 1,
-        backgroundColor: '#0E0E64',
-    },
+            {/* Action Buttons */}
+            <View style={styles.buttonContainer}>
+              {/* View Button */}
+              <TouchableOpacity
+                style={[
+                  styles.actionButton,
+                  {backgroundColor: currentTheme.background},
+                ]}
+                onPress={() => Details(item.id)}>
+                <Text style={[styles.buttonText, {color: currentTheme.text}]}>
+                  View
+                </Text>
+              </TouchableOpacity>
 
-    name: {
-        color: '#fff',
-        fontSize: responsiveFontSize(3),
-        fontWeight: 'bold',
-        textAlign: "center",
-        marginBottom: responsiveHeight(3)
-    },
+              {item.status === 'pending' && (
+                <TouchableOpacity
+                  style={[styles.actionButton, {backgroundColor: '#FFA500'}]}
+                  onPress={() =>
+                    navigation.navigate('ApplyResign', {id: item.id})
+                  }>
+                  <Text style={styles.buttonText}>Edit</Text>
+                </TouchableOpacity>
+              )}
+
+              {/* Withdraw Button */}
+              {item.status === 'pending' && (
+                <TouchableOpacity
+                  style={[styles.actionButton, {backgroundColor: '#FF0000'}]}
+                  onPress={() =>
+                    navigation.navigate('WithdrawResign', {id: item.id})
+                  }>
+                  <Text style={styles.buttonText}>Withdraw</Text>
+                </TouchableOpacity>
+              )}
+            </View>
+          </View>
+        )}
+      />
+      {/* Modal for Details */}
+      {selectedResign && (
+        <Modal
+          animationType="slide"
+          transparent={true}
+          visible={modalVisible}
+          onRequestClose={closeModal}>
+          <View style={styles.modalOverlay}>
+            <View style={[styles.modalContainer, {backgroundColor: '#fff'}]}>
+              <ScrollView>
+                <Text style={styles.modalTitle}>Resignation Details</Text>
+                <Text style={styles.modalText}>
+                  <Text style={styles.bold}>Name:</Text>{' '}
+                  {selectedResign?.user?.name}
+                </Text>
+                <Text style={styles.modalText}>
+                  <Text style={styles.bold}>Reason:</Text>{' '}
+                  {selectedResign?.remark}
+                </Text>
+                <Text style={styles.modalText}>
+                  <Text style={styles.bold}>Status:</Text>{' '}
+                  <Text style={{color: getStatusColor(selectedResign?.status)}}>
+                    {selectedResign?.status.toUpperCase()}
+                  </Text>
+                </Text>
+                <Text style={styles.modalText}>
+                  <Text style={styles.bold}>Last Day:</Text>{' '}
+                  {selectedResign.release_date || 'Not Specified'}
+                </Text>
+                {/* Add more details here */}
+              </ScrollView>
+              <TouchableOpacity
+                style={[styles.closeButton, {backgroundColor: '#FF0000'}]}
+                onPress={closeModal}>
+                <Text style={styles.closeButtonText}>Close</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </Modal>
+      )}
+    </View>
+  );
+};
+
+const styles = StyleSheet.create({
+  container: {flex: 1, padding: 10, backgroundColor: '#f5f5f5'},
+  addButton: {
+    backgroundColor: '#007BFF',
+    padding: 15,
+    borderRadius: 10,
+    marginBottom: 10,
+    alignItems: 'center',
+  },
+  addButtonText: {color: '#fff', fontSize: 16, fontWeight: 'bold'},
+  card: {
+    backgroundColor: '#fff',
+    padding: 15,
+    borderRadius: 10,
+    marginVertical: 5,
+  },
+  date: {fontSize: 16, fontWeight: 'bold', color: '#fff'},
+  reason: {fontSize: 14, marginTop: 5, color: '#fff'},
+  status: {fontSize: 14, marginTop: 5},
+  lastDay: {fontSize: 14, marginTop: 5, fontStyle: 'italic', color: '#fff'},
+  buttonContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-around',
+    marginTop: 10,
+  },
+  actionButton: {
+    padding: 10,
+    borderRadius: 5,
+    width: '30%',
+    alignItems: 'center',
+  },
+  buttonText: {color: '#fff', fontSize: 14, fontWeight: 'bold'},
+  modalOverlay: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: 'rgba(0,0,0,0.5)',
+  },
+  modalContainer: {width: '90%', padding: 20, borderRadius: 10},
+  modalTitle: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    marginBottom: 10,
+    color: '#000',
+  },
+  modalText: {fontSize: 16, marginVertical: 5, color: '#000'},
+  bold: {fontWeight: 'bold', color: '#000'},
+  closeButton: {
+    padding: 10,
+    borderRadius: 5,
+    alignItems: 'center',
+    marginTop: 10,
+  },
+  closeButtonText: {color: '#fff', fontSize: 16, fontWeight: 'bold'},
 });
+
+export default Resign;

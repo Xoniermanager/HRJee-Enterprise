@@ -122,12 +122,14 @@ const Person_Detils = () => {
     data.append('gender', details.gender);
     data.append('marital_status', details.marital_status);
     data.append('phone', details.phone);
-    var imagepath = {
-      uri: image?.path,
-      type: image?.mime,
-      name: image?.modificationDate + '.' + 'jpg',
-    };
-    data.append('image', imagepath);
+    if (image && image.path && image.mime && image.modificationDate) {
+      var imagepath = {
+        uri: image.path,
+        type: image.mime,
+        name: `${image.modificationDate}.jpg`,
+      };
+      data.append('image', imagepath);
+    }
     data.append('profile_image', imagepath);
     data.append(
       'date_of_birth',

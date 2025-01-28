@@ -183,3 +183,19 @@ export const logout = (url,token) => {
   let item = axiosGet(url,token);
   return item;
 };
+export const getResginList = (url,token) => {
+  let item = axiosGet(url,token);
+  return item;
+};
+export const ApplyResigns=(url,data,token)=>{
+  let item=axiosPost(url,data,token);
+  return item
+}
+export const WithdrawResigns=(url,data,token,form)=>{
+  let item = axiosPut(url,data,token,form);
+  return item
+}
+export const DetailsResign = (url,token) => {
+  let item = axiosGet(url,token);
+  return item;
+};

@@ -246,13 +246,9 @@ const HomePage = ({navigation}) => {
       setLoader(true);
       let token = await AsyncStorage.getItem('TOKEN');
 
-      const url = `${BASE_URL}/leave/type`;
+      const url = `${BASE_URL}/leave-types`;
       const response = await getLeaveType(url, token);
       if (response?.data?.status == true) {
-        // showMessage({
-        //     message: `${response?.data?.message}`,
-        //     type: "success",
-        // });
         setGetLeaveTypeApiData(response?.data?.data);
         setLoader(false);
       } else {
@@ -270,7 +266,7 @@ const HomePage = ({navigation}) => {
     checkleave();
     getLastAttendance();
   }, []);
-
+  console.log(lastAttendanceDetails, 'lastAttendanceDetails');
   const radioButtons: RadioButtonProps[] = useMemo(
     () => [
       {
@@ -412,69 +408,6 @@ const HomePage = ({navigation}) => {
     }
     check();
   }, []);
-
-  const handleSubmit = async () => {
-    try {
-      if (startDate == '' || startDate == [] || startDate == undefined) {
-        showMessage({
-          message: 'Please select startdate',
-          type: 'danger',
-        });
-      } else if (endDate == '' || endDate == [] || endDate == undefined) {
-        showMessage({
-          message: 'Please select enddate',
-          type: 'danger',
-        });
-      } else if (value1 == undefined || value1 == '' || value1 == []) {
-        showMessage({
-          message: 'Please select leave type',
-          type: 'danger',
-        });
-      } else if (reason == '') {
-        showMessage({
-          message: 'Please enter reason',
-          type: 'danger',
-        });
-      } else {
-        setLoader(true);
-        const token = await AsyncStorage.getItem('TOKEN');
-        const url = `${BASE_URL}/apply/leave`;
-
-        let data = {
-          leave_type_id: value1,
-          from: startDate,
-          to: endDate,
-          reason: reason,
-        };
-
-        if (toggleCheckBox) {
-          if (startDate == endDate) {
-            data.is_half_day = true;
-            data.from_half_day = selectedId == 1 ? 'first_half' : 'second_half';
-          } else {
-            data.is_half_day = true;
-            data.from_half_day =
-              selectedId1 == 1 ? 'first_half' : 'second_half';
-            data.to_half_day = selectedId2 == 1 ? 'first_half' : 'second_half';
-          }
-        }
-
-        const response = await LeaveApply(url, data, token);
-        if (response?.data?.status == true) {
-          showMessage({
-            message: `${response?.data?.message}`,
-            type: 'success',
-          });
-          setLoader(false);
-        } else {
-          setLoader(false);
-        }
-      }
-    } catch (error) {
-      console.error('Error making POST request:', error);
-      setLoader(false);
-    }
-  };
   const Punch_IN_Out = async () => {
     setloading(true);
     setDisabledBtn(true);
@@ -533,7 +466,6 @@ const HomePage = ({navigation}) => {
           width: responsiveWidth(35),
           resizeMode: 'contain',
           overflow: 'hidden',
-       
         }}
         source={item.uri}
       />
@@ -593,6 +525,139 @@ const HomePage = ({navigation}) => {
   function capitalizeFirstLetter(string) {
     return string.charAt(0).toUpperCase() + string.slice(1);
   }
+  const getLastAttendanceDaily = () => {
+    if (lastAttendanceDetails == 'No Last Attendance Available') {
+      return (
+        <View>
+          <Text
+            style={{
+              color: currentTheme.text,
+              fontSize: 16,
+              textAlign: 'center',
+            }}>
+            No Last Attendance Available
+          </Text>
+        </View>
+      );
+    } else {
+      {
+        lastAttendanceDetails?.map((elements, index) => {
+          return (
+            <View
+              key={index}
+              style={{
+                flexDirection: 'row',
+                justifyContent: 'space-between',
+                marginHorizontal: 10,
+                marginVertical: 8,
+              }}>
+              <View style={{}}>
+                <Text
+                  style={{
+                    color: currentTheme.text,
+                    fontSize: 20,
+                    fontWeight: '500',
+                  }}>
+                  {elements?.day}
+                </Text>
+                <Text style={{color: currentTheme.text, fontSize: 18}}>
+                  {elements?.date}
+                </Text>
+              </View>
+              <View style={{}}>
+                <Image
+                  style={{
+                    tintColor: currentTheme.text,
+                    fontSize: 20,
+                    fontWeight: '500',
+                    height: 30,
+                    width: 30,
+                    alignSelf: 'center',
+                  }}
+                  source={require('../../assets/HomeScreen/clock.png')}
+                />
+                <Text
+                  style={{
+                    color: currentTheme.text,
+                    fontSize: 18,
+                    textAlign: 'center',
+                  }}>
+                  {elements?.total_hours}
+                </Text>
+              </View>
+            </View>
+          );
+        });
+      }
+    }
+  };
+  const handleSubmit = async () => {
+    try {
+      if (startDate == '' || startDate == [] || startDate == undefined) {
+        showMessage({
+          message: 'Please select startdate',
+          type: 'danger',
+        });
+      } else if (endDate == '' || endDate == [] || endDate == undefined) {
+        showMessage({
+          message: 'Please select enddate',
+          type: 'danger',
+        });
+      } else if (value1 == undefined || value1 == '' || value1 == []) {
+        showMessage({
+          message: 'Please select leave type',
+          type: 'danger',
+        });
+      } else if (reason == '') {
+        showMessage({
+          message: 'Please enter reason',
+          type: 'danger',
+        });
+      } else {
+        const token = await AsyncStorage.getItem('TOKEN');
+        const url = `${BASE_URL}/apply/leave`;
+        let data = {
+          leave_type_id: value1,
+          from: startDate,
+          to: endDate,
+          is_half_day: toggleCheckBox ? 1 : 0,
+          reason: reason,
+          ...(toggleCheckBox && {
+            from_half_day: selectedId1 == 1 ? 'first_half' : 'second_half',
+            to_half_day: selectedId2 == 1 ? 'first_half' : 'second_half',
+          }),
+        };
+
+        if (toggleCheckBox) {
+          if (startDate == endDate) {
+            data.is_half_day = true;
+            data.from_half_day = selectedId == 1 ? 'first_half' : 'second_half';
+          } else {
+            data.is_half_day = true;
+            data.from_half_day =
+              selectedId1 == 1 ? 'first_half' : 'second_half';
+            data.to_half_day = selectedId2 == 1 ? 'first_half' : 'second_half';
+          }
+        }
+
+        const response = await LeaveApply(url, data, token);
+        if (response?.data?.status == true) {
+          showMessage({
+            message: `${response?.data?.message}`,
+            type: 'success',
+          });
+      
+        
+        } else {
+         
+        }
+      }
+    } catch (error) {
+      console.error('Error making POST request:', error);
+      setLoader(false);
+    }
+  };
+
   return (
     <>
       <View style={{flex: 1, backgroundColor: currentTheme.background}}>
@@ -628,7 +693,6 @@ const HomePage = ({navigation}) => {
                     // resizeMode: 'contain',
                     alignSelf: 'center',
                     borderRadius: 50,
-                 
                   }}
                   source={{uri: getProfileApiData?.profile_image}}
                 />
@@ -1187,7 +1251,7 @@ const HomePage = ({navigation}) => {
             </View>
 
             {/* This is Holiday management */}
-            <View>
+            {/* <View>
               <View
                 style={{
                   backgroundColor: '#8AEBC3',
@@ -1401,7 +1465,7 @@ const HomePage = ({navigation}) => {
                   </View>
                 </View>
               ) : null}
-            </View>
+            </View> */}
 
             {/* This is recent attendence */}
             <View>
@@ -1496,54 +1560,7 @@ const HomePage = ({navigation}) => {
                         borderColor: '#4148fe',
                         borderTopWidth: 0.8,
                       }}></View>
-                    {lastAttendanceDetails?.map((elements, index) => {
-                      return (
-                        <View
-                          key={index}
-                          style={{
-                            flexDirection: 'row',
-                            justifyContent: 'space-between',
-                            marginHorizontal: 10,
-                            marginVertical: 8,
-                          }}>
-                          <View style={{}}>
-                            <Text
-                              style={{
-                                color: currentTheme.text,
-                                fontSize: 20,
-                                fontWeight: '500',
-                              }}>
-                              {elements?.day}
-                            </Text>
-                            <Text
-                              style={{color: currentTheme.text, fontSize: 18}}>
-                              {elements?.date}
-                            </Text>
-                          </View>
-                          <View style={{}}>
-                            <Image
-                              style={{
-                                tintColor: currentTheme.text,
-                                fontSize: 20,
-                                fontWeight: '500',
-                                height: 30,
-                                width: 30,
-                                alignSelf: 'center',
-                              }}
-                              source={require('../../assets/HomeScreen/clock.png')}
-                            />
-                            <Text
-                              style={{
-                                color: currentTheme.text,
-                                fontSize: 18,
-                                textAlign: 'center',
-                              }}>
-                              {elements?.total_hours}
-                            </Text>
-                          </View>
-                        </View>
-                      );
-                    })}
+                    {getLastAttendanceDaily()}
                   </View>
                 </View>
               ) : null}
@@ -1567,7 +1584,7 @@ const HomePage = ({navigation}) => {
               from your profile.
             </Text>
 
-            {['light', 'dark', 'Use device theme'].map(val => (
+            {['light', 'dark'].map(val => (
               <TouchableOpacity
                 key={val}
                 style={styles.option}

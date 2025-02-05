@@ -36,6 +36,7 @@ import ProfileDetails from '../../Component/Skeleton/ProfileDetails';
 import {ThemeContext} from '../../Store/ConetxtApi.jsx/ConextApi';
 import ApplyResign from '../../Component/Services/Resign/ApplyResign';
 import WithdrawResign from '../../Component/Services/Resign/WithdrawResign';
+import ResetPassword from '../../Component/ForgetPassword/ResetPassword';
 
 const MyStack = () => {
   const {currentTheme} = useContext(ThemeContext);
@@ -156,6 +157,22 @@ const MyStack = () => {
         component={WithdrawResign}
         options={{
           title: 'Withdraw Resign',
+
+          headerBackTitleVisible: false,
+          headerStyle: {
+            backgroundColor: currentTheme.background_v2,
+          },
+          headerTintColor: '#fff',
+          headerTitleStyle: {
+            fontWeight: '500',
+          },
+        }}
+      />
+       <Stack.Screen
+        name="ResetPassword"
+        component={ResetPassword}
+        options={{
+          title: 'Reset Password',
 
           headerBackTitleVisible: false,
           headerStyle: {

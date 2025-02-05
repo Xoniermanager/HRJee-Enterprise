@@ -19,6 +19,8 @@ import {
   responsiveHeight,
   responsiveWidth,
 } from 'react-native-responsive-dimensions';
+import {BASE_URL} from '../../utils';
+import {showMessage} from 'react-native-flash-message';
 
 const ResetPassword = ({route}) => {
   const theme = useColorScheme();
@@ -45,14 +47,12 @@ const ResetPassword = ({route}) => {
     return () => clearInterval(timer);
   }, []);
 
-
-
   const reset_Password = async () => {
     setLoader(true);
     const data = {
       email: email,
       password: password,
-      password_confirmation: confirmPassword,
+      confirm_password: confirmPassword,
       otp: otp,
     };
     const token = await AsyncStorage.getItem('token');
@@ -62,33 +62,23 @@ const ResetPassword = ({route}) => {
       otp.trim() === ''
     ) {
       setLoader(false);
-      Popup.show({
-        type: 'Warning',
-        title: 'Warning',
-        button: true,
-        textBody: 'Password and OTP Fields are mendatory ',
-        buttonText: 'Ok',
-        callback: () => [Popup.hide()],
+      showMessage({
+        message: `Password and OTP Fields are mendatory`,
+        type: 'danger',
       });
     } else if (password != confirmPassword) {
       setLoader(false);
-
-      Popup.show({
-        type: 'Warning',
-        title: 'Warning',
-        button: true,
-        textBody: 'Password Mismatched',
-        buttonText: 'Ok',
-        callback: () => [Popup.hide()],
+      showMessage({
+        message: `Password Mismatched`,
+        type: 'danger',
       });
     } else {
       let config = {
         method: 'post',
         maxBodyLength: Infinity,
-        url: 'https://hrjee-v2.xonierconnect.com/api/password/reset',
+        url: `${BASE_URL}/reset/password`,
         headers: {
           'Content-Type': 'application/json',
-          Cookie: 'ci_session=ngc399claf516efh767kho1ldnmsf952',
         },
         data: data,
       };
@@ -96,43 +86,29 @@ const ResetPassword = ({route}) => {
       axios
         .request(config)
         .then(response => {
-          if (response.data.status == 1) {
+          if (response.data.status) {
             setLoader(false);
-            Popup.show({
-              type: 'Success',
-              title: 'Success',
-              button: true,
-              textBody: response.data.message,
-              buttonText: 'Ok',
-              callback: () => [Popup.hide(), navigation.navigate('LoginScreen')],
+            showMessage({
+              message: `${response?.data?.message}`,
+              type: 'success',
             });
-          } else if (response.data.status == 0) {
+            navigation.navigate('LoginScreen');
+          } else {
             setloading(false);
             setLoader(false);
-
-            Popup.show({
-              type: 'Warning',
-              title: 'Warning',
-              button: true,
-              textBody: response.data.message,
-              buttonText: 'Ok',
-              callback: () => [Popup.hide()],
+            showMessage({
+              message: response.data.message,
+              type: 'danger',
             });
           }
         })
         .catch(error => {
           setLoader(false);
-
           console.log(error);
-          Popup.show({
-            type: 'Warning',
-            title: 'Warning',
-            button: true,
-            textBody: error.response.data.message,
-            buttonText: 'Ok',
-            callback: () => [Popup.hide()],
+          showMessage({
+            message: error.response.data.message,
+            type: 'danger',
           });
-          console.log(error);
           setloading(false);
         });
     }
@@ -142,11 +118,7 @@ const ResetPassword = ({route}) => {
     let config = {
       method: 'post',
       maxBodyLength: Infinity,
-      url: `https://hrjee-v2.xonierconnect.com/api/sendOtp?email=${email}`,
-      headers: {
-        Cookie:
-          'XSRF-TOKEN=eyJpdiI6InViRHk5Nm1SaDNwVWZaa1lrZTlscmc9PSIsInZhbHVlIjoidU9HQnlaV0xMcHFOb2Jqa0pzQVJxNkV3VVMrR1NJVEdYMXNObjNRdzJxSUI3V2tJQkFncW9vRndBYUFReTNVY3lIbXpKYlgrRkJHZGRDZ0ZxZlRYY05ySGR5YUU2N1AxSXJ6b2RGTWhacTh3akhPOGZvcDBKRFc2VUtoZ21Zek8iLCJtYWMiOiI2MTZiODdjYjdlOTFjNTgwODA3OGFkNzBmNjdhNDgxZTZiMjUwMzc0NTkyOGMzOTQyOTNjM2VhMzhjZWY0ZjliIiwidGFnIjoiIn0%3D; hrjee_v2_session=eyJpdiI6IjdtNVFYdzFvR2s4dEZxVHdkRVlZUmc9PSIsInZhbHVlIjoiZVJ1blI2VHJucDFSdnBHYitDQ2t4SnF3WGs5ZGQ4dHV4ZnhRZ1pHSVpPUjYwZ0hlZVBHKzlpdUJTdHJwV1g1aWxwODVEMXI2WEZ1Z0pCZmhDMlc2TjNiTXk3MDFSbVI0QklJV1hGTHhxemZhcmFaWDltdDE0RklndVpKMXFGU0UiLCJtYWMiOiJjNmQ2MjgxZWI1YWJhODAxMTNlNDYwYTEzYzE1ZjRkNjY2NDFlMmMxZDRlZTE2MzZkNmZjN2FmNzRjNGQwODA1IiwidGFnIjoiIn0%3D',
-      },
+      url: `${BASE_URL}/sendOtp?email=${email}`,
     };
 
     axios
@@ -154,6 +126,10 @@ const ResetPassword = ({route}) => {
       .then(response => {
         console.log(JSON.stringify(response.data));
         setResendLoader(false);
+        showMessage({
+          message: `${response?.data?.message}`,
+          type: 'success',
+        });
       })
       .catch(error => {
         console.log(error);
@@ -172,10 +148,7 @@ const ResetPassword = ({route}) => {
               placeholderTextColor={theme == 'dark' ? '#000' : '#000'}
               autoCapitalize="none"
               value={password}
-              onChangeText={text =>
-                // setpassword({...password, currentPassword: text})
-                setPassword(text)
-              }
+              onChangeText={text => setPassword(text)}
             />
           </View>
           <View style={{marginVertical: 10, marginHorizontal: 20}}>
@@ -206,13 +179,13 @@ const ResetPassword = ({route}) => {
                 width: responsiveWidth(40),
                 borderRadius: 30,
                 alignSelf: 'center',
-                  backgroundColor: "#0433DA",
+                backgroundColor: '#0433DA',
                 marginTop: responsiveHeight(7.5),
                 height: responsiveHeight(6.25),
                 justifyContent: 'center',
                 alignItems: 'center',
                 borderWidth: 1,
-                borderColor: "#000",
+                borderColor: '#000',
               }}
               onPress={() => resendOTP()}>
               {resendloader ? (
@@ -220,11 +193,11 @@ const ResetPassword = ({route}) => {
               ) : (
                 <Text
                   style={{
-                    color: "#fff",
+                    color: '#fff',
                     fontSize: responsiveFontSize(2.1),
                     fontWeight: '500',
                   }}>
-                  resend
+                  Resend
                 </Text>
               )}
             </TouchableOpacity>
@@ -233,7 +206,7 @@ const ResetPassword = ({route}) => {
                 width: responsiveWidth(40),
                 borderRadius: 30,
                 alignSelf: 'center',
-                backgroundColor: "#0433DA",
+                backgroundColor: '#0433DA',
                 marginTop: responsiveHeight(7.5),
                 height: responsiveHeight(6.25),
                 justifyContent: 'center',
@@ -249,7 +222,7 @@ const ResetPassword = ({route}) => {
                     fontSize: responsiveFontSize(2.1),
                     fontWeight: '500',
                   }}>
-                  submit
+                  Submit
                 </Text>
               )}
             </TouchableOpacity>
@@ -288,6 +261,6 @@ const styles = StyleSheet.create({
     padding: 10,
     borderRadius: 20,
     borderColor: '#000',
-    backgroundColor:"#fff"
+    backgroundColor: '#fff',
   },
 });

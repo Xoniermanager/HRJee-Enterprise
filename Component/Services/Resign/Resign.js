@@ -7,12 +7,14 @@ import {
   TouchableOpacity,
   Modal,
   ScrollView,
+  Image
 } from 'react-native';
 import {ThemeContext} from '../../../Store/ConetxtApi.jsx/ConextApi';
 import {useIsFocused, useNavigation} from '@react-navigation/native';
 import {DetailsResign, getResginList} from '../../../APINetwork/ComponentApi';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import {BASE_URL} from '../../../utils';
+
 const Resign = () => {
   const navigation = useNavigation();
   const IsFocused = useIsFocused();
@@ -89,6 +91,12 @@ const Resign = () => {
       <FlatList
         data={list?.data}
         keyExtractor={item => item.id}
+        ListEmptyComponent={
+          <View style={styles.emptyContainer}>
+            <Text style={styles.emptyText}>Data not found</Text>
+          
+          </View>
+        }
         renderItem={({item}) => (
           <View
             style={[
@@ -119,7 +127,7 @@ const Resign = () => {
                 </Text>
               </TouchableOpacity>
 
-              {item.status === 'pending' && (
+              {item.status === 'Pending' && (
                 <TouchableOpacity
                   style={[styles.actionButton, {backgroundColor: '#FFA500'}]}
                   onPress={() =>
@@ -130,7 +138,7 @@ const Resign = () => {
               )}
 
               {/* Withdraw Button */}
-              {item.status === 'pending' && (
+              {item.status === 'Pending' && (
                 <TouchableOpacity
                   style={[styles.actionButton, {backgroundColor: '#FF0000'}]}
                   onPress={() =>
@@ -241,6 +249,16 @@ const styles = StyleSheet.create({
     marginTop: 10,
   },
   closeButtonText: {color: '#fff', fontSize: 16, fontWeight: 'bold'},
+  emptyContainer: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginTop: 20,
+  },
+  emptyText: {
+    fontSize: 16,
+    color: 'gray',
+    fontWeight: 'bold'
+  },
 });
 
 export default Resign;

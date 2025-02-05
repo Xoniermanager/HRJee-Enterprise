@@ -57,16 +57,16 @@ const ApplyLeave = ({navigation}) => {
   const radioButtons: RadioButtonProps[] = useMemo(
     () => [
       {
-        id: '1', // acts as primary key, should be unique and non-empty string
+        id: '1', 
         label: 'Morning',
         value: 'first_half',
-        labelStyle: {color: currentTheme.text}, // Customize label style here
+        labelStyle: {color: '#fff'}, // Customize label style here
       },
       {
         id: '2',
         label: 'Afternoon',
         value: 'second_half',
-        labelStyle: {color: currentTheme.text}, // Customize label style here
+        labelStyle: {color: '#fff'}, // Customize label style here
       },
     ],
     [],
@@ -77,13 +77,13 @@ const ApplyLeave = ({navigation}) => {
         id: '1', // acts as primary key, should be unique and non-empty string
         label: 'Morning',
         value: 'option1',
-        labelStyle: {color:currentTheme.text}, // Customize label style here
+        labelStyle: {color:'#fff'}, // Customize label style here
       },
       {
         id: '2',
         label: 'Afternoon',
         value: 'option2',
-        labelStyle: {color:currentTheme.text}, // Customize label style here
+        labelStyle: {color:'#fff'}, // Customize label style here
       },
     ],
     [],
@@ -91,21 +91,21 @@ const ApplyLeave = ({navigation}) => {
   const radioButtons2: RadioButtonProps[] = useMemo(
     () => [
       {
-        id: '1', // acts as primary key, should be unique and non-empty string
+        id: '1', 
         label: 'Morning',
         value: 'option1',
-        labelStyle: {color:currentTheme.text}, // Customize label style here
+        labelStyle: {color:'#fff'}, 
       },
       {
         id: '2',
         label: 'Afternoon',
         value: 'option2',
-        labelStyle: {color:currentTheme.text}, // Customize label style here
+        labelStyle: {color:'#fff'}, 
       },
     ],
     [],
   );
-
+    console.log(selectedId1,selectedId2,'jjjjj')
   const calculateDaysBetweenDates = () => {
     // Ensure startDate and endDate are valid dates
     if (!startDate || !endDate) {
@@ -124,45 +124,36 @@ const ApplyLeave = ({navigation}) => {
 
     return daysDifference;
   };
-
-  // Example usage
   const daysBetween = calculateDaysBetweenDates();
-
   const handlePress = type => {
-    const currentDate = selected; // Get the currently selected date
+    const currentDate = selected;
     if (type === 1) {
-      setStartDate(currentDate); // Set start date
+      setStartDate(currentDate); 
     } else if (type === 2) {
-      setEndDate(currentDate); // Set end date
+      setEndDate(currentDate); 
     }
-    setSelected(currentDate); // Highlight selected date
+    setSelected(currentDate); 
   };
+  async function check() {
+    try {
+      setLoader(true);
+      let token = await AsyncStorage.getItem('TOKEN');
 
-  // This is starting api part
-
-  useEffect(() => {
-    async function check() {
-      try {
-        setLoader(true);
-        let token = await AsyncStorage.getItem('TOKEN');
-
-        const url = `${BASE_URL}/leave/type`;
-        const response = await getLeaveType(url, token);
-        if (response?.data?.status == true) {
-          // showMessage({
-          //     message: `${response?.data?.message}`,
-          //     type: "success",
-          // });
-          setGetLeaveTypeApiData(response?.data?.data);
-          setLoader(false);
-        } else {
-          setLoader(false);
-        }
-      } catch (error) {
-        console.error('Error making POST request:', error);
+      const url = `${BASE_URL}/leave-types`;
+      const response = await getLeaveType(url, token);
+      if (response?.data?.status == true) {
+        setGetLeaveTypeApiData(response?.data?.data);
+        setLoader(false);
+      } else {
         setLoader(false);
       }
+    } catch (error) {
+      console.error('Error making POST request:', error);
+      setLoader(false);
     }
+  }
+
+  useEffect(() => {
     check();
   }, []);
 
@@ -189,7 +180,6 @@ const ApplyLeave = ({navigation}) => {
           type: 'danger',
         });
       } else {
-        setLoader(true);
         const token = await AsyncStorage.getItem('TOKEN');
         const url = `${BASE_URL}/apply/leave`;
 
@@ -197,7 +187,12 @@ const ApplyLeave = ({navigation}) => {
           leave_type_id: value1,
           from: startDate,
           to: endDate,
+          is_half_day: toggleCheckBox ? 1 : 0,
           reason: reason,
+          ...(toggleCheckBox && {
+            from_half_day: selectedId1 == 1 ? 'first_half' : 'second_half',
+            to_half_day: selectedId2 == 1 ? 'first_half' : 'second_half',
+          }),
         };
 
         if (toggleCheckBox) {
@@ -212,7 +207,6 @@ const ApplyLeave = ({navigation}) => {
           }
         }
 
-        console.log('payload------------', data);
         const response = await LeaveApply(url, data, token);
         if (response?.data?.status == true) {
           showMessage({
@@ -220,9 +214,9 @@ const ApplyLeave = ({navigation}) => {
             type: 'success',
           });
           navigation.goBack();
-          setLoader(false);
+        
         } else {
-          setLoader(false);
+         
         }
       }
     } catch (error) {
@@ -230,12 +224,7 @@ const ApplyLeave = ({navigation}) => {
       setLoader(false);
     }
   };
-
-  // This is ending api part
-
-  // if (getleavetypeapidata == '') {
-  //     return <Reload />
-  // }
+     console.log(toggleCheckBox,'toggleCheckBox')
 
   return (
     <SafeAreaView style={[styles.container,{backgroundColor:currentTheme.background_v2}]}>
@@ -419,8 +408,8 @@ const ApplyLeave = ({navigation}) => {
                     padding: 5,
                     marginHorizontal: responsiveWidth(2),
                   }}>
-                  <Text style={{color: Themes == 'dark' ? '#000' : '#000'}}>
-                    First day of leave
+                  <Text style={{color: Themes == 'dark' ? '#fff' : '#fff'}}>
+                  From Half day
                   </Text>
                   <RadioGroup
                     containerStyle={{flexDirection: 'row'}}
@@ -428,8 +417,8 @@ const ApplyLeave = ({navigation}) => {
                     onPress={setSelectedId1}
                     selectedId={selectedId1}
                   />
-                  <Text style={{color: Themes == 'dark' ? '#000' : '#000'}}>
-                    Last day of leave
+                  <Text style={{color: Themes == 'dark' ? '#fff' : '#fff'}}>
+                  To Half day
                   </Text>
                   <RadioGroup
                     containerStyle={{flexDirection: 'row'}}
@@ -473,7 +462,7 @@ const ApplyLeave = ({navigation}) => {
                     setValue1(item.id);
                   }}
                   placeholderStyle={{
-                    color: Themes == 'dark' ? '#000' : '#000', // Assuming Themes.colors.placeholder is defined
+                    color: Themes == 'dark' ? '#000' : '#000', 
                   }}
                   itemTextStyle={{color: Themes == 'dark' ? '#000' : '#000'}}
                 />

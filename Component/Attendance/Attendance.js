@@ -3,7 +3,6 @@ import {
   SafeAreaView,
   Modal,
   StyleSheet,
-  TextInput,
   Text,
   View,
   FlatList,
@@ -14,7 +13,6 @@ import {
   Platform,
 } from 'react-native';
 import React, {useState, useEffect, useContext} from 'react';
-import LinearGradient from 'react-native-linear-gradient';
 import {
   responsiveFontSize,
   responsiveHeight,
@@ -65,7 +63,6 @@ const Attendance = () => {
     },
   ];
   const {currentTheme} = useContext(ThemeContext);
-
   const [startdate, setStartDate] = useState(new Date());
   const [modalVisible, setModalVisible] = useState(false);
   const [isEnabled, setIsEnabled] = useState(false);
@@ -77,6 +74,7 @@ const Attendance = () => {
   const [data, setData] = useState('');
   const [fromDate, setFromDate] = useState(null);
   const [toDate, setToDate] = useState(null);
+  const [dailyDate,setDailyDate]=useState()
 
   const StatusItem = ({color, text, value}) => (
     <View style={[styles.statusItem, {backgroundColor: color}]}>
@@ -88,7 +86,9 @@ const Attendance = () => {
   const LegendItem = ({color, text}) => (
     <View style={styles.legendItem}>
       <View style={[styles.legendColor, {backgroundColor: color}]} />
-      <Text style={[styles.legendText,{color:currentTheme.text}]}>{text}</Text>
+      <Text style={[styles.legendText, {color: currentTheme.text}]}>
+        {text}
+      </Text>
     </View>
   );
 
@@ -123,14 +123,23 @@ const Attendance = () => {
 
   const onDayPress = day => {
     setSelectedDate(day.dateString);
+    console.log(day.dateString,'day.dateString')
+    attendance_by_date(day.dateString)
     setModalVisible(true);
   };
-
-  // api calling start
-
-  useEffect(() => {
-    getTodayAttendance();
-  }, []);
+  const attendance_by_date = async (day) => {
+    let token = await AsyncStorage.getItem('TOKEN');
+    try {
+      const url = `${BASE_URL}/attendance?date=${day}`;
+      const response = await gettodayattendance(url, token);
+      if (response?.data?.status === true) {
+        setDailyDate(response?.data?.data);
+      } else {
+      }
+    } catch (error) {
+      console.error('Error making POST request:', error);
+    }
+  };
 
   async function getTodayAttendance() {
     let token = await AsyncStorage.getItem('TOKEN');
@@ -139,10 +148,6 @@ const Attendance = () => {
       const url = `${BASE_URL}/get-today-attendance`;
       const response = await gettodayattendance(url, token);
       if (response?.data?.status === true) {
-        // showMessage({
-        //     message: `${response?.data?.message}`,
-        //     type: "success",
-        // });
         setTodayAttendanceDetails(response?.data?.todayAttendanceDetails);
         setLoader(false);
       } else {
@@ -155,6 +160,10 @@ const Attendance = () => {
   }
 
   useEffect(() => {
+    getTodayAttendance();
+  }, []);
+
+  useEffect(() => {
     if (fromDate && toDate) {
       getSearchAttendence();
     }
@@ -162,14 +171,9 @@ const Attendance = () => {
 
   const getSearchAttendence = async () => {
     function formatDate(dateStr) {
-      // Split the input date string by '/'
       const [month, day, year] = dateStr.split('/');
-
-      // Pad month and day with leading zeros if needed
       const paddedMonth = month.padStart(2, '0');
       const paddedDay = day.padStart(2, '0');
-
-      // Return the date in 'YYYY-MM-DD' format
       return `${year}-${paddedMonth}-${paddedDay}`;
     }
 
@@ -180,23 +184,18 @@ const Attendance = () => {
         from_date: fromDate,
         to_date: toDate,
       };
-
-      // Convert the dates to the desired format
       data.from_date = formatDate(data.from_date);
       data.to_date = formatDate(data.to_date);
-
-      console.log(data,'hellodata');
-
       setLoading(true);
       const url = `${BASE_URL}/search/filter/attendance`;
       const response = await getrecentattendence(url, data, token);
       if (response?.data?.status == true) {
-        // showMessage({
-        //     message: `${response?.data?.data}`,
-        //     type: "success",
-        // });
         setLoader(false);
-        setData(response?.data);
+        if (response.data.data == 'No Attendance Found Of Respective Dates') {
+          setData([]);
+        } else {
+          setData(response?.data);
+        }
       } else {
         setLoading(false);
       }
@@ -206,7 +205,6 @@ const Attendance = () => {
     }
   };
 
-  // Calculate the difference
   const punchIn = moment(
     todayAttendanceDetails?.punch_in,
     'YYYY-MM-DD HH:mm:ss',
@@ -228,7 +226,7 @@ const Attendance = () => {
   const hideFromDatePicker = () => setFromDatePickerVisibility(false);
 
   const handleFromDateConfirm = date => {
-    setFromDate(date.toLocaleDateString()); // Format date as needed
+    setFromDate(date.toLocaleDateString());
     hideFromDatePicker();
   };
 
@@ -236,7 +234,7 @@ const Attendance = () => {
   const hideToDatePicker = () => setToDatePickerVisibility(false);
 
   const handleToDateConfirm = date => {
-    setToDate(date.toLocaleDateString()); // Format date as needed
+    setToDate(date.toLocaleDateString());
     hideToDatePicker();
   };
 
@@ -665,7 +663,7 @@ const Attendance = () => {
                   <Text
                     style={{
                       textAlign: 'center',
-                      color: Themes == 'dark' ? '#000' : '#000',
+                      color: currentTheme.text,
                     }}>
                     There are no avaliable Attendance
                   </Text>
@@ -717,7 +715,11 @@ const Attendance = () => {
                   setModalVisible(!modalVisible);
                 }}>
                 <View style={styles.modalContainer}>
-                  <View style={[styles.modalView,{backgroundColor:currentTheme.modalBack}]}>
+                  <View
+                    style={[
+                      styles.modalView,
+                      {backgroundColor: currentTheme.modalBack},
+                    ]}>
                     <View
                       style={{
                         flexDirection: 'row',
@@ -726,7 +728,7 @@ const Attendance = () => {
                       }}>
                       <Text
                         style={{
-                          color:currentTheme.text,
+                          color: currentTheme.text,
                           fontWeight: '500',
                           fontSize: 18,
                         }}>
@@ -752,7 +754,7 @@ const Attendance = () => {
                       }}></View>
                     <View
                       style={{
-                        backgroundColor:currentTheme.background,
+                        backgroundColor: currentTheme.background,
                         alignSelf: 'flex-start',
                         borderRadius: 10,
                         marginVertical: 5,
@@ -763,7 +765,7 @@ const Attendance = () => {
                           padding: 5,
                           marginHorizontal: 5,
                         }}>
-                        10 May 2024
+                      {selectedDate}
                       </Text>
                     </View>
                     <View
@@ -772,7 +774,7 @@ const Attendance = () => {
                         marginVertical: 5,
                         elevation: 1,
                         opacity: 0.3,
-                        borderColor:currentTheme.text,
+                        borderColor: currentTheme.text,
                       }}></View>
                     <View
                       style={{
@@ -782,7 +784,7 @@ const Attendance = () => {
                       <View style={{alignSelf: 'flex-start'}}>
                         <Text
                           style={{
-                            color:currentTheme.text,
+                            color: currentTheme.text,
                             fontSize: 16,
                             marginVertical: 10,
                           }}>
@@ -790,7 +792,7 @@ const Attendance = () => {
                         </Text>
                         <Text
                           style={{
-                            color:currentTheme.text,
+                            color: currentTheme.text,
                             fontSize: 16,
                             marginVertical: 10,
                           }}>
@@ -822,8 +824,12 @@ const Attendance = () => {
                             marginVertical: 5,
                           }}>
                           <Text
-                            style={{color: currentTheme.text, fontSize: 16, padding: 5}}>
-                            09:30 AM
+                            style={{
+                              color: currentTheme.text,
+                              fontSize: 16,
+                              padding: 5,
+                            }}>
+                          {dailyDate?.punch_in==null?'N/A':dailyDate?.punch_in}
                           </Text>
                         </View>
                         <View
@@ -833,8 +839,12 @@ const Attendance = () => {
                             marginVertical: 5,
                           }}>
                           <Text
-                            style={{color: currentTheme.text, fontSize: 16, padding: 5}}>
-                            09:30 AM
+                            style={{
+                              color: currentTheme.text,
+                              fontSize: 16,
+                              padding: 5,
+                            }}>
+                              {dailyDate?.punch_out==null?'N/A':dailyDate?.punch_out}
                           </Text>
                         </View>
                         <View
@@ -844,8 +854,12 @@ const Attendance = () => {
                             marginVertical: 5,
                           }}>
                           <Text
-                            style={{color: currentTheme.text, fontSize: 16, padding: 5}}>
-                            09:30 AM
+                            style={{
+                              color: currentTheme.text,
+                              fontSize: 16,
+                              padding: 5,
+                            }}>
+                            {dailyDate?.total_working_hours}
                           </Text>
                         </View>
                         <View
@@ -861,7 +875,7 @@ const Attendance = () => {
                               padding: 5,
                               textAlign: 'center',
                             }}>
-                            Absent
+                             {dailyDate?.status}
                           </Text>
                         </View>
                       </View>

@@ -199,3 +199,11 @@ export const DetailsResign = (url,token) => {
   let item = axiosGet(url,token);
   return item;
 };
+export const menuaccess = (url,token) => {
+  let item = axiosGet(url,token);
+  return item;
+};
+export const DailyCheckAttendance = (url,token) => {
+  let item = axiosGet(url,token);
+  return item;
+};

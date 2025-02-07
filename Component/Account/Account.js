@@ -1,4 +1,3 @@
-import LinearGradient from 'react-native-linear-gradient';
 import React, {useState, useContext, useEffect} from 'react';
 import {
   Text,
@@ -9,7 +8,6 @@ import {
   StyleSheet,
   SafeAreaView,
   FlatList,
-  Alert,
   Platform,
 } from 'react-native';
 import {
@@ -19,54 +17,43 @@ import {
 } from 'react-native-responsive-dimensions';
 import FontAwesome from 'react-native-vector-icons/FontAwesome';
 import {DrawerActions, useNavigation} from '@react-navigation/native';
-import {createDrawerNavigator} from '@react-navigation/drawer';
-import {createStackNavigator} from '@react-navigation/stack';
 import {BASE_URL} from '../../utils';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import axios from 'axios';
-import Reload from '../../Reload';
 import {getProfile} from '../../APINetwork/ComponentApi';
-import {showMessage} from 'react-native-flash-message';
 import RNFetchBlob from 'rn-fetch-blob';
 import AccountSkeleton from '../Skeleton/AccountSkeleton';
 import Themes from '../Theme/Theme';
 import {ThemeContext} from '../../Store/ConetxtApi.jsx/ConextApi';
-
-const Drawer = createDrawerNavigator();
-const Stack = createStackNavigator();
-
-const Account = ({title, description}) => {
+const Account = () => {
+  const {currentTheme,theme} = useContext(ThemeContext);
   const showData = [
     {
       id: 1,
       uri: require('../../assets/HomeScreen/calendar.png'),
       name: 'Attendance',
       num: 20,
-      backgroundcolor: '#BAAEFC',
+      backgroundcolor: theme=='light'?'#BAAEFC':'#242B3A',
     },
     {
       id: 2,
       uri: require('../../assets/HomeScreen/leave.png'),
       name: 'Leave',
       num: 20,
-      backgroundcolor: '#F9B7D5',
+      backgroundcolor:theme=='light'? '#F9B7D5':'#242B3A',
     },
     {
       id: 3,
       uri: require('../../assets/HomeScreen/medal.png'),
       name: 'Award',
       num: 20,
-      backgroundcolor: '#44D5FB',
+      backgroundcolor:theme=='light'? '#44D5FB':'#242B3A',
     },
   ];
   const [getProfileApiData, setGetProfileApiData] = useState('');
   const [getAssetsApiData, setGetAssetsApiData] = useState('');
-  const [item, setURI] = useState('');
   const [loader, setLoader] = useState(false);
   const [show, setShow] = useState(false);
-
   const navigation = useNavigation();
-
   const renderServicesList = ({item}) => (
     <View
       style={{
@@ -84,24 +71,18 @@ const Account = ({title, description}) => {
         />
         <Text
           numberOfLines={1}
-          style={{marginBottom: 2, fontSize: 16, color: '#000'}}>
+          style={{marginBottom: 2, fontSize: 16, color: currentTheme.text}}>
           {item.name}
         </Text>
-        <Text style={{fontSize: 16, color: '#000'}}>{item.num}</Text>
+        <Text style={{fontSize: 16, color: currentTheme.text}}>{item.num}</Text>
       </View>
     </View>
   );
-
-  {
-    /* THis code is less more */
-  }
-
   const [expandedbank, setExpandedBank] = useState(false);
   const [expandedassets, setExpandedAssets] = useState(false);
   const [expandeddocuments, setExpandedDocuments] = useState(false);
   const [bankdetailsdata, setBankDetailsData] = useState('');
   const [documentdetailsdata, setGetDocumentApiData] = useState([]);
-  const {currentTheme} = useContext(ThemeContext);
   const toggleExpandedBank = () => {
     setExpandedBank(!expandedbank);
   };
@@ -111,33 +92,6 @@ const Account = ({title, description}) => {
   const toggleExpandedDocuments = () => {
     setExpandedDocuments(!expandeddocuments);
   };
-
-  // const BankDetails = async () => {
-  //   try {
-  //     let token = await AsyncStorage.getItem('token');
-  //     const response = await axios.get(`${BASE_URL}/user/bank/details`, {
-  //       headers: {
-  //         Authorization: `Bearer ${token}`,
-  //       },
-  //     });
-  //     setBankDetailsData(response?.data?.data);
-  //   } catch (error) {
-  //     if (error.response) {
-  //       // Backend error handling
-  //       console.error('Backend returned status:', error.response.status);
-  //       console.error('Backend error data:', error.response.data);
-  //       throw new Error(error.response.data.message || 'Something went wrong');
-  //     } else if (error.request) {
-  //       // Network error handling
-  //       console.error('Network error:', error.request);
-  //       throw new Error('Network error, please try again');
-  //     } else {
-  //       // General error handling
-  //       console.error('Error:', error.message);
-  //       throw new Error('An unknown error occurred');
-  //     }
-  //   }
-  // };
   async function check() {
     try {
       setLoader(true);
@@ -146,10 +100,6 @@ const Account = ({title, description}) => {
       const response = await getProfile(url, token);
 
       if (response?.data?.status === true) {
-        // showMessage({
-        //   message: `${response?.data?.message}`,
-        //   type: "success",
-        // });
         setGetProfileApiData(response?.data?.data);
         setBankDetailsData(response?.data?.data?.bank_details);
         setGetDocumentApiData(response?.data?.data?.document_details);
@@ -166,7 +116,6 @@ const Account = ({title, description}) => {
   useEffect(() => {
     check();
   }, []);
-
   const historyDownload = item => {
     if (item != null) {
       setShow(true);
@@ -273,7 +222,7 @@ const Account = ({title, description}) => {
                   borderRadius: 50,
                   alignSelf: 'center',
                 }}
-                source={{uri: getProfileApiData?.profile_image}} // Replace with the actual image URL
+                source={{uri: getProfileApiData?.profile_image}}
               />
             )}
             <Text style={styles.name}>{getProfileApiData.name}</Text>

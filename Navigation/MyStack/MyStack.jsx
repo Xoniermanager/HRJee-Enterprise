@@ -187,17 +187,50 @@ const MyStack = () => {
       <Stack.Screen
         name="Verification"
         component={TwoFectorVerification}
-        options={{headerShown: false}}
+        options={{
+          title: 'Verification',
+
+          headerBackTitleVisible: false,
+          headerStyle: {
+            backgroundColor: currentTheme.background_v2,
+          },
+          headerTintColor: '#fff',
+          headerTitleStyle: {
+            fontWeight: '500',
+          },
+        }}
       />
       <Stack.Screen
         name="ForgetPassword"
         component={ForgetPassword}
-        options={{headerShown: false}}
+        options={{
+          title: 'Forget Password',
+
+          headerBackTitleVisible: false,
+          headerStyle: {
+            backgroundColor: currentTheme.background_v2,
+          },
+          headerTintColor: '#fff',
+          headerTitleStyle: {
+            fontWeight: '500',
+          },
+        }}
       />
       <Stack.Screen
         name="ChangePassword"
         component={ChangePassword}
-        options={{headerShown: false}}
+        options={{
+          title: 'Change Password',
+
+          headerBackTitleVisible: false,
+          headerStyle: {
+            backgroundColor: currentTheme.background_v2,
+          },
+          headerTintColor: '#fff',
+          headerTitleStyle: {
+            fontWeight: '500',
+          },
+        }}
       />
       <Stack.Screen
         name="HolidayList"
@@ -305,7 +338,17 @@ const MyStack = () => {
       <Stack.Screen
         name="Leaves"
         component={Leaves}
-        options={{headerShown: false}}
+        options={{
+          title: 'Leaves',
+          headerBackTitleVisible: false,
+          headerStyle: {
+            backgroundColor: currentTheme.background_v2,
+          },
+          headerTintColor: '#fff',
+          headerTitleStyle: {
+            fontWeight: '500',
+          },
+        }}
       />
       <Stack.Screen
         name="PolicyDetails"

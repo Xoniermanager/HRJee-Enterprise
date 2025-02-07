@@ -60,6 +60,7 @@ const Leaves = ({navigation}) => {
       console.error('Error making POST request:', error);
     }
   }
+  
 
   useEffect(() => {
     check();

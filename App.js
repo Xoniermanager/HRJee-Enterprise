@@ -1,48 +1,4 @@
 
-// import { StyleSheet, Text, View, StatusBar, BackHandler, Linking, Platform, Alert } from 'react-native'
-// import React, {useEffect} from 'react'
-// import { NavigationContainer } from '@react-navigation/native';
-// import ConextApi from './Store/ConetxtApi.jsx/ConextApi';
-// import MyStack from './Navigation/MyStack/MyStack';
-// import 'react-native-gesture-handler';
-// import FlashMessage from "react-native-flash-message";
-// import { navigationRef } from './APINetwork/NavigationService';
-// import NetInfo from '@react-native-community/netinfo';
-
-
-// const App = () => {
-//   useEffect(() => {
-//     // Subscribe to network state changes
-//     const unsubscribe = NetInfo.addEventListener(state => {
-//       if (!state.isConnected) {
-//         Alert.alert(
-//           "No Internet Connection",
-//           "Please check your internet connection.",
-//           [{ text: "OK" }]
-//         );
-//       }
-//     });
-
-//     // Cleanup the subscription on unmount
-//     return () => unsubscribe();
-//   }, []);
-
-//   return (
-//     <ConextApi>
-//       <StatusBar barStyle="light-content" backgroundColor="#0E0E64" />
-//       <NavigationContainer ref={navigationRef}>
-//         <MyStack />
-//       </NavigationContainer>
-//       <FlashMessage position="top" />
-//     </ConextApi>
-//   )
-// }
-
-// export default App
-
-// const styles = StyleSheet.create({})
-
-
 import React, { useState, useEffect } from 'react';
 import { StyleSheet, StatusBar, Modal, View, Image, Text, TouchableOpacity, Alert } from 'react-native';
 import { NavigationContainer } from '@react-navigation/native';

@@ -1,5 +1,4 @@
 import {
-  Dimensions,
   StyleSheet,
   Text,
   View,
@@ -10,7 +9,6 @@ import {
   TextInput,
   Alert,
   Platform,
-  Switch,
 } from 'react-native';
 import React, {useState, useEffect, useMemo, useContext} from 'react';
 import {
@@ -18,15 +16,12 @@ import {
   responsiveHeight,
   responsiveWidth,
 } from 'react-native-responsive-dimensions';
-const windowWidth = Dimensions.get('window').width;
-const windowHeight = Dimensions.get('window').height;
 import LinearGradient from 'react-native-linear-gradient';
-import {Calendar, LocaleConfig} from 'react-native-calendars';
+import {Calendar} from 'react-native-calendars';
 import {ScrollView} from 'react-native-gesture-handler';
 import CheckBox from '@react-native-community/checkbox';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import {BASE_URL} from '../../utils';
-import axios from 'axios';
 import Modal from 'react-native-modal';
 import {
   LeaveApply,
@@ -42,11 +37,11 @@ import {showMessage} from 'react-native-flash-message';
 import HomeSkeleton from '../Skeleton/HomeSkeleton';
 import moment from 'moment';
 import AntDesign from 'react-native-vector-icons/AntDesign';
-import Themes from '../Theme/Theme';
 import {ThemeContext} from '../../Store/ConetxtApi.jsx/ConextApi';
-
+import {useIsFocused} from '@react-navigation/native';
 const HomePage = ({navigation}) => {
   const [monthDay, setMonth] = useState('');
+  const ISFoucs = useIsFocused();
   const date = new Date(selected);
   const month = date.toLocaleString('default', {month: 'long'});
   const {
@@ -56,6 +51,7 @@ const HomePage = ({navigation}) => {
     isModalVisible,
     setModalVisible,
     setTheme,
+    menuaccesssList,
   } = useContext(ThemeContext);
   const [getleavetypeapidata, setGetLeaveTypeApiData] = useState([]);
   const [loader, setLoader] = useState(false);
@@ -152,10 +148,6 @@ const HomePage = ({navigation}) => {
       const response = await getProfile(url, token, navigation);
 
       if (response?.data?.status === true) {
-        // showMessage({
-        //   message: `${response?.data?.message}`,
-        //   type: "success",
-        // });
         setGetProfileApiData(response?.data?.data);
         setLoader(false);
       } else {
@@ -166,6 +158,7 @@ const HomePage = ({navigation}) => {
       setLoader(false);
     }
   }
+
   async function getTodayAttendance() {
     try {
       setLoader(true);
@@ -226,13 +219,10 @@ const HomePage = ({navigation}) => {
       let token = await AsyncStorage.getItem('TOKEN');
       const url = `${BASE_URL}/get-last-attendance`;
       const response = await gettodayattendance(url, token);
-      setLastAttendanceDetails(response?.data?.data);
+
       if (response?.data?.status === true) {
-        // showMessage({
-        //   message: `${response?.data?.message}`,
-        //   type: "success",
-        // });
         setLoader(false);
+        setLastAttendanceDetails(response?.data?.data);
       } else {
         setLoader(false);
       }
@@ -259,14 +249,13 @@ const HomePage = ({navigation}) => {
       setLoader(false);
     }
   }
-
   useEffect(() => {
     check();
     getTodayAttendance();
     checkleave();
     getLastAttendance();
-  }, []);
-  console.log(lastAttendanceDetails, 'lastAttendanceDetails');
+  }, [ISFoucs]);
+
   const radioButtons: RadioButtonProps[] = useMemo(
     () => [
       {
@@ -416,48 +405,26 @@ const HomePage = ({navigation}) => {
       let token = await AsyncStorage.getItem('TOKEN');
       const response = await punchin(url, token);
       if (response?.data?.status == true) {
+        setLoader(false);
         setPunch(response?.data);
+        setDisabledBtn(false);
         getTodayAttendance();
         showMessage({
           message: `${response?.data?.message}`,
           type: 'success',
         });
 
-        setLoader(false);
+     
       } else {
         setLoader(false);
+        setDisabledBtn(false);
       }
     } catch (error) {
       console.error('Error making POST request:', error);
+      setDisabledBtn(false);
       setLoader(false);
     }
   };
-  const services = [
-    {
-      id: '1',
-      name: 'Policies',
-      uri: require('../../assets/HomeScreen/h1.png'),
-      nav: 'Policy',
-    },
-    {
-      id: '2',
-      name: 'News',
-      uri: require('../../assets/HomeScreen/h2.png'),
-      nav: 'News',
-    },
-    {
-      id: '3',
-      name: 'Payslip',
-      uri: require('../../assets/HomeScreen/h3.png'),
-      nav: 'Salary',
-    },
-    {
-      id: '4',
-      name: 'Annouce',
-      uri: require('../../assets/announcement.png'),
-      nav: 'Announcement',
-    },
-  ];
   const renderServicesList = ({item}) => (
     <TouchableOpacity onPress={() => navigation.navigate(item.nav)}>
       <Image
@@ -474,7 +441,7 @@ const HomePage = ({navigation}) => {
           position: 'absolute',
           bottom: 5,
           alignSelf: 'center',
-          fontSize: responsiveFontSize(2.5),
+          fontSize: responsiveFontSize(1.9),
           color: '#fff',
           fontWeight: '500',
         }}>
@@ -482,21 +449,14 @@ const HomePage = ({navigation}) => {
       </Text>
     </TouchableOpacity>
   );
-
-  {
-    /* THis code is less more */
-  }
-
   const [expandedholiday, setExpandedHoliday] = useState(false);
   const toggleExpandedHoliday = () => {
     setExpandedHoliday(!expandedholiday);
   };
-
   const [expandedapplyleave, setExpandedApplyLeave] = useState(false);
   const toggleExpandedApplyLeave = () => {
     setExpandedApplyLeave(!expandedapplyleave);
   };
-
   const [expanded, setExpanded] = useState(false);
   const toggleExpanded = () => {
     setExpanded(!expanded);
@@ -526,6 +486,7 @@ const HomePage = ({navigation}) => {
     return string.charAt(0).toUpperCase() + string.slice(1);
   }
   const getLastAttendanceDaily = () => {
+    console.log(lastAttendanceDetails, 'if');
     if (lastAttendanceDetails == 'No Last Attendance Available') {
       return (
         <View>
@@ -540,55 +501,54 @@ const HomePage = ({navigation}) => {
         </View>
       );
     } else {
-      {
-        lastAttendanceDetails?.map((elements, index) => {
-          return (
-            <View
-              key={index}
-              style={{
-                flexDirection: 'row',
-                justifyContent: 'space-between',
-                marginHorizontal: 10,
-                marginVertical: 8,
-              }}>
-              <View style={{}}>
-                <Text
-                  style={{
-                    color: currentTheme.text,
-                    fontSize: 20,
-                    fontWeight: '500',
-                  }}>
-                  {elements?.day}
-                </Text>
-                <Text style={{color: currentTheme.text, fontSize: 18}}>
-                  {elements?.date}
-                </Text>
-              </View>
-              <View style={{}}>
-                <Image
-                  style={{
-                    tintColor: currentTheme.text,
-                    fontSize: 20,
-                    fontWeight: '500',
-                    height: 30,
-                    width: 30,
-                    alignSelf: 'center',
-                  }}
-                  source={require('../../assets/HomeScreen/clock.png')}
-                />
-                <Text
-                  style={{
-                    color: currentTheme.text,
-                    fontSize: 18,
-                    textAlign: 'center',
-                  }}>
-                  {elements?.total_hours}
-                </Text>
-              </View>
+      console.log(lastAttendanceDetails, 'else');
+      lastAttendanceDetails?.map((elements, index) => {
+        return (
+          <View
+            key={index}
+            style={{
+              flexDirection: 'row',
+              justifyContent: 'space-between',
+              marginHorizontal: 10,
+              marginVertical: 8,
+            }}>
+            <View style={{}}>
+              <Text
+                style={{
+                  color: currentTheme.text,
+                  fontSize: 20,
+                  fontWeight: '500',
+                }}>
+                {elements?.day}
+              </Text>
+              <Text style={{color: currentTheme.text, fontSize: 18}}>
+                {elements?.date}
+              </Text>
             </View>
-          );
-        });
-      }
+            <View style={{}}>
+              <Image
+                style={{
+                  tintColor: currentTheme.text,
+                  fontSize: 20,
+                  fontWeight: '500',
+                  height: 30,
+                  width: 30,
+                  alignSelf: 'center',
+                }}
+                source={require('../../assets/HomeScreen/clock.png')}
+              />
+              <Text
+                style={{
+                  color: currentTheme.text,
+                  fontSize: 18,
+                  textAlign: 'center',
+                }}>
+                {elements?.total_hours}
+              </Text>
+            </View>
+          </View>
+        );
+      });
     }
   };
   const handleSubmit = async () => {
@@ -646,10 +606,13 @@ const HomePage = ({navigation}) => {
             message: `${response?.data?.message}`,
             type: 'success',
           });
-      
-        
+          setExpandedApplyLeave(false);
+          setSelectedId1('');
+          setSelectedId2('');
+          setStartDate('');
+          setEndDate('');
+          navigation.navigate('Leaves');
         } else {
-         
         }
       }
     } catch (error) {
@@ -728,7 +691,7 @@ const HomePage = ({navigation}) => {
             <FlatList
               horizontal
               showsHorizontalScrollIndicator={false}
-              data={services}
+              data={menuaccesssList}
               renderItem={renderServicesList}
               keyExtractor={item => item.id}
             />
@@ -1058,9 +1021,9 @@ const HomePage = ({navigation}) => {
                               setMonth(day);
 
                               if (!startDate) {
-                                setStartDate(day.dateString); // Set start date if it's not already set
+                                setStartDate(day.dateString);
                               } else if (!endDate) {
-                                setEndDate(day.dateString); // Set end date if start date is already set
+                                setEndDate(day.dateString);
                               }
                             }}
                             markedDates={{
@@ -1081,8 +1044,6 @@ const HomePage = ({navigation}) => {
                               },
                             }}
                           />
-
-                          {/* <Text>End date greater then start date</Text> */}
                         </View>
                       </View>
                       {startDate > endDate
@@ -1090,8 +1051,7 @@ const HomePage = ({navigation}) => {
                             message: `End date greater then start date, Please select valid details`,
                             type: 'danger',
                           })
-                        : // <Text style={{ textAlign: "center" }}>End date greater then start date, Please select valid details</Text>
-                          null}
+                        : null}
                       <View
                         style={{
                           flexDirection: 'row',

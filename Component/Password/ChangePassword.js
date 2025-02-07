@@ -22,9 +22,10 @@ import {
 } from 'react-native-responsive-dimensions';
 import Themes from '../Theme/Theme';
 import {ThemeContext} from '../../Store/ConetxtApi.jsx/ConextApi';
-import { useNavigation } from '@react-navigation/native';
+import {useNavigation} from '@react-navigation/native';
+import {showMessage} from 'react-native-flash-message';
 const ChangePassword = () => {
-  const navigation=useNavigation()
+  const navigation = useNavigation();
   const {currentTheme} = useContext(ThemeContext);
   const [oldPassword, setOldPassword] = useState('');
   const [newPassword, setNewPassword] = useState('');
@@ -36,8 +37,8 @@ const ChangePassword = () => {
 
   let data = {
     old_password: oldPassword,
-    new_password: newPassword,
-    new_password_confirmation: confirmPassword,
+    password: newPassword,
+    confirm_password: confirmPassword,
   };
 
   const handleChangePassword = async () => {
@@ -45,19 +46,32 @@ const ChangePassword = () => {
     console.log(token, 'token');
     try {
       if (newPassword !== confirmPassword) {
-        Alert.alert('New passwords do not match');
+        showMessage({
+          message: 'New passwords do not match',
+          type: 'danger',
+        });
+
         return;
       } else {
         setLoader(true);
+        let form = 0;
         const url = `${BASE_URL}/change/password`;
-        const response = await changePasswords(url, data, token);
+        const response = await changePasswords(url, data, token, form);
         if (response?.data?.status == true) {
           setLoader(false);
           setOldPassword('');
           setNewPassword('');
           setConfirmPassword('');
+          showMessage({
+            message: `${response?.data?.message}`,
+            type: 'success',
+          });
           navigation.goBack();
         } else {
+          showMessage({
+            message: `${response?.data?.message}`,
+            type: 'danger',
+          });
           setLoader(false);
         }
       }
@@ -69,12 +83,18 @@ const ChangePassword = () => {
   return (
     <SafeAreaView
       style={[styles.container, {backgroundColor: currentTheme.background_v2}]}>
-      <View style={[styles.headerContainer,{backgroundColor: currentTheme.background_v2}]}>
-      <TouchableOpacity onPress={()=>navigation.goBack()} style={styles.backButton}>
-        <Ionicons name="arrow-back" size={24} color="#fff" />
-      </TouchableOpacity>
-      <Text style={styles.title}>Change Password</Text>
-    </View>
+      <View
+        style={[
+          styles.headerContainer,
+          {backgroundColor: currentTheme.background_v2},
+        ]}>
+        <TouchableOpacity
+          onPress={() => navigation.goBack()}
+          style={styles.backButton}>
+          <Ionicons name="arrow-back" size={24} color="#fff" />
+        </TouchableOpacity>
+        <Text style={styles.title}>Change Password</Text>
+      </View>
       <ScrollView
         style={{
           width: '100%',
@@ -211,7 +231,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     padding: 16,
     backgroundColor: '#f8f8f8', // Change as per design
-   
   },
   backButton: {
     marginRight: 16,

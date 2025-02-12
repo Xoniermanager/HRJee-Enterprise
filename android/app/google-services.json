@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "765827537953",
+    "project_id": "hrjee-v2",
+    "storage_bucket": "hrjee-v2.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:765827537953:android:dd4daeb82f4f87ef501760",
+        "android_client_info": {
+          "package_name": "com.hrjee_enterprise"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDxMCVuex1zRSKdhgP_m0bmuWO3W7jwstw"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

@@ -43,7 +43,7 @@ const ApplyResign = ({route}) => {
       } else {
       }
     } catch (error) {
-      console.error('Error making POST request:', error);
+      // console.error('Error making POST request:', error);
     }
   }
   useEffect(() => {

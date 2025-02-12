@@ -207,3 +207,7 @@ export const DailyCheckAttendance = (url,token) => {
   let item = axiosGet(url,token);
   return item;
 };
+export const AssetsAPI = (url,token) => {
+  let item = axiosGet(url,token);
+  return item;
+};

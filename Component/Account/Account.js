@@ -9,6 +9,7 @@ import {
   SafeAreaView,
   FlatList,
   Platform,
+  Linking,
 } from 'react-native';
 import {
   responsiveHeight,
@@ -25,28 +26,28 @@ import AccountSkeleton from '../Skeleton/AccountSkeleton';
 import Themes from '../Theme/Theme';
 import {ThemeContext} from '../../Store/ConetxtApi.jsx/ConextApi';
 const Account = () => {
-  const {currentTheme,theme} = useContext(ThemeContext);
+  const {currentTheme, theme} = useContext(ThemeContext);
   const showData = [
     {
       id: 1,
       uri: require('../../assets/HomeScreen/calendar.png'),
       name: 'Attendance',
       num: 20,
-      backgroundcolor: theme=='light'?'#BAAEFC':'#242B3A',
+      backgroundcolor: theme == 'light' ? '#BAAEFC' : '#242B3A',
     },
     {
       id: 2,
       uri: require('../../assets/HomeScreen/leave.png'),
       name: 'Leave',
       num: 20,
-      backgroundcolor:theme=='light'? '#F9B7D5':'#242B3A',
+      backgroundcolor: theme == 'light' ? '#F9B7D5' : '#242B3A',
     },
     {
       id: 3,
       uri: require('../../assets/HomeScreen/medal.png'),
       name: 'Award',
       num: 20,
-      backgroundcolor:theme=='light'? '#44D5FB':'#242B3A',
+      backgroundcolor: theme == 'light' ? '#44D5FB' : '#242B3A',
     },
   ];
   const [getProfileApiData, setGetProfileApiData] = useState('');
@@ -103,79 +104,38 @@ const Account = () => {
         setGetProfileApiData(response?.data?.data);
         setBankDetailsData(response?.data?.data?.bank_details);
         setGetDocumentApiData(response?.data?.data?.document_details);
-        setGetAssetsApiData(response?.data?.data?.asset_details);
+        // setGetAssetsApiData(response?.data?.data?.asset_details);
         setLoader(false);
       } else {
         setLoader(false);
       }
     } catch (error) {
-      console.error('Error making POST request:', error);
+      console.log('Error making POST request:', error);
+      setLoader(false);
+    }
+  }
+  async function AssetsList() {
+    try {
+      // setLoader(true);
+      let token = await AsyncStorage.getItem('TOKEN');
+      const url = `${BASE_URL}/assets`;
+      const response = await getProfile(url, token);
+
+      if (response?.data?.status === true) {
+        setGetAssetsApiData(response?.data?.data);
+        setLoader(false);
+      } else {
+        setLoader(false);
+      }
+    } catch (error) {
+      console.log('Error making POST request:', error);
       setLoader(false);
     }
   }
   useEffect(() => {
     check();
+    AssetsList();
   }, []);
-  const historyDownload = item => {
-    if (item != null) {
-      setShow(true);
-      if (Platform.OS === 'ios' || Platform.OS == 'android') {
-        downloadHistory(item);
-      } else {
-        try {
-          PermissionsAndroid.request(
-            PermissionsAndroid.PERMISSIONS.WRITE_EXTERNAL_STORAGE,
-            {
-              title: 'storage title',
-              message: 'storage_permission',
-            },
-          ).then(granted => {
-            if (granted === PermissionsAndroid.RESULTS.GRANTED) {
-              console.log('Storage Permission Granted.');
-              setShow(false);
-
-              downloadHistory(item);
-            } else {
-              alert('storage_permission');
-              setShow(false);
-            }
-          });
-        } catch (err) {
-          //To handle permission related issue
-          console.log('error', err);
-          setloading(false);
-        }
-      }
-    } else {
-      alert('No record found!');
-      setShow(false);
-    }
-  };
-  const downloadHistory = async item => {
-    const {config, fs} = RNFetchBlob;
-    let PictureDir = fs.dirs.PictureDir;
-    let date = new Date();
-    let options = {
-      fileCache: true,
-      addAndroidDownloads: {
-        //Related to the Android only
-        useDownloadManager: true,
-        notification: true,
-        path:
-          PictureDir +
-          '/Report_Download' +
-          Math.floor(date.getTime() + date.getSeconds() / 2),
-        description: 'Risk Report Download',
-      },
-    };
-    config(options)
-      .fetch('GET', item)
-      .then(res => {
-        alert('Report Downloaded Successfully.');
-        setShow(false);
-      });
-  };
-
   if (loader) {
     return <AccountSkeleton />;
   }
@@ -215,7 +175,7 @@ const Account = () => {
             ) : (
               <Image
                 style={{
-                  height:90,
+                  height: 90,
                   width: 90,
                   // resizeMode: 'contain',
                   marginVertical: 5,
@@ -665,7 +625,7 @@ const Account = () => {
                               {fileExtension}
                             </Text>
                             <TouchableOpacity
-                              onPress={() => historyDownload(fileURL)}>
+                              onPress={() => Linking.openURL(fileURL)}>
                               <Text
                                 style={[
                                   styles.description,

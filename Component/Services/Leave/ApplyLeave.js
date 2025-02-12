@@ -10,13 +10,11 @@ import {
   Platform,
 } from 'react-native';
 import React, {useState, useEffect, useMemo, useContext} from 'react';
-import LinearGradient from 'react-native-linear-gradient';
 import {
   responsiveFontSize,
   responsiveHeight,
   responsiveWidth,
 } from 'react-native-responsive-dimensions';
-import {NavigationContainer} from '@react-navigation/native';
 import {Calendar, LocaleConfig} from 'react-native-calendars';
 import CheckBox from '@react-native-community/checkbox';
 import {
@@ -27,15 +25,11 @@ import {
 import {BASE_URL} from '../../../utils';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import {showMessage} from 'react-native-flash-message';
-import Reload from '../../../Reload';
 import {Dropdown} from 'react-native-element-dropdown';
-import axios from 'axios';
 import RadioGroup, {RadioButtonProps} from 'react-native-radio-buttons-group';
-import CardSkeletonBorder from '../../Skeleton/CardStyle/CardSkeletonBorder';
-import ProfileDetails from '../../Skeleton/ProfileDetails';
 import ApplyLeaveSkeleton from '../../Skeleton/ApplyLeaveSkeleton';
 import Themes from '../../Theme/Theme';
-import { ThemeContext } from '../../../Store/ConetxtApi.jsx/ConextApi';
+import {ThemeContext} from '../../../Store/ConetxtApi.jsx/ConextApi';
 
 const ApplyLeave = ({navigation}) => {
   const {currentTheme} = useContext(ThemeContext);
@@ -57,7 +51,7 @@ const ApplyLeave = ({navigation}) => {
   const radioButtons: RadioButtonProps[] = useMemo(
     () => [
       {
-        id: '1', 
+        id: '1',
         label: 'Morning',
         value: 'first_half',
         labelStyle: {color: '#fff'}, // Customize label style here
@@ -77,13 +71,13 @@ const ApplyLeave = ({navigation}) => {
         id: '1', // acts as primary key, should be unique and non-empty string
         label: 'Morning',
         value: 'option1',
-        labelStyle: {color:'#fff'}, // Customize label style here
+        labelStyle: {color: '#fff'}, // Customize label style here
       },
       {
         id: '2',
         label: 'Afternoon',
         value: 'option2',
-        labelStyle: {color:'#fff'}, // Customize label style here
+        labelStyle: {color: '#fff'}, // Customize label style here
       },
     ],
     [],
@@ -91,21 +85,21 @@ const ApplyLeave = ({navigation}) => {
   const radioButtons2: RadioButtonProps[] = useMemo(
     () => [
       {
-        id: '1', 
+        id: '1',
         label: 'Morning',
         value: 'option1',
-        labelStyle: {color:'#fff'}, 
+        labelStyle: {color: '#fff'},
       },
       {
         id: '2',
         label: 'Afternoon',
         value: 'option2',
-        labelStyle: {color:'#fff'}, 
+        labelStyle: {color: '#fff'},
       },
     ],
     [],
   );
-    console.log(selectedId1,selectedId2,'jjjjj')
+  console.log(selectedId1, selectedId2, 'jjjjj');
   const calculateDaysBetweenDates = () => {
     // Ensure startDate and endDate are valid dates
     if (!startDate || !endDate) {
@@ -128,11 +122,11 @@ const ApplyLeave = ({navigation}) => {
   const handlePress = type => {
     const currentDate = selected;
     if (type === 1) {
-      setStartDate(currentDate); 
+      setStartDate(currentDate);
     } else if (type === 2) {
-      setEndDate(currentDate); 
+      setEndDate(currentDate);
     }
-    setSelected(currentDate); 
+    setSelected(currentDate);
   };
   async function check() {
     try {
@@ -148,7 +142,7 @@ const ApplyLeave = ({navigation}) => {
         setLoader(false);
       }
     } catch (error) {
-      console.error('Error making POST request:', error);
+      console.log('Error making POST request:', error);
       setLoader(false);
     }
   }
@@ -214,29 +208,29 @@ const ApplyLeave = ({navigation}) => {
             type: 'success',
           });
           navigation.goBack();
-        
         } else {
-         
         }
       }
     } catch (error) {
-      console.error('Error making POST request:', error);
+      showMessage({
+        message: `${error.response.data.message}`,
+        type: 'danger',
+      });
       setLoader(false);
     }
   };
-     console.log(toggleCheckBox,'toggleCheckBox')
-
   return (
-    <SafeAreaView style={[styles.container,{backgroundColor:currentTheme.background_v2}]}>
+    <SafeAreaView
+      style={[styles.container, {backgroundColor: currentTheme.background_v2}]}>
       <View style={{alignSelf: 'center', marginTop: 15}}>
-        <Text style={styles.name}>Apply Leave</Text>
+        {/* <Text style={styles.name}>Apply Leave</Text> */}
       </View>
 
       <ScrollView
         style={{
           width: '100%',
           height: '100%',
-          backgroundColor:currentTheme.background,
+          backgroundColor: currentTheme.background,
           borderTopLeftRadius: 40,
           marginTop: responsiveHeight(3),
           borderTopRightRadius: 40,
@@ -281,7 +275,7 @@ const ApplyLeave = ({navigation}) => {
                   </Text>
                 </TouchableOpacity>
                 <Image
-                  style={{height: 50, width: 50,tintColor:currentTheme.text}}
+                  style={{height: 50, width: 50, tintColor: currentTheme.text}}
                   source={require('../../../assets/ApplyLeave/arrow-down.png')}
                 />
                 <TouchableOpacity
@@ -308,7 +302,7 @@ const ApplyLeave = ({navigation}) => {
                 </TouchableOpacity>
                 <Text
                   style={{
-                    color:currentTheme.text,
+                    color: currentTheme.text,
                     fontSize: 18,
                     marginTop: responsiveHeight(1),
                   }}>
@@ -320,7 +314,7 @@ const ApplyLeave = ({navigation}) => {
                   style={{
                     borderTopLeftRadius: 50,
                     borderTopRightRadius: 50,
-                    backgroundColor:currentTheme.background,
+                    backgroundColor: currentTheme.background,
                     elevation: 7,
                     width: responsiveWidth(70),
                   }}
@@ -372,13 +366,16 @@ const ApplyLeave = ({navigation}) => {
                 disabled={false}
                 value={toggleCheckBox}
                 onValueChange={newValue => setToggleCheckBox(newValue)}
-                tintColors={{true: (color = currentTheme.text), false: (color = currentTheme.text)}}
+                tintColors={{
+                  true: (color = currentTheme.text),
+                  false: (color = currentTheme.text),
+                }}
               />
               <Text
                 style={{
                   alignSelf: 'center',
                   fontSize: 16,
-                  color:currentTheme.text,
+                  color: currentTheme.text,
                   marginHorizontal: Platform.OS == 'ios' ? 8 : null,
                 }}>
                 Is half day
@@ -404,12 +401,12 @@ const ApplyLeave = ({navigation}) => {
                 <View
                   style={{
                     borderRadius: 10,
-                    backgroundColor:currentTheme.background_v2,
+                    backgroundColor: currentTheme.background_v2,
                     padding: 5,
                     marginHorizontal: responsiveWidth(2),
                   }}>
                   <Text style={{color: Themes == 'dark' ? '#fff' : '#fff'}}>
-                  From Half day
+                    From Half day
                   </Text>
                   <RadioGroup
                     containerStyle={{flexDirection: 'row'}}
@@ -418,7 +415,7 @@ const ApplyLeave = ({navigation}) => {
                     selectedId={selectedId1}
                   />
                   <Text style={{color: Themes == 'dark' ? '#fff' : '#fff'}}>
-                  To Half day
+                    To Half day
                   </Text>
                   <RadioGroup
                     containerStyle={{flexDirection: 'row'}}
@@ -462,7 +459,7 @@ const ApplyLeave = ({navigation}) => {
                     setValue1(item.id);
                   }}
                   placeholderStyle={{
-                    color: Themes == 'dark' ? '#000' : '#000', 
+                    color: Themes == 'dark' ? '#000' : '#000',
                   }}
                   itemTextStyle={{color: Themes == 'dark' ? '#000' : '#000'}}
                 />
@@ -491,7 +488,7 @@ const ApplyLeave = ({navigation}) => {
               onPress={() => handleSubmit()}
               style={{
                 marginBottom: 5,
-                backgroundColor:currentTheme.background_v2,
+                backgroundColor: currentTheme.background_v2,
                 padding: 18,
                 width: '90%',
                 alignSelf: 'center',

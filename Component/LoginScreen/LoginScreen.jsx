@@ -10,6 +10,7 @@ import {
   Alert,
   Platform,
 } from 'react-native';
+import messaging from '@react-native-firebase/messaging';
 import React, { useState, useEffect } from 'react';
 import { useNavigation } from '@react-navigation/native';
 import { TextInput } from 'react-native-gesture-handler';
@@ -35,6 +36,26 @@ const LoginScreen = () => {
   const toggleShowPassword = () => {
     setShowPassword(!showPassword);
   };
+  async function requestUserPermission() {
+    const authStatus = await messaging().requestPermission();
+    const enabled =
+      authStatus === messaging.AuthorizationStatus.AUTHORIZED ||
+      authStatus === messaging.AuthorizationStatus.PROVISIONAL;
+
+    if (enabled) {
+      getFCMToken()
+    }
+  }
+
+  async function getFCMToken() {
+    // console.log("yashu")
+    const token = await messaging().getToken();
+    console.log(token, 'fcm token');
+  }
+
+  useEffect(() => {
+    requestUserPermission();
+  }, [])
 
   const loginSubmit = async () => {
     try {

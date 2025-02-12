@@ -21,7 +21,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import {getLeaveType} from '../../../APINetwork/ComponentApi';
 import HomeSkeleton from '../../Skeleton/HomeSkeleton';
 const Leaves = ({navigation}) => {
-  const {currentTheme} = useContext(ThemeContext);
+  const {currentTheme,theme} = useContext(ThemeContext);
   const [list, setList] = useState(null);
   const showData = [
     {
@@ -29,21 +29,21 @@ const Leaves = ({navigation}) => {
       uri: require('../../../assets/HomeScreen/calendar.png'),
       name: 'View',
       num: 'Calendar',
-      backgroundcolor: '#44D5FB',
+      backgroundcolor: theme=='light'?'#44D5FB':'#242B3A',
     },
     {
       id: 2,
       uri: require('../../../assets/HomeScreen/holiday.png'),
       name: 'View',
       num: 'Holiday',
-      backgroundcolor: '#F9B7D5',
+      backgroundcolor: theme=='light'?'#F9B7D5':'#242B3A',
     },
     {
       id: 3,
       uri: require('../../../assets/HomeScreen/leave.png'),
       name: 'Leave',
       num: 'Balance',
-      backgroundcolor: '#BAAEFC',
+      backgroundcolor: theme=='light'?'#BAAEFC':'#242B3A',
     },
   ];
   async function check() {
@@ -90,10 +90,10 @@ const Leaves = ({navigation}) => {
           style={{height: 60, width: 60, marginBottom: 10}}
           source={item.uri}
         />
-        <Text style={{marginBottom: 2, fontSize: 16, color: '#000'}}>
+        <Text style={{marginBottom: 2, fontSize: 16, color: currentTheme.text}}>
           {item.name}
         </Text>
-        <Text style={{fontSize: 16, color: '#000'}}>{item.num}</Text>
+        <Text style={{fontSize: 16, color: currentTheme.text}}>{item.num}</Text>
       </View>
     </View>
   );

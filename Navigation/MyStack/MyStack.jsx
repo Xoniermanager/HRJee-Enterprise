@@ -97,7 +97,18 @@ const MyStack = () => {
       <Stack.Screen
         name="ApplyLeave"
         component={ApplyLeave}
-        options={{headerShown: false}}
+        options={{
+          title: 'Apply Leave',
+
+          headerBackTitleVisible: false,
+          headerStyle: {
+            backgroundColor: currentTheme.background_v2,
+          },
+          headerTintColor: '#fff',
+          headerTitleStyle: {
+            fontWeight: '500',
+          },
+        }}
       />
       <Stack.Screen
         name="Holiday"

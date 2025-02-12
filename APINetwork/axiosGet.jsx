@@ -40,10 +40,10 @@ const axiosGet = async (url, token, navigation) => {
           message = error.response.data.message;
         }
 
-        showMessage({
-          message: message,
-          type: "danger",
-        });
+        // showMessage({
+        //   message: message,
+        //   type: "danger",
+        // });
       }
     } else if (error.request) {
       // Network error

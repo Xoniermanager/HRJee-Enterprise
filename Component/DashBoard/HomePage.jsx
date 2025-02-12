@@ -159,48 +159,54 @@ const HomePage = ({navigation}) => {
     }
   }
 
-  async function getTodayAttendance() {
+  async function CheckDailyAttendances() {
     try {
       setLoader(true);
       settimerOn(false);
       let token = await AsyncStorage.getItem('TOKEN');
       const url = `${BASE_URL}/get-today-attendance`;
       const response = await gettodayattendance(url, token);
-      if (response?.data?.status == true) {
-        const data = response.data.todayAttendanceDetails;
-        if (
+      if (response?.data?.status) {
+        const data = response?.data?.todayAttendanceDetails;
+        if(data==null){
+          setinTime(null);
+          setOutTime(null);
+          setactivityTime(null);
+          setloading(false);
+        }
+       else if (
           response?.data?.todayAttendanceDetails?.punch_in != '' &&
           response?.data?.todayAttendanceDetails?.punch_out == null
         ) {
+       
           setTodayAttendanceDetails(response?.data?.todayAttendanceDetails);
           setinTime(response?.data?.todayAttendanceDetails?.punch_in);
           setOutTime(response?.data?.todayAttendanceDetails?.punch_out);
           settimerOn(true);
           setloading(false);
-        } else {
-          if (data.punch_in != '' && data.punch_out != '') {
-            settimerOn(false);
-            setinTime(data.punch_in);
-            setOutTime(data.punch_out);
-            setloading(false);
+        } else  if (data.punch_in != '' && data.punch_out != '') {
+          console.log("2")
+          settimerOn(false);
+          setinTime(data.punch_in);
+          setOutTime(data.punch_out);
+          setloading(false);
 
-            var timeEnd1 = moment(data.punch_out);
-            const startDate = moment(data.punch_in);
-            const timeEnd = moment(timeEnd1);
-            const diff = timeEnd.diff(startDate);
-            const diffDuration = moment.duration(diff);
-            var days = diffDuration.days();
-            var hours = diffDuration.hours();
-            var minutes = diffDuration.minutes();
-            var seconds = diffDuration.seconds();
-            var time =
-              (hours < 10 ? '0' + hours : hours) +
-              ':' +
-              (minutes < 10 ? '0' + minutes : minutes) +
-              ':' +
-              (seconds < 10 ? '0' + seconds : seconds);
-            setfullTime(time);
-          }
+          var timeEnd1 = moment(data.punch_out);
+          const startDate = moment(data.punch_in);
+          const timeEnd = moment(timeEnd1);
+          const diff = timeEnd.diff(startDate);
+          const diffDuration = moment.duration(diff);
+          var days = diffDuration.days();
+          var hours = diffDuration.hours();
+          var minutes = diffDuration.minutes();
+          var seconds = diffDuration.seconds();
+          var time =
+            (hours < 10 ? '0' + hours : hours) +
+            ':' +
+            (minutes < 10 ? '0' + minutes : minutes) +
+            ':' +
+            (seconds < 10 ? '0' + seconds : seconds);
+          setfullTime(time);
         }
       } else {
         setinTime(null);
@@ -221,6 +227,7 @@ const HomePage = ({navigation}) => {
       const response = await gettodayattendance(url, token);
 
       if (response?.data?.status === true) {
+        console.log(response?.data?.data, 'hello');
         setLoader(false);
         setLastAttendanceDetails(response?.data?.data);
       } else {
@@ -251,7 +258,7 @@ const HomePage = ({navigation}) => {
   }
   useEffect(() => {
     check();
-    getTodayAttendance();
+    CheckDailyAttendances();
     checkleave();
     getLastAttendance();
   }, [ISFoucs]);
@@ -337,7 +344,7 @@ const HomePage = ({navigation}) => {
   const daysBetween = calculateDaysBetweenDates();
 
   const handlePress = type => {
-    const currentDate = selected; // Get the currently selected date
+    const currentDate = selected;
     if (type === 1) {
       setStartDate(currentDate); // Set start date
     } else if (type === 2) {
@@ -404,23 +411,25 @@ const HomePage = ({navigation}) => {
       const url = `${BASE_URL}/employee/make/attendance`;
       let token = await AsyncStorage.getItem('TOKEN');
       const response = await punchin(url, token);
-      if (response?.data?.status == true) {
+      CheckDailyAttendances()
+      if (response?.data?.status) {
+        CheckDailyAttendances()
         setLoader(false);
+        setloading(false);
         setPunch(response?.data);
         setDisabledBtn(false);
-        getTodayAttendance();
         showMessage({
           message: `${response?.data?.message}`,
           type: 'success',
         });
-
-     
       } else {
         setLoader(false);
+        setloading(false);
         setDisabledBtn(false);
       }
     } catch (error) {
       console.error('Error making POST request:', error);
+      setloading(false);
       setDisabledBtn(false);
       setLoader(false);
     }
@@ -486,7 +495,6 @@ const HomePage = ({navigation}) => {
     return string.charAt(0).toUpperCase() + string.slice(1);
   }
   const getLastAttendanceDaily = () => {
-    console.log(lastAttendanceDetails, 'if');
     if (lastAttendanceDetails == 'No Last Attendance Available') {
       return (
         <View>
@@ -501,8 +509,7 @@ const HomePage = ({navigation}) => {
         </View>
       );
     } else {
-      console.log(lastAttendanceDetails, 'else');
-      lastAttendanceDetails?.map((elements, index) => {
+      return lastAttendanceDetails?.map((elements, index) => {
         return (
           <View
             key={index}
@@ -613,13 +620,20 @@ const HomePage = ({navigation}) => {
           setEndDate('');
           navigation.navigate('Leaves');
         } else {
+
         }
       }
     } catch (error) {
-      console.error('Error making POST request:', error);
+      // console.error('Error making POST request:', error);
+      showMessage({
+        message: `${error.response.data.message}`,
+        type: 'danger',
+      });
+      console.log(error.response.data.message)
       setLoader(false);
     }
   };
+  console.log(inTime,outTime,'hello')
 
   return (
     <>

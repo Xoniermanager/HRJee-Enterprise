@@ -20,8 +20,11 @@ import {BASE_URL} from '../../../utils';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import {getLeaveType} from '../../../APINetwork/ComponentApi';
 import HomeSkeleton from '../../Skeleton/HomeSkeleton';
+import {useIsFocused} from '@react-navigation/native';
+import PullToRefresh from '../../../PullToRefresh';
 const Leaves = ({navigation}) => {
-  const {currentTheme,theme} = useContext(ThemeContext);
+  const {currentTheme, theme} = useContext(ThemeContext);
+  const isFocused = useIsFocused;
   const [list, setList] = useState(null);
   const showData = [
     {
@@ -29,21 +32,21 @@ const Leaves = ({navigation}) => {
       uri: require('../../../assets/HomeScreen/calendar.png'),
       name: 'View',
       num: 'Calendar',
-      backgroundcolor: theme=='light'?'#44D5FB':'#242B3A',
+      backgroundcolor: theme == 'light' ? '#44D5FB' : '#242B3A',
     },
     {
       id: 2,
       uri: require('../../../assets/HomeScreen/holiday.png'),
       name: 'View',
       num: 'Holiday',
-      backgroundcolor: theme=='light'?'#F9B7D5':'#242B3A',
+      backgroundcolor: theme == 'light' ? '#F9B7D5' : '#242B3A',
     },
     {
       id: 3,
       uri: require('../../../assets/HomeScreen/leave.png'),
       name: 'Leave',
       num: 'Balance',
-      backgroundcolor: theme=='light'?'#BAAEFC':'#242B3A',
+      backgroundcolor: theme == 'light' ? '#BAAEFC' : '#242B3A',
     },
   ];
   async function check() {
@@ -60,11 +63,10 @@ const Leaves = ({navigation}) => {
       console.error('Error making POST request:', error);
     }
   }
-  
 
   useEffect(() => {
     check();
-  }, []);
+  }, [isFocused]);
   if (list == null) {
     return <HomeSkeleton />;
   }
@@ -74,7 +76,7 @@ const Leaves = ({navigation}) => {
     const timeDifference = toDate.getTime() - fromDate.getTime();
     const dayDifference = timeDifference / (1000 * 3600 * 24) + 1;
     return dayDifference;
-}
+  }
   const renderServicesList = ({item}) => (
     <View
       style={{
@@ -139,12 +141,12 @@ const Leaves = ({navigation}) => {
               size={30}
               color="#fff"
             />
-            <View style={{marginHorizontal:8}}> 
+            <View style={{marginHorizontal: 8}}>
               <Text style={[styles.leaveText, {color: currentTheme.text}]}>
                 {item?.from} - {item?.to}
               </Text>
               <Text style={[styles.leaveText, {color: currentTheme.text}]}>
-               {getLeaveDays(item?.from, item?.to)} Day - Vacation Leave
+                {getLeaveDays(item?.from, item?.to)} Day - {item?.reason}
               </Text>
             </View>
             <View
@@ -162,9 +164,6 @@ const Leaves = ({navigation}) => {
   return (
     <SafeAreaView
       style={[styles.container, {backgroundColor: currentTheme.background_v2}]}>
-      <View style={{alignSelf: 'center', marginTop: 15}}>
-        <Text style={styles.name}>Leaves</Text>
-      </View>
       <ScrollView
         style={{
           width: '100%',
@@ -175,6 +174,14 @@ const Leaves = ({navigation}) => {
           borderTopRightRadius: 40,
         }}>
         <View style={{margin: 18}}>
+          <TouchableOpacity
+            onPress={() => navigation.navigate('ApplyLeave')}
+            style={[
+              styles.applyButton,
+              {backgroundColor: currentTheme.background_v2},
+            ]}>
+            <Text style={styles.applyButtonText}>Apply Leave</Text>
+          </TouchableOpacity>
           <View style={styles.menu}>
             <FlatList
               style={{alignSelf: 'center'}}
@@ -198,15 +205,6 @@ const Leaves = ({navigation}) => {
               keyExtractor={item => item.id}
             />
           </View>
-
-          <TouchableOpacity
-            onPress={() => navigation.navigate('ApplyLeave')}
-            style={[
-              styles.applyButton,
-              {backgroundColor: currentTheme.background_v2},
-            ]}>
-            <Text style={styles.applyButtonText}>Apply Leave</Text>
-          </TouchableOpacity>
         </View>
       </ScrollView>
     </SafeAreaView>
@@ -289,11 +287,11 @@ const styles = StyleSheet.create({
     borderLeftColor: 'red',
   },
   applyButton: {
-    marginTop: 20,
     padding: 15,
     borderRadius: 10,
     backgroundColor: '#0000ff',
     alignItems: 'center',
+    alignSelf: 'flex-end',
   },
   applyButtonText: {
     color: '#ffffff',

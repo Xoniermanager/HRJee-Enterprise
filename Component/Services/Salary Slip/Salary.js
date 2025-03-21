@@ -9,19 +9,56 @@ import {
   TextInput,
   FlatList,
 } from 'react-native';
-import React, {useState} from 'react';
+import React, {useEffect, useState} from 'react';
+import DateTimePicker from '@react-native-community/datetimepicker';
 import LinearGradient from 'react-native-linear-gradient';
 import {
   responsiveFontSize,
   responsiveHeight,
   responsiveWidth,
 } from 'react-native-responsive-dimensions';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { BASE_URL } from '../../../utils';
+import { SalarySlip } from '../../../APINetwork/ComponentApi';
+import { showMessage } from 'react-native-flash-message';
+import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 const Salary = ({navigation}) => {
   const arr = [1, 2, 3, 4, 5, 6, 7];
+  const [list,setList]=useState();
   const [expandedprofile, setExpandedProfile] = useState(false);
+  const [openStartDate, setOpenStartDate] = useState(false);
+  const [startDate, setStartDate] = useState(new Date());
+  const [openEndDate, setOpenEndDate] = useState(false);
+  const [endDate, setEndDate] = useState(new Date());
   const toggleExpandedProfile = () => {
     setExpandedProfile(!expandedprofile);
   };
+  const handleDateChange = (event, selectedDate) => {
+    setOpenStartDate(false);
+    setStartDate(selectedDate);
+  };
+  const handleDateChangeEnd = (event, selectedDate) => {
+    setOpenEndDate(false);
+    setEndDate(selectedDate);
+  };
+    const SalarySliplist=async()=>{
+      const token=await AsyncStorage.getItem('TOKEN');
+      const url=`${BASE_URL}/generatePaySlip`
+      const response=await SalarySlip(url,token);
+      if(response.data.status){
+        setList(response.data.data)
+      }
+      else {
+        setList([])
+        showMessage({
+          message: response.data.message,
+          type: 'danger',
+        });
+      }
+    }
+    useEffect(()=>{
+      SalarySliplist();
+    },[])
   const renderSalrySlip = ({item}) => {
     return (
       <View style={{flexDirection: 'row'}}>
@@ -56,21 +93,19 @@ const Salary = ({navigation}) => {
             padding: 10,
             elevation: 7,
             borderRadius: 10,
+            width:responsiveWidth(80),
+            justifyContent:'space-between'
+
           }}>
           <Text style={{color: '#0E0E64', fontSize: 18, textAlign: 'center'}}>
             Nov 2023
           </Text>
-          <TouchableOpacity
-            style={{
-              marginLeft: responsiveWidth(25),
-              backgroundColor: '#0528a5',
-              padding: 5,
-              width: 80,
-              borderRadius: 50,
-            }}>
-            <Text style={{color: '#fff', textAlign: 'center', fontSize: 16}}>
-              Open
-            </Text>
+          <TouchableOpacity style={{marginRight:15}}>
+            <MaterialCommunityIcons
+                          name="download"
+                          size={30}
+                          color={'#000'}
+                        />
           </TouchableOpacity>
         </View>
       </View>
@@ -82,9 +117,7 @@ const Salary = ({navigation}) => {
         style={{
           marginTop: 15,
         }}>
-        <View style={{alignSelf: 'center'}}>
-          <Text style={styles.name}>Salary Slip</Text>
-        </View>
+       
 
         <ScrollView
           style={{
@@ -96,7 +129,7 @@ const Salary = ({navigation}) => {
             borderTopRightRadius: 40,
           }}>
           <View style={{marginHorizontal: responsiveWidth(5)}}>
-            <Text
+            {/* <Text
               style={{
                 color: '#0E0E64',
                 marginVertical: 10,
@@ -144,9 +177,9 @@ const Salary = ({navigation}) => {
                       fontSize: 18,
                       textAlign: 'center',
                     }}>
-                    2024-03-07
+                    {startDate.toISOString().split('T')[0]}
                   </Text>
-                  <TouchableOpacity onPress={() => alert('Hello')}>
+                  <TouchableOpacity onPress={() =>setOpenStartDate(true)}>
                     <Image
                       style={{
                         marginHorizontal: 10,
@@ -193,9 +226,9 @@ const Salary = ({navigation}) => {
                       fontSize: 18,
                       textAlign: 'center',
                     }}>
-                    2024-03-07
+                   {endDate.toISOString().split('T')[0]}
                   </Text>
-                  <TouchableOpacity onPress={() => alert('Hello')}>
+                  <TouchableOpacity onPress={() => setOpenEndDate(true)}>
                     <Image
                       style={{
                         marginHorizontal: 10,
@@ -209,7 +242,7 @@ const Salary = ({navigation}) => {
                   </TouchableOpacity>
                 </View>
               </View>
-            </View>
+            </View> */}
             <Text
               style={{
                 color: '#0E0E64',
@@ -225,8 +258,29 @@ const Salary = ({navigation}) => {
               showsVerticalScrollIndicator={false}
               renderItem={renderSalrySlip}
               keyExtractor={item => item.id}
+              // ListEmptyComponent={()=>
+              // <View style={{}}>
+              //   <Text style={{textAlign:'center',fontSize:responsiveFontSize(2),fontWeight:'500',color:'#000'}}>No Data Found</Text>
+              //   </View>
+              // }
             />
           </View>
+          {openStartDate && (
+          <DateTimePicker
+            value={startDate}
+            mode="date"
+            display="default"
+            onChange={handleDateChange}
+          />
+        )}
+         {openEndDate && (
+          <DateTimePicker
+            value={endDate}
+            mode="date"
+            display="default"
+            onChange={handleDateChangeEnd}
+          />
+        )}
         </ScrollView>
       </View>
     </SafeAreaView>

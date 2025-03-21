@@ -39,6 +39,7 @@ import moment from 'moment';
 import AntDesign from 'react-native-vector-icons/AntDesign';
 import {ThemeContext} from '../../Store/ConetxtApi.jsx/ConextApi';
 import {useIsFocused} from '@react-navigation/native';
+import PullToRefresh from '../../PullToRefresh';
 const HomePage = ({navigation}) => {
   const [monthDay, setMonth] = useState('');
   const ISFoucs = useIsFocused();
@@ -168,24 +169,22 @@ const HomePage = ({navigation}) => {
       const response = await gettodayattendance(url, token);
       if (response?.data?.status) {
         const data = response?.data?.todayAttendanceDetails;
-        if(data==null){
+        if (data == null) {
           setinTime(null);
           setOutTime(null);
           setactivityTime(null);
           setloading(false);
-        }
-       else if (
+        } else if (
           response?.data?.todayAttendanceDetails?.punch_in != '' &&
           response?.data?.todayAttendanceDetails?.punch_out == null
         ) {
-       
           setTodayAttendanceDetails(response?.data?.todayAttendanceDetails);
           setinTime(response?.data?.todayAttendanceDetails?.punch_in);
           setOutTime(response?.data?.todayAttendanceDetails?.punch_out);
           settimerOn(true);
           setloading(false);
-        } else  if (data.punch_in != '' && data.punch_out != '') {
-          console.log("2")
+        } else if (data.punch_in != '' && data.punch_out != '') {
+          console.log('2');
           settimerOn(false);
           setinTime(data.punch_in);
           setOutTime(data.punch_out);
@@ -262,7 +261,12 @@ const HomePage = ({navigation}) => {
     checkleave();
     getLastAttendance();
   }, [ISFoucs]);
-
+  const handleRefresh = async () => {
+    check();
+    CheckDailyAttendances();
+    checkleave();
+    getLastAttendance();
+  };
   const radioButtons: RadioButtonProps[] = useMemo(
     () => [
       {
@@ -411,9 +415,9 @@ const HomePage = ({navigation}) => {
       const url = `${BASE_URL}/employee/make/attendance`;
       let token = await AsyncStorage.getItem('TOKEN');
       const response = await punchin(url, token);
-      CheckDailyAttendances()
+      CheckDailyAttendances();
       if (response?.data?.status) {
-        CheckDailyAttendances()
+        CheckDailyAttendances();
         setLoader(false);
         setloading(false);
         setPunch(response?.data);
@@ -620,7 +624,6 @@ const HomePage = ({navigation}) => {
           setEndDate('');
           navigation.navigate('Leaves');
         } else {
-
         }
       }
     } catch (error) {
@@ -629,160 +632,191 @@ const HomePage = ({navigation}) => {
         message: `${error.response.data.message}`,
         type: 'danger',
       });
-      console.log(error.response.data.message)
+      console.log(error.response.data.message);
       setLoader(false);
     }
   };
-  console.log(inTime,outTime,'hello')
+  console.log(inTime, outTime, 'hello');
 
   return (
     <>
       <View style={{flex: 1, backgroundColor: currentTheme.background}}>
-        <View style={styles.parent}>
-          <View
-            style={[
-              styles.child,
-              {backgroundColor: currentTheme.background_v2},
-            ]}>
+        <PullToRefresh onRefresh={handleRefresh}>
+          <View style={styles.parent}>
             <View
-              style={{
-                flexDirection: 'row',
-                alignItems: 'center',
-                marginLeft: 15,
-              }}>
-              {getProfileApiData?.profile_image == '' ||
-              getProfileApiData?.profile_image == [] ||
-              getProfileApiData?.profile_image == null ? (
-                <Image
-                  style={{
-                    height: 120,
-                    width: 120,
-                    resizeMode: 'contain',
-                    alignSelf: 'center',
-                  }}
-                  source={require('../../assets/HomeScreen/profile.png')}
-                />
-              ) : (
-                <Image
-                  style={{
-                    height: 90,
-                    width: 90,
-                    // resizeMode: 'contain',
-                    alignSelf: 'center',
-                    borderRadius: 50,
-                  }}
-                  source={{uri: getProfileApiData?.profile_image}}
-                />
-              )}
-              <View style={{marginHorizontal: 15}}>
-                {/* <Switch
+              style={[
+                styles.child,
+                {backgroundColor: currentTheme.background_v2},
+              ]}>
+              <View
+                style={{
+                  flexDirection: 'row',
+                  alignItems: 'center',
+                  marginLeft: 15,
+                }}>
+                {getProfileApiData?.profile_image == '' ||
+                getProfileApiData?.profile_image == [] ||
+                getProfileApiData?.profile_image == null ? (
+                  <Image
+                    style={{
+                      height: 120,
+                      width: 120,
+                      resizeMode: 'contain',
+                      alignSelf: 'center',
+                    }}
+                    source={require('../../assets/HomeScreen/profile.png')}
+                  />
+                ) : (
+                  <Image
+                    style={{
+                      height: 90,
+                      width: 90,
+                      // resizeMode: 'contain',
+                      alignSelf: 'center',
+                      borderRadius: 50,
+                    }}
+                    source={{uri: getProfileApiData?.profile_image}}
+                  />
+                )}
+                <View style={{marginHorizontal: 15}}>
+                  {/* <Switch
                   trackColor={{false: '#767577', true: '#81B0FF'}}
                   thumbColor={isEnabled ? '#F5DD4B' : '#F4F3F4'}
                   ios_backgroundColor="#3E3E3E"
                   onValueChange={toggleTheme}
                   value={isEnabled}
                 /> */}
-                <Text style={{color: '#fff', fontSize: 15, fontWeight: 'bold'}}>
-                  {getProfileApiData?.name}
-                </Text>
-                <Text style={{color: '#fff', fontSize: 18}}>
-                  {formattedDate}
-                </Text>
+                  <Text
+                    style={{color: '#fff', fontSize: 15, fontWeight: 'bold'}}>
+                    {getProfileApiData?.name}
+                  </Text>
+                  <Text style={{color: '#fff', fontSize: 18}}>
+                    {formattedDate}
+                  </Text>
+                </View>
               </View>
             </View>
           </View>
-        </View>
 
-        {/* This is Services list */}
-        <ScrollView showsVerticalScrollIndicator={false}>
-          <View
-            style={{
-              marginBottom: 100,
-              marginHorizontal: 10,
-              alignSelf: 'center',
-              marginTop: responsiveHeight(2),
-            }}>
-            <FlatList
-              horizontal
-              showsHorizontalScrollIndicator={false}
-              data={menuaccesssList}
-              renderItem={renderServicesList}
-              keyExtractor={item => item.id}
-            />
+          {/* This is Services list */}
+          <ScrollView showsVerticalScrollIndicator={false}>
             <View
               style={{
-                marginBottom: responsiveHeight(1),
-                padding: 20,
-                backgroundColor: currentTheme.background_v2,
-                borderColor: currentTheme.background_v2,
-                borderRadius: 20,
-                borderWidth: 5,
-                flexDirection: 'row',
-                justifyContent: 'space-between',
-                marginTop: 15,
+                marginBottom: 100,
+                marginHorizontal: 10,
+                alignSelf: 'center',
+                marginTop: responsiveHeight(2),
               }}>
-              <View>
-                <Text
-                  style={{
-                    color: currentTheme.text_v2,
-                    fontSize: 18,
-                    marginBottom: 5,
-                    marginTop: 5,
-                  }}>
-                  {days[d.getDay()]}
-                </Text>
-                <Text
-                  style={{
-                    color: currentTheme.text_v2,
-                    fontSize: 18,
-                    marginTop: 5,
-                  }}>
-                  {d.getDate() +
-                    ' ' +
-                    monthNames[d.getMonth()] +
-                    ' ' +
-                    d.getFullYear()}
-                </Text>
-              </View>
+              <FlatList
+                horizontal
+                showsHorizontalScrollIndicator={false}
+                data={menuaccesssList}
+                renderItem={renderServicesList}
+                keyExtractor={item => item.id}
+              />
               <View
                 style={{
-                  borderColor: currentTheme.text_v2,
-                  borderWidth: 1,
-                }}></View>
-              <View>
-                {inTime && !outTime && (
-                  <>
-                    <View
-                      style={{
-                        flexDirection: 'row',
-                        marginBottom: 8,
-                      }}>
-                      <AntDesign
-                        name="rightcircle"
+                  marginBottom: responsiveHeight(1),
+                  padding: 20,
+                  backgroundColor: currentTheme.background_v2,
+                  borderColor: currentTheme.background_v2,
+                  borderRadius: 20,
+                  borderWidth: 5,
+                  flexDirection: 'row',
+                  justifyContent: 'space-between',
+                  marginTop: 15,
+                }}>
+                <View>
+                  <Text
+                    style={{
+                      color: currentTheme.text_v2,
+                      fontSize: 18,
+                      marginBottom: 5,
+                      marginTop: 5,
+                    }}>
+                    {days[d.getDay()]}
+                  </Text>
+                  <Text
+                    style={{
+                      color: currentTheme.text_v2,
+                      fontSize: 18,
+                      marginTop: 5,
+                    }}>
+                    {d.getDate() +
+                      ' ' +
+                      monthNames[d.getMonth()] +
+                      ' ' +
+                      d.getFullYear()}
+                  </Text>
+                </View>
+                <View
+                  style={{
+                    borderColor: currentTheme.text_v2,
+                    borderWidth: 1,
+                  }}></View>
+                <View>
+                  {inTime && !outTime && (
+                    <>
+                      <View
                         style={{
-                          fontSize: 23,
-                          color: '#fff',
-                        }}
-                      />
-                      <Text
-                        style={{
-                          color: currentTheme.text_v2,
-                          fontSize: 18,
-                          textAlign: 'center',
-                          marginHorizontal: 10,
+                          flexDirection: 'row',
+                          marginBottom: 8,
                         }}>
-                        {activityTime}
-                      </Text>
-                    </View>
+                        <AntDesign
+                          name="rightcircle"
+                          style={{
+                            fontSize: 23,
+                            color: '#fff',
+                          }}
+                        />
+                        <Text
+                          style={{
+                            color: currentTheme.text_v2,
+                            fontSize: 18,
+                            textAlign: 'center',
+                            marginHorizontal: 10,
+                          }}>
+                          {activityTime}
+                        </Text>
+                      </View>
+                      <TouchableOpacity
+                        onPress={() => handleLogout()}
+                        style={{
+                          backgroundColor: currentTheme.buttonText,
+                          borderRadius: 20,
+                          height: 40,
+                          justifyContent: 'center',
+                          width: 120,
+                          height: 40,
+                        }}>
+                        {loading ? (
+                          <ActivityIndicator color="#0E0E64" />
+                        ) : (
+                          <Text
+                            style={{
+                              textAlign: 'center',
+                              color: currentTheme.text,
+                              fontSize: 16,
+                              textAlign: 'center',
+                            }}>
+                            Punch Out
+                          </Text>
+                        )}
+                      </TouchableOpacity>
+                    </>
+                  )}
+
+                  {!inTime && !outTime && (
                     <TouchableOpacity
-                      onPress={() => handleLogout()}
+                      onPress={() => Punch_IN_Out()}
+                      disabled={disabledBtn == true ? true : false}
                       style={{
                         backgroundColor: currentTheme.buttonText,
                         borderRadius: 20,
                         height: 40,
                         justifyContent: 'center',
                         width: 120,
-                        height: 40,
+                        marginTop: 10,
                       }}>
                       {loading ? (
                         <ActivityIndicator color="#0E0E64" />
@@ -791,149 +825,52 @@ const HomePage = ({navigation}) => {
                           style={{
                             textAlign: 'center',
                             color: currentTheme.text,
-                            fontSize: 16,
+                            fontSize: 18,
                             textAlign: 'center',
                           }}>
-                          Punch Out
+                          Punch In
                         </Text>
                       )}
                     </TouchableOpacity>
-                  </>
-                )}
+                  )}
 
-                {!inTime && !outTime && (
-                  <TouchableOpacity
-                    onPress={() => Punch_IN_Out()}
-                    disabled={disabledBtn == true ? true : false}
-                    style={{
-                      backgroundColor: currentTheme.buttonText,
-                      borderRadius: 20,
-                      height: 40,
-                      justifyContent: 'center',
-                      width: 120,
-                      marginTop: 10,
-                    }}>
-                    {loading ? (
-                      <ActivityIndicator color="#0E0E64" />
-                    ) : (
-                      <Text
+                  {inTime && outTime && (
+                    <>
+                      <View
                         style={{
-                          textAlign: 'center',
-                          color: currentTheme.text,
-                          fontSize: 18,
-                          textAlign: 'center',
+                          flexDirection: 'row',
+                          justifyContent: 'center',
                         }}>
-                        Punch In
-                      </Text>
-                    )}
-                  </TouchableOpacity>
-                )}
-
-                {inTime && outTime && (
-                  <>
-                    <View
-                      style={{
-                        flexDirection: 'row',
-                        justifyContent: 'center',
-                      }}>
-                      <Text
-                        style={{
-                          color: '#00f0ff',
-                          fontSize: 18,
-                          textAlign: 'center',
-                          marginHorizontal: 10,
-                          marginBottom: 5,
-                          marginTop: 5,
-                          marginTop: 5,
-                        }}>
-                        {fullTime}
-                      </Text>
-                    </View>
-                    <Text style={{color: 'red', marginTop: 5, fontSize: 18}}>
-                      Total Time Elapsed
-                    </Text>
-                  </>
-                )}
-              </View>
-            </View>
-
-            {/* This is apply leave  */}
-            <View>
-              <View
-                style={{
-                  backgroundColor: '#AA9AFD',
-                  marginTop: responsiveHeight(1),
-                  borderTopLeftRadius: 10,
-                  borderBottomLeftRadius: expandedapplyleave == true ? 0 : 10,
-                  borderTopRightRadius: 10,
-                  borderBottomRightRadius: 10,
-                }}>
-                <View
-                  style={{
-                    width: '98%',
-                    marginLeft: '2%',
-                    backgroundColor: currentTheme.background,
-                    opacity: 1,
-                    elevation: 10,
-                    borderTopLeftRadius: 10,
-                    borderBottomLeftRadius: expandedapplyleave == true ? 0 : 10,
-                    borderTopRightRadius: 10,
-                    borderBottomRightRadius:
-                      expandedapplyleave == true ? 0 : 10,
-                    padding: 20,
-                    flexDirection: 'row',
-                    justifyContent: 'space-between',
-                    alignItems: 'center',
-                    borderWidth: 0.5,
-                    borderColor: '#333',
-                  }}>
-                  <LinearGradient
-                    style={{padding: 10, borderRadius: 10}}
-                    colors={['#AA9AFD', '#8370ED']}>
-                    <Image
-                      style={{height: 30, width: 30, resizeMode: 'contain'}}
-                      source={require('../../assets/HomeScreen/h5.png')}
-                    />
-                  </LinearGradient>
-                  <Text
-                    style={{
-                      color: currentTheme.text,
-                      fontSize: responsiveFontSize(2.3),
-                    }}>
-                    Apply Leave
-                  </Text>
-                  <TouchableOpacity onPress={toggleExpandedApplyLeave}>
-                    {expandedapplyleave ? (
-                      <Image
-                        style={{
-                          height: 30,
-                          width: 30,
-                          resizeMode: 'contain',
-                          tintColor: currentTheme.text,
-                        }}
-                        source={require('../../assets/HomeScreen/up.png')}
-                      />
-                    ) : (
-                      <>
-                        <Image
+                        <Text
                           style={{
-                            height: 30,
-                            width: 30,
-                            resizeMode: 'contain',
-                            tintColor: currentTheme.text,
-                          }}
-                          source={require('../../assets/HomeScreen/down.png')}
-                        />
-                      </>
-                    )}
-                  </TouchableOpacity>
+                            color: '#00f0ff',
+                            fontSize: 18,
+                            textAlign: 'center',
+                            marginHorizontal: 10,
+                            marginBottom: 5,
+                            marginTop: 5,
+                            marginTop: 5,
+                          }}>
+                          {fullTime}
+                        </Text>
+                      </View>
+                      <Text style={{color: 'red', marginTop: 5, fontSize: 18}}>
+                        Total Time Elapsed
+                      </Text>
+                    </>
+                  )}
                 </View>
               </View>
-              {expandedapplyleave ? (
+
+              {/* This is apply leave  */}
+              <View>
                 <View
                   style={{
                     backgroundColor: '#AA9AFD',
-                    borderBottomLeftRadius: 10,
+                    marginTop: responsiveHeight(1),
+                    borderTopLeftRadius: 10,
+                    borderBottomLeftRadius: expandedapplyleave == true ? 0 : 10,
+                    borderTopRightRadius: 10,
                     borderBottomRightRadius: 10,
                   }}>
                   <View
@@ -941,291 +878,369 @@ const HomePage = ({navigation}) => {
                       width: '98%',
                       marginLeft: '2%',
                       backgroundColor: currentTheme.background,
-                      borderTopLeftRadius: 0,
+                      opacity: 1,
+                      elevation: 10,
+                      borderTopLeftRadius: 10,
+                      borderBottomLeftRadius:
+                        expandedapplyleave == true ? 0 : 10,
+                      borderTopRightRadius: 10,
+                      borderBottomRightRadius:
+                        expandedapplyleave == true ? 0 : 10,
+                      padding: 20,
+                      flexDirection: 'row',
+                      justifyContent: 'space-between',
+                      alignItems: 'center',
+                      borderWidth: 0.5,
+                      borderColor: '#333',
+                    }}>
+                    <LinearGradient
+                      style={{padding: 10, borderRadius: 10}}
+                      colors={['#AA9AFD', '#8370ED']}>
+                      <Image
+                        style={{height: 30, width: 30, resizeMode: 'contain'}}
+                        source={require('../../assets/HomeScreen/h5.png')}
+                      />
+                    </LinearGradient>
+                    <Text
+                      style={{
+                        color: currentTheme.text,
+                        fontSize: responsiveFontSize(2.3),
+                      }}>
+                      Apply Leave
+                    </Text>
+                    <TouchableOpacity onPress={toggleExpandedApplyLeave}>
+                      {expandedapplyleave ? (
+                        <Image
+                          style={{
+                            height: 30,
+                            width: 30,
+                            resizeMode: 'contain',
+                            tintColor: currentTheme.text,
+                          }}
+                          source={require('../../assets/HomeScreen/up.png')}
+                        />
+                      ) : (
+                        <>
+                          <Image
+                            style={{
+                              height: 30,
+                              width: 30,
+                              resizeMode: 'contain',
+                              tintColor: currentTheme.text,
+                            }}
+                            source={require('../../assets/HomeScreen/down.png')}
+                          />
+                        </>
+                      )}
+                    </TouchableOpacity>
+                  </View>
+                </View>
+                {expandedapplyleave ? (
+                  <View
+                    style={{
+                      backgroundColor: '#AA9AFD',
                       borderBottomLeftRadius: 10,
                       borderBottomRightRadius: 10,
                     }}>
-                    <ScrollView
+                    <View
                       style={{
-                        width: '100%',
+                        width: '98%',
+                        marginLeft: '2%',
+                        backgroundColor: currentTheme.background,
+                        borderTopLeftRadius: 0,
+                        borderBottomLeftRadius: 10,
+                        borderBottomRightRadius: 10,
                       }}>
-                      <View
+                      <ScrollView
                         style={{
-                          flexDirection: 'row',
-                          alignSelf: 'center',
-                          alignItems: 'center',
-                          justifyContent: 'space-between',
+                          width: '100%',
                         }}>
                         <View
                           style={{
+                            flexDirection: 'row',
+                            alignSelf: 'center',
                             alignItems: 'center',
+                            justifyContent: 'space-between',
+                          }}>
+                          <View
+                            style={{
+                              alignItems: 'center',
+                              marginHorizontal: responsiveWidth(2),
+                            }}>
+                            <TouchableOpacity
+                              onPress={() => handlePress(1)}
+                              style={{
+                                backgroundColor: currentTheme.background_v2,
+                                borderRadius: 100,
+                                height: 90,
+                                width: 90,
+                                justifyContent: 'center',
+                              }}>
+                              <Text
+                                style={{color: '#fff', textAlign: 'center'}}>
+                                {startDate
+                                  ? new Date(startDate).getDate()
+                                  : 'Start'}
+                              </Text>
+                              <Text
+                                style={{color: '#fff', textAlign: 'center'}}>
+                                {startDate
+                                  ? new Date(startDate).toLocaleString(
+                                      'default',
+                                      {month: 'long'},
+                                    )
+                                  : 'Date'}
+                              </Text>
+                            </TouchableOpacity>
+                            <Image
+                              style={{
+                                height: 50,
+                                width: 50,
+                                tintColor: currentTheme.text,
+                              }}
+                              source={require('../../assets/ApplyLeave/arrow-down.png')}
+                            />
+                            <TouchableOpacity
+                              onPress={() => handlePress(2)}
+                              style={{
+                                backgroundColor: currentTheme.background_v2,
+                                borderRadius: 100,
+                                height: 90,
+                                width: 90,
+                                justifyContent: 'center',
+                              }}>
+                              <Text
+                                style={{color: '#fff', textAlign: 'center'}}>
+                                {endDate ? new Date(endDate).getDate() : 'End'}
+                              </Text>
+                              <Text
+                                style={{color: '#fff', textAlign: 'center'}}>
+                                {endDate
+                                  ? new Date(endDate).toLocaleString(
+                                      'default',
+                                      {
+                                        month: 'long',
+                                      },
+                                    )
+                                  : 'Date'}
+                              </Text>
+                            </TouchableOpacity>
+                            <Text
+                              style={{
+                                color: currentTheme.text,
+                                fontSize: 18,
+                                marginTop: responsiveHeight(1),
+                              }}>
+                              {daysBetween} Days
+                            </Text>
+                          </View>
+                          <View style={{marginHorizontal: responsiveWidth(2)}}>
+                            <Calendar
+                              style={{
+                                borderTopLeftRadius: 50,
+                                borderTopRightRadius: 50,
+                                backgroundColor: currentTheme.background,
+                                elevation: 7,
+                                width: responsiveWidth(60),
+                              }}
+                              onDayPress={day => {
+                                setSelected(day.dateString);
+                                setMonth(day);
+
+                                if (!startDate) {
+                                  setStartDate(day.dateString);
+                                } else if (!endDate) {
+                                  setEndDate(day.dateString);
+                                }
+                              }}
+                              markedDates={{
+                                [selected]: {
+                                  selected: true,
+                                  disableTouchEvent: true,
+                                  selectedDotColor: 'orange',
+                                },
+                                [startDate]: {
+                                  startingDay: true,
+                                  color: 'orange',
+                                  textColor: 'white',
+                                },
+                                [endDate]: {
+                                  endingDay: true,
+                                  color: 'orange',
+                                  textColor: 'white',
+                                },
+                              }}
+                            />
+                          </View>
+                        </View>
+                        {startDate > endDate
+                          ? showMessage({
+                              message: `End date greater then start date, Please select valid details`,
+                              type: 'danger',
+                            })
+                          : null}
+                        <View
+                          style={{
+                            flexDirection: 'row',
                             marginHorizontal: responsiveWidth(2),
                           }}>
-                          <TouchableOpacity
-                            onPress={() => handlePress(1)}
-                            style={{
-                              backgroundColor: currentTheme.background_v2,
-                              borderRadius: 100,
-                              height: 90,
-                              width: 90,
-                              justifyContent: 'center',
-                            }}>
-                            <Text style={{color: '#fff', textAlign: 'center'}}>
-                              {startDate
-                                ? new Date(startDate).getDate()
-                                : 'Start'}
-                            </Text>
-                            <Text style={{color: '#fff', textAlign: 'center'}}>
-                              {startDate
-                                ? new Date(startDate).toLocaleString(
-                                    'default',
-                                    {month: 'long'},
-                                  )
-                                : 'Date'}
-                            </Text>
-                          </TouchableOpacity>
-                          <Image
-                            style={{
-                              height: 50,
-                              width: 50,
-                              tintColor: currentTheme.text,
+                          <CheckBox
+                            disabled={false}
+                            value={toggleCheckBox}
+                            onValueChange={newValue =>
+                              setToggleCheckBox(newValue)
+                            }
+                            tintColors={{
+                              true: (color = currentTheme.text),
+                              false: (color = currentTheme.text),
                             }}
-                            source={require('../../assets/ApplyLeave/arrow-down.png')}
                           />
-                          <TouchableOpacity
-                            onPress={() => handlePress(2)}
-                            style={{
-                              backgroundColor: currentTheme.background_v2,
-                              borderRadius: 100,
-                              height: 90,
-                              width: 90,
-                              justifyContent: 'center',
-                            }}>
-                            <Text style={{color: '#fff', textAlign: 'center'}}>
-                              {endDate ? new Date(endDate).getDate() : 'End'}
-                            </Text>
-                            <Text style={{color: '#fff', textAlign: 'center'}}>
-                              {endDate
-                                ? new Date(endDate).toLocaleString('default', {
-                                    month: 'long',
-                                  })
-                                : 'Date'}
-                            </Text>
-                          </TouchableOpacity>
                           <Text
                             style={{
+                              alignSelf: 'center',
+                              fontSize: 16,
                               color: currentTheme.text,
-                              fontSize: 18,
-                              marginTop: responsiveHeight(1),
+                              marginHorizontal: Platform.OS == 'ios' ? 8 : null,
                             }}>
-                            {daysBetween} Days
+                            Is half day
                           </Text>
                         </View>
-                        <View style={{marginHorizontal: responsiveWidth(2)}}>
-                          <Calendar
-                            style={{
-                              borderTopLeftRadius: 50,
-                              borderTopRightRadius: 50,
-                              backgroundColor: currentTheme.background,
-                              elevation: 7,
-                              width: responsiveWidth(60),
-                            }}
-                            onDayPress={day => {
-                              setSelected(day.dateString);
-                              setMonth(day);
+                        {toggleCheckBox == true ? (
+                          startDate == endDate ? (
+                            <View
+                              style={{
+                                borderRadius: 10,
+                                backgroundColor: currentTheme.inputText_color,
+                                padding: 5,
+                                marginHorizontal: responsiveWidth(2),
+                              }}>
+                              <RadioGroup
+                                containerStyle={{flexDirection: 'row'}}
+                                radioButtons={radioButtons}
+                                onPress={setSelectedId}
+                                selectedId={selectedId}
+                              />
+                            </View>
+                          ) : (
+                            <View
+                              style={{
+                                borderRadius: 10,
+                                backgroundColor: '#EDFBFE',
+                                padding: 5,
+                                marginHorizontal: responsiveWidth(2),
+                              }}>
+                              <Text style={{color: '#000'}}>
+                                First day of leave
+                              </Text>
+                              <RadioGroup
+                                containerStyle={{flexDirection: 'row'}}
+                                radioButtons={radioButtons1}
+                                onPress={setSelectedId1}
+                                selectedId={selectedId1}
+                              />
+                              <Text style={{color: '#000'}}>
+                                Last day of leave
+                              </Text>
+                              <RadioGroup
+                                containerStyle={{flexDirection: 'row'}}
+                                radioButtons={radioButtons2}
+                                onPress={setSelectedId2}
+                                selectedId={selectedId2}
+                              />
+                            </View>
+                          )
+                        ) : null}
 
-                              if (!startDate) {
-                                setStartDate(day.dateString);
-                              } else if (!endDate) {
-                                setEndDate(day.dateString);
+                        {/* This is profile details */}
+                        <View
+                          style={{
+                            marginHorizontal: responsiveWidth(2),
+                            marginTop: responsiveHeight(1),
+                            borderTopRightRadius: 10,
+                            borderBottomRightRadius: 10,
+                          }}>
+                          <View
+                            style={{
+                              backgroundColor: currentTheme.background_v2,
+                              padding: 10,
+                              marginBottom: 5,
+                              borderRadius: 10,
+                            }}>
+                            <Dropdown
+                              selectedTextProps={{
+                                style: {
+                                  color: '#fff',
+                                },
+                              }}
+                              data={getleavetypeapidata && getleavetypeapidata}
+                              maxHeight={300}
+                              labelField="name"
+                              valueField="id"
+                              placeholder={
+                                !isFocus ? 'Select leave type' : '...'
                               }
-                            }}
-                            markedDates={{
-                              [selected]: {
-                                selected: true,
-                                disableTouchEvent: true,
-                                selectedDotColor: 'orange',
-                              },
-                              [startDate]: {
-                                startingDay: true,
-                                color: 'orange',
-                                textColor: 'white',
-                              },
-                              [endDate]: {
-                                endingDay: true,
-                                color: 'orange',
-                                textColor: 'white',
-                              },
-                            }}
-                          />
-                        </View>
-                      </View>
-                      {startDate > endDate
-                        ? showMessage({
-                            message: `End date greater then start date, Please select valid details`,
-                            type: 'danger',
-                          })
-                        : null}
-                      <View
-                        style={{
-                          flexDirection: 'row',
-                          marginHorizontal: responsiveWidth(2),
-                        }}>
-                        <CheckBox
-                          disabled={false}
-                          value={toggleCheckBox}
-                          onValueChange={newValue =>
-                            setToggleCheckBox(newValue)
-                          }
-                          tintColors={{
-                            true: (color = currentTheme.text),
-                            false: (color = currentTheme.text),
-                          }}
-                        />
-                        <Text
-                          style={{
-                            alignSelf: 'center',
-                            fontSize: 16,
-                            color: currentTheme.text,
-                            marginHorizontal: Platform.OS == 'ios' ? 8 : null,
-                          }}>
-                          Is half day
-                        </Text>
-                      </View>
-                      {toggleCheckBox == true ? (
-                        startDate == endDate ? (
-                          <View
-                            style={{
-                              borderRadius: 10,
-                              backgroundColor: currentTheme.inputText_color,
-                              padding: 5,
-                              marginHorizontal: responsiveWidth(2),
-                            }}>
-                            <RadioGroup
-                              containerStyle={{flexDirection: 'row'}}
-                              radioButtons={radioButtons}
-                              onPress={setSelectedId}
-                              selectedId={selectedId}
-                            />
-                          </View>
-                        ) : (
-                          <View
-                            style={{
-                              borderRadius: 10,
-                              backgroundColor: '#EDFBFE',
-                              padding: 5,
-                              marginHorizontal: responsiveWidth(2),
-                            }}>
-                            <Text style={{color: '#000'}}>
-                              First day of leave
-                            </Text>
-                            <RadioGroup
-                              containerStyle={{flexDirection: 'row'}}
-                              radioButtons={radioButtons1}
-                              onPress={setSelectedId1}
-                              selectedId={selectedId1}
-                            />
-                            <Text style={{color: '#000'}}>
-                              Last day of leave
-                            </Text>
-                            <RadioGroup
-                              containerStyle={{flexDirection: 'row'}}
-                              radioButtons={radioButtons2}
-                              onPress={setSelectedId2}
-                              selectedId={selectedId2}
-                            />
-                          </View>
-                        )
-                      ) : null}
-
-                      {/* This is profile details */}
-                      <View
-                        style={{
-                          marginHorizontal: responsiveWidth(2),
-                          marginTop: responsiveHeight(1),
-                          borderTopRightRadius: 10,
-                          borderBottomRightRadius: 10,
-                        }}>
-                        <View
-                          style={{
-                            backgroundColor: currentTheme.background_v2,
-                            padding: 10,
-                            marginBottom: 5,
-                            borderRadius: 10,
-                          }}>
-                          <Dropdown
-                            selectedTextProps={{
-                              style: {
+                              value={value1}
+                              onChange={item => {
+                                setValue1(item.id);
+                              }}
+                              placeholderStyle={{
                                 color: '#fff',
-                              },
-                            }}
-                            data={getleavetypeapidata && getleavetypeapidata}
-                            maxHeight={300}
-                            labelField="name"
-                            valueField="id"
-                            placeholder={!isFocus ? 'Select leave type' : '...'}
-                            value={value1}
-                            onChange={item => {
-                              setValue1(item.id);
-                            }}
-                            placeholderStyle={{
-                              color: '#fff',
-                            }}
-                            itemTextStyle={{
-                              color: '#000',
-                            }}
-                          />
+                              }}
+                              itemTextStyle={{
+                                color: '#000',
+                              }}
+                            />
+                          </View>
+
+                          <View
+                            style={{
+                              borderRadius: 20,
+                              marginBottom: 8,
+                              padding: 5,
+                              backgroundColor: currentTheme.background_v2,
+                              opacity: 1,
+                              elevation: 10,
+                            }}>
+                            <TextInput
+                              placeholder="Reason"
+                              numberOfLines={6}
+                              textAlignVertical={'top'}
+                              onChangeText={text => setReason(text)}
+                              style={{height: 120}} // Adjust height as needed
+                              placeholderTextColor={'#fff'}
+                              color={'#fff'}
+                            />
+                          </View>
                         </View>
 
-                        <View
+                        <TouchableOpacity
+                          onPress={() => handleSubmit()}
                           style={{
-                            borderRadius: 20,
-                            marginBottom: 8,
-                            padding: 5,
+                            marginBottom: 5,
                             backgroundColor: currentTheme.background_v2,
-                            opacity: 1,
-                            elevation: 10,
+                            padding: 15,
+                            width: '60%',
+                            alignSelf: 'center',
+                            borderRadius: 50,
                           }}>
-                          <TextInput
-                            placeholder="Reason"
-                            numberOfLines={6}
-                            textAlignVertical={'top'}
-                            onChangeText={text => setReason(text)}
-                            style={{height: 120}} // Adjust height as needed
-                            placeholderTextColor={'#fff'}
-                            color={'#fff'}
-                          />
-                        </View>
-                      </View>
-
-                      <TouchableOpacity
-                        onPress={() => handleSubmit()}
-                        style={{
-                          marginBottom: 5,
-                          backgroundColor: currentTheme.background_v2,
-                          padding: 15,
-                          width: '60%',
-                          alignSelf: 'center',
-                          borderRadius: 50,
-                        }}>
-                        <Text
-                          style={{
-                            textAlign: 'center',
-                            color: '#fff',
-                            fontSize: 18,
-                            fontWeight: 'bold',
-                          }}>
-                          Submit
-                        </Text>
-                      </TouchableOpacity>
-                    </ScrollView>
+                          <Text
+                            style={{
+                              textAlign: 'center',
+                              color: '#fff',
+                              fontSize: 18,
+                              fontWeight: 'bold',
+                            }}>
+                            Submit
+                          </Text>
+                        </TouchableOpacity>
+                      </ScrollView>
+                    </View>
                   </View>
-                </View>
-              ) : null}
-            </View>
+                ) : null}
+              </View>
 
-            {/* This is Holiday management */}
-            {/* <View>
+              {/* This is Holiday management */}
+              {/* <View>
               <View
                 style={{
                   backgroundColor: '#8AEBC3',
@@ -1441,82 +1456,15 @@ const HomePage = ({navigation}) => {
               ) : null}
             </View> */}
 
-            {/* This is recent attendence */}
-            <View>
-              <View
-                style={{
-                  backgroundColor: '#FABED7',
-                  marginTop: responsiveHeight(1),
-                  borderTopLeftRadius: 10,
-                  borderBottomLeftRadius: expanded == true ? 0 : 10,
-                  borderTopRightRadius: 10,
-                  borderBottomRightRadius: 10,
-                }}>
-                <View
-                  style={{
-                    width: '98%',
-                    marginLeft: '2%',
-                    backgroundColor: currentTheme.background,
-                    opacity: 1,
-                    elevation: 10,
-                    borderTopLeftRadius: 10,
-                    borderBottomLeftRadius: expanded == true ? 0 : 10,
-                    borderTopRightRadius: 10,
-                    borderBottomRightRadius: expanded == true ? 0 : 10,
-                    padding: 20,
-                    flexDirection: 'row',
-                    justifyContent: 'space-between',
-                    alignItems: 'center',
-                    borderWidth: 0.5,
-                    borderColor: '#333',
-                  }}>
-                  <LinearGradient
-                    style={{padding: 10, borderRadius: 10}}
-                    colors={['#FABED7', '#FF94C3']}>
-                    <Image
-                      style={{height: 30, width: 30, resizeMode: 'contain'}}
-                      source={require('../../assets/HomeScreen/recentattendance.png')}
-                    />
-                  </LinearGradient>
-                  <Text
-                    style={{
-                      color: currentTheme.text,
-                      fontSize: responsiveFontSize(2.3),
-                    }}>
-                    Recent Attendance
-                  </Text>
-                  <TouchableOpacity onPress={toggleExpanded}>
-                    {expanded ? (
-                      <Image
-                        style={{
-                          height: 30,
-                          width: 30,
-                          resizeMode: 'contain',
-                          tintColor: currentTheme.text,
-                        }}
-                        source={require('../../assets/HomeScreen/up.png')}
-                      />
-                    ) : (
-                      <>
-                        <Image
-                          style={{
-                            height: 30,
-                            width: 30,
-                            resizeMode: 'contain',
-                            tintColor: currentTheme.text,
-                          }}
-                          source={require('../../assets/HomeScreen/down.png')}
-                        />
-                      </>
-                    )}
-                  </TouchableOpacity>
-                </View>
-              </View>
-              {expanded ? (
+              {/* This is recent attendence */}
+              <View>
                 <View
                   style={{
                     backgroundColor: '#FABED7',
-                    borderBottomLeftRadius: 10,
+                    marginTop: responsiveHeight(1),
+                    borderTopLeftRadius: 10,
+                    borderBottomLeftRadius: expanded == true ? 0 : 10,
+                    borderTopRightRadius: 10,
                     borderBottomRightRadius: 10,
                   }}>
                   <View
@@ -1524,62 +1472,130 @@ const HomePage = ({navigation}) => {
                       width: '98%',
                       marginLeft: '2%',
                       backgroundColor: currentTheme.background,
-                      borderTopLeftRadius: 0,
+                      opacity: 1,
+                      elevation: 10,
+                      borderTopLeftRadius: 10,
+                      borderBottomLeftRadius: expanded == true ? 0 : 10,
+                      borderTopRightRadius: 10,
+                      borderBottomRightRadius: expanded == true ? 0 : 10,
+                      padding: 20,
+                      flexDirection: 'row',
+                      justifyContent: 'space-between',
+                      alignItems: 'center',
+                      borderWidth: 0.5,
+                      borderColor: '#333',
+                    }}>
+                    <LinearGradient
+                      style={{padding: 10, borderRadius: 10}}
+                      colors={['#FABED7', '#FF94C3']}>
+                      <Image
+                        style={{height: 30, width: 30, resizeMode: 'contain'}}
+                        source={require('../../assets/HomeScreen/recentattendance.png')}
+                      />
+                    </LinearGradient>
+                    <Text
+                      style={{
+                        color: currentTheme.text,
+                        fontSize: responsiveFontSize(2.3),
+                      }}>
+                      Recent Attendance
+                    </Text>
+                    <TouchableOpacity onPress={toggleExpanded}>
+                      {expanded ? (
+                        <Image
+                          style={{
+                            height: 30,
+                            width: 30,
+                            resizeMode: 'contain',
+                            tintColor: currentTheme.text,
+                          }}
+                          source={require('../../assets/HomeScreen/up.png')}
+                        />
+                      ) : (
+                        <>
+                          <Image
+                            style={{
+                              height: 30,
+                              width: 30,
+                              resizeMode: 'contain',
+                              tintColor: currentTheme.text,
+                            }}
+                            source={require('../../assets/HomeScreen/down.png')}
+                          />
+                        </>
+                      )}
+                    </TouchableOpacity>
+                  </View>
+                </View>
+                {expanded ? (
+                  <View
+                    style={{
+                      backgroundColor: '#FABED7',
                       borderBottomLeftRadius: 10,
                       borderBottomRightRadius: 10,
                     }}>
                     <View
                       style={{
-                        flex: 1,
-                        borderColor: '#4148fe',
-                        borderTopWidth: 0.8,
-                      }}></View>
-                    {getLastAttendanceDaily()}
+                        width: '98%',
+                        marginLeft: '2%',
+                        backgroundColor: currentTheme.background,
+                        borderTopLeftRadius: 0,
+                        borderBottomLeftRadius: 10,
+                        borderBottomRightRadius: 10,
+                      }}>
+                      <View
+                        style={{
+                          flex: 1,
+                          borderColor: '#4148fe',
+                          borderTopWidth: 0.8,
+                        }}></View>
+                      {getLastAttendanceDaily()}
+                    </View>
                   </View>
-                </View>
-              ) : null}
+                ) : null}
+              </View>
             </View>
-          </View>
-        </ScrollView>
-        <Modal
-          isVisible={isModalVisible}
-          onBackdropPress={toggleModal}
-          style={styles.modal}
-          animationIn="slideInUp" // Animation when showing the modal
-          animationOut="slideOutDown" // Animation when hiding the modal
-          animationInTiming={500} // Duration for animation in (milliseconds)
-          animationOutTiming={500} // Duration for animation out (milliseconds)
-        >
-          <View style={styles.bottomSheet}>
-            <Text style={styles.title}>Introducing</Text>
-            <Text style={styles.subTitle}>Dark Mode</Text>
-            <Text style={styles.description}>
-              Choose your preferred app theme. You can also change this later
-              from your profile.
-            </Text>
+          </ScrollView>
+          <Modal
+            isVisible={isModalVisible}
+            onBackdropPress={toggleModal}
+            style={styles.modal}
+            animationIn="slideInUp" // Animation when showing the modal
+            animationOut="slideOutDown" // Animation when hiding the modal
+            animationInTiming={500} // Duration for animation in (milliseconds)
+            animationOutTiming={500} // Duration for animation out (milliseconds)
+          >
+            <View style={styles.bottomSheet}>
+              <Text style={styles.title}>Introducing</Text>
+              <Text style={styles.subTitle}>Dark Mode</Text>
+              <Text style={styles.description}>
+                Choose your preferred app theme. You can also change this later
+                from your profile.
+              </Text>
 
-            {['light', 'dark'].map(val => (
-              <TouchableOpacity
-                key={val}
-                style={styles.option}
-                onPress={() => [setTheme(val), toggleTheme()]}>
-                <Text style={styles.optionText}>
-                  {capitalizeFirstLetter(val)}
-                </Text>
-                <View
-                  style={[
-                    styles.radioCircle,
-                    theme === val && styles.selectedRadio,
-                  ]}
-                />
+              {['light', 'dark'].map(val => (
+                <TouchableOpacity
+                  key={val}
+                  style={styles.option}
+                  onPress={() => [setTheme(val), toggleTheme()]}>
+                  <Text style={styles.optionText}>
+                    {capitalizeFirstLetter(val)}
+                  </Text>
+                  <View
+                    style={[
+                      styles.radioCircle,
+                      theme === val && styles.selectedRadio,
+                    ]}
+                  />
+                </TouchableOpacity>
+              ))}
+
+              <TouchableOpacity onPress={toggleModal} style={styles.saveButton}>
+                <Text style={styles.saveButtonText}>Save Preference</Text>
               </TouchableOpacity>
-            ))}
-
-            <TouchableOpacity onPress={toggleModal} style={styles.saveButton}>
-              <Text style={styles.saveButtonText}>Save Preference</Text>
-            </TouchableOpacity>
-          </View>
-        </Modal>
+            </View>
+          </Modal>
+        </PullToRefresh>
       </View>
     </>
   );

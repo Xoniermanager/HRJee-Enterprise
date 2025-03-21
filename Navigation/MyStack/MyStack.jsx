@@ -37,6 +37,10 @@ import {ThemeContext} from '../../Store/ConetxtApi.jsx/ConextApi';
 import ApplyResign from '../../Component/Services/Resign/ApplyResign';
 import WithdrawResign from '../../Component/Services/Resign/WithdrawResign';
 import ResetPassword from '../../Component/ForgetPassword/ResetPassword';
+import PRMList from '../../Component/Services/PRM/PRMList';
+import AddPRM from '../../Component/Services/PRM/AddPRM';
+import EditPRM from '../../Component/Services/PRM/EditPRM';
+import Attendance from '../../Component/Attendance/Attendance';
 
 const MyStack = () => {
   const {currentTheme} = useContext(ThemeContext);
@@ -64,6 +68,11 @@ const MyStack = () => {
         component={OnboardingScreen}
         options={{headerShown: false}}
       />
+        <Stack.Screen
+        name="Attendance"
+        component={Attendance}
+        options={{headerShown: false}}
+      />
       <Stack.Screen
         name="Splash"
         component={Splash}
@@ -82,7 +91,18 @@ const MyStack = () => {
       <Stack.Screen
         name="Salary"
         component={Salary}
-        options={{headerShown: false}}
+        options={{
+          title: 'Salary Slip',
+
+          headerBackTitleVisible: false,
+          headerStyle: {
+            backgroundColor: currentTheme.background_v2,
+          },
+          headerTintColor: '#fff',
+          headerTitleStyle: {
+            fontWeight: '500',
+          },
+        }}
       />
       <Stack.Screen
         name="Account"
@@ -147,6 +167,7 @@ const MyStack = () => {
           },
         }}
       />
+      
       <Stack.Screen
         name="ApplyResign"
         component={ApplyResign}
@@ -329,7 +350,18 @@ const MyStack = () => {
       <Stack.Screen
         name="LocationList"
         component={LocationList}
-        options={{headerShown: false}}
+        options={{
+          title: 'Task Location',
+
+          headerBackTitleVisible: false,
+          headerStyle: {
+            backgroundColor: currentTheme.background_v2,
+          },
+          headerTintColor: '#fff',
+          headerTitleStyle: {
+            fontWeight: '500',
+          },
+        }}
       />
       <Stack.Screen
         name="Pending"
@@ -351,6 +383,52 @@ const MyStack = () => {
         component={Leaves}
         options={{
           title: 'Leaves',
+          headerBackTitleVisible: false,
+          headerStyle: {
+            backgroundColor: currentTheme.background_v2,
+          },
+          headerTintColor: '#fff',
+          headerTitleStyle: {
+            fontWeight: '500',
+          },
+        }}
+      />
+       <Stack.Screen
+        name="PRMList"
+        component={PRMList}
+        options={{
+          title: 'PRM List',
+          headerBackTitleVisible: false,
+          headerStyle: {
+            backgroundColor: currentTheme.background_v2,
+          },
+          headerTintColor: '#fff',
+          headerTitleStyle: {
+            fontWeight: '500',
+          },
+        }}
+      />
+       <Stack.Screen
+        name="AddPRM"
+        component={AddPRM}
+        options={{
+          title: 'Add PRM',
+          headerBackTitleVisible: false,
+          headerStyle: {
+            backgroundColor: currentTheme.background_v2,
+          },
+          headerTintColor: '#fff',
+          headerTitleStyle: {
+            fontWeight: '500',
+          },
+        }}
+      />
+       <Stack.Screen
+        name="EditPRM"
+        component={EditPRM}
+        options={{
+          title: 'Update PRM',
+
           headerBackTitleVisible: false,
           headerStyle: {
             backgroundColor: currentTheme.background_v2,

@@ -34,6 +34,7 @@ const Account = () => {
       name: 'Attendance',
       num: 20,
       backgroundcolor: theme == 'light' ? '#BAAEFC' : '#242B3A',
+      nav:'Attendance'
     },
     {
       id: 2,
@@ -41,6 +42,7 @@ const Account = () => {
       name: 'Leave',
       num: 20,
       backgroundcolor: theme == 'light' ? '#F9B7D5' : '#242B3A',
+      nav:'Leaves'
     },
     {
       id: 3,
@@ -48,6 +50,7 @@ const Account = () => {
       name: 'Award',
       num: 20,
       backgroundcolor: theme == 'light' ? '#44D5FB' : '#242B3A',
+      nav:'Award'
     },
   ];
   const [getProfileApiData, setGetProfileApiData] = useState('');
@@ -56,7 +59,8 @@ const Account = () => {
   const [show, setShow] = useState(false);
   const navigation = useNavigation();
   const renderServicesList = ({item}) => (
-    <View
+    <TouchableOpacity
+    onPress={()=>navigation.navigate(item.nav)}
       style={{
         justifyContent: 'center',
         backgroundColor: item.backgroundcolor,
@@ -77,7 +81,7 @@ const Account = () => {
         </Text>
         <Text style={{fontSize: 16, color: currentTheme.text}}>{item.num}</Text>
       </View>
-    </View>
+    </TouchableOpacity>
   );
   const [expandedbank, setExpandedBank] = useState(false);
   const [expandedassets, setExpandedAssets] = useState(false);
@@ -97,14 +101,13 @@ const Account = () => {
     try {
       setLoader(true);
       let token = await AsyncStorage.getItem('TOKEN');
-      const url = `${BASE_URL}/user/details`;
+      const url = `${BASE_URL}/profile/details`;
       const response = await getProfile(url, token);
 
       if (response?.data?.status === true) {
         setGetProfileApiData(response?.data?.data);
         setBankDetailsData(response?.data?.data?.bank_details);
         setGetDocumentApiData(response?.data?.data?.document_details);
-        // setGetAssetsApiData(response?.data?.data?.asset_details);
         setLoader(false);
       } else {
         setLoader(false);

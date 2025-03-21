@@ -78,7 +78,7 @@ const MyDrawer = () => {
           ),
         }}
       /> */}
-      <Drawer.Screen
+      {/* <Drawer.Screen
         name="PunchIn"
         component={PunchIn}
         options={{
@@ -99,7 +99,7 @@ const MyDrawer = () => {
             </View>
           ),
         }}
-      />
+      /> */}
       <Drawer.Screen
         name="ChangePassword"
         component={ChangePassword}

@@ -34,15 +34,24 @@ const ConextApi = ({children}) => {
           : require('../../assets/home3.png'),
       nav: 'News',
     },
+    // {
+    //   id: '3',
+    //   name: 'Payslip',
+    //   uri:
+    //     theme === 'light'
+    //       ? require('../../assets/HomeScreen/h3.png')
+    //       : require('../../assets/home1.png'),
+    //   nav: 'Salary',
+    // },
     {
       id: '3',
-      name: 'Payslip',
+      name: 'Policies',
       uri:
         theme === 'light'
           ? require('../../assets/HomeScreen/h3.png')
           : require('../../assets/home1.png'),
-      nav: 'Salary',
-    },
+          nav: 'Salary',    
+        },
     {
       id: '4',
       name: 'Announcements',

@@ -28,20 +28,26 @@ const Services = ({ navigation }) => {
         {
             id: 3,
             uri: require('../../assets/Services/s4.png'),
-            name: "Location",
+            name: "Visit Location",
             nav: "LocationList"
         },
+        // {
+        //     id: 4,
+        //     uri: require('../../assets/Services/s5.png'),
+        //     name: "Documents",
+        //     nav: "Documents",
+        // },
         {
             id: 4,
-            uri: require('../../assets/Services/s5.png'),
-            name: "Documents",
-            nav: "Documents",
-        },
-        {
-            id: 5,
             uri: require('../../assets/Services/s6.png'),
             name: "Resign",
             nav: "Resign",
+        },
+        {
+            id: 5,
+            uri: require('../../assets/Services/s5.png'),
+            name: "PRM",
+            nav: "PRMList",
         },
     ]
 

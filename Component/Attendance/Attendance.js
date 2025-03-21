@@ -11,6 +11,7 @@ import {
   ScrollView,
   Button,
   Platform,
+  Linking,
 } from 'react-native';
 import React, {useState, useEffect, useContext} from 'react';
 import {
@@ -31,7 +32,7 @@ import moment from 'moment';
 import DateTimePickerModal from 'react-native-modal-datetime-picker';
 import Themes from '../Theme/Theme';
 import {ThemeContext} from '../../Store/ConetxtApi.jsx/ConextApi';
-
+import AntDesign from 'react-native-vector-icons/AntDesign';
 const Attendance = () => {
   const showData = [
     {
@@ -64,6 +65,7 @@ const Attendance = () => {
   ];
   const {currentTheme} = useContext(ThemeContext);
   const [startdate, setStartDate] = useState(new Date());
+  const [dataExport,setDataExport]=useState()
   const [modalVisible, setModalVisible] = useState(false);
   const [isEnabled, setIsEnabled] = useState(false);
   const toggleSwitch = () => setIsEnabled(previousState => !previousState);
@@ -74,7 +76,7 @@ const Attendance = () => {
   const [data, setData] = useState('');
   const [fromDate, setFromDate] = useState(null);
   const [toDate, setToDate] = useState(null);
-  const [dailyDate,setDailyDate]=useState()
+  const [dailyDate, setDailyDate] = useState();
 
   const StatusItem = ({color, text, value}) => (
     <View style={[styles.statusItem, {backgroundColor: color}]}>
@@ -123,11 +125,11 @@ const Attendance = () => {
 
   const onDayPress = day => {
     setSelectedDate(day.dateString);
-    console.log(day.dateString,'day.dateString')
-    attendance_by_date(day.dateString)
+    console.log(day.dateString, 'day.dateString');
+    attendance_by_date(day.dateString);
     setModalVisible(true);
   };
-  const attendance_by_date = async (day) => {
+  const attendance_by_date = async day => {
     let token = await AsyncStorage.getItem('TOKEN');
     try {
       const url = `${BASE_URL}/attendance?date=${day}`;
@@ -166,6 +168,7 @@ const Attendance = () => {
   useEffect(() => {
     if (fromDate && toDate) {
       getSearchAttendence();
+      getExport()
     }
   }, [fromDate, toDate]);
 
@@ -198,6 +201,40 @@ const Attendance = () => {
         }
       } else {
         setLoading(false);
+      }
+    } catch (error) {
+      console.error('Error making POST request:', error);
+      setLoading(false);
+    }
+  };
+  const getExport = async () => {
+    function formatDate(dateStr) {
+      const [month, day, year] = dateStr.split('/');
+      const paddedMonth = month.padStart(2, '0');
+      const paddedDay = day.padStart(2, '0');
+      return `${year}-${paddedMonth}-${paddedDay}`;
+    }
+
+    try {
+      let token = await AsyncStorage.getItem('TOKEN');
+
+      let data = {
+        from_date: fromDate,
+        to_date: toDate,
+      };
+      data.from_date = formatDate(data.from_date);
+      data.to_date = formatDate(data.to_date);
+      setLoading(true);
+      const url = `${BASE_URL}/attendance/export`;
+      const response = await getrecentattendence(url, data, token);
+      if (response?.data?.status) {
+        setLoader(false);
+        setDataExport(response.data.data)
+      } else {
+        setLoading(false);
+        console.log(response.data.message,'response.data.message')
+        setDataExport(response.data.message)
+
       }
     } catch (error) {
       console.error('Error making POST request:', error);
@@ -237,6 +274,27 @@ const Attendance = () => {
     setToDate(date.toLocaleDateString());
     hideToDatePicker();
   };
+  const handleExport=()=>{
+    if (fromDate && toDate) {
+      if(dataExport=='No Attendance found for this two respective dates'){
+        showMessage({
+          message: 'No Attendance found for this two respective dates',
+          type: 'danger',
+        });
+      }
+      else if (dataExport){
+        Linking.openURL(dataExport.download_url)
+
+      }
+    }
+    else {
+      showMessage({
+        message: 'Please Select the Start Date and End Date',
+        type: 'danger',
+      });
+    }
+  }
+
 
   return (
     <SafeAreaView
@@ -480,7 +538,7 @@ const Attendance = () => {
                       textAlign: 'center',
                       marginTop: 5,
                     }}>
-                    Form Date
+                   Start Date
                   </Text>
                   <View
                     style={{
@@ -539,7 +597,7 @@ const Attendance = () => {
                       textAlign: 'center',
                       marginTop: 5,
                     }}>
-                    To Date
+                    End Date
                   </Text>
                   <View
                     style={{
@@ -580,6 +638,33 @@ const Attendance = () => {
                   onCancel={hideToDatePicker}
                 />
               </View>
+                      {/*   Export button  */}
+                   <View style={{flexDirection:'row',
+                  alignItems:'center',
+                  justifyContent:'space-between',
+                  marginTop:10,
+                  }}>
+                   <Text
+                  style={{
+                    color: currentTheme.text,
+                    fontWeight: 'bold',
+                    fontSize: 20,
+                    textAlign:'right',
+                    marginLeft:20
+                    
+                  }}>
+                  Export Attendance 
+                </Text>
+                      <TouchableOpacity
+                  style={{marginRight:30}}
+                  onPress={() =>handleExport()}>
+                  <AntDesign
+                    name="export"
+                    size={35}
+                    color={currentTheme.text}
+                  />
+                </TouchableOpacity>
+                   </View>
 
               {/* Logs codes */}
               <View
@@ -765,7 +850,7 @@ const Attendance = () => {
                           padding: 5,
                           marginHorizontal: 5,
                         }}>
-                      {selectedDate}
+                        {selectedDate}
                       </Text>
                     </View>
                     <View
@@ -829,7 +914,9 @@ const Attendance = () => {
                               fontSize: 16,
                               padding: 5,
                             }}>
-                          {dailyDate?.punch_in==null?'N/A':dailyDate?.punch_in}
+                            {dailyDate?.punch_in == null
+                              ? 'N/A'
+                              : dailyDate?.punch_in}
                           </Text>
                         </View>
                         <View
@@ -844,7 +931,9 @@ const Attendance = () => {
                               fontSize: 16,
                               padding: 5,
                             }}>
-                              {dailyDate?.punch_out==null?'N/A':dailyDate?.punch_out}
+                            {dailyDate?.punch_out == null
+                              ? 'N/A'
+                              : dailyDate?.punch_out}
                           </Text>
                         </View>
                         <View
@@ -875,7 +964,7 @@ const Attendance = () => {
                               padding: 5,
                               textAlign: 'center',
                             }}>
-                             {dailyDate?.status}
+                            {dailyDate?.status}
                           </Text>
                         </View>
                       </View>
@@ -992,4 +1081,13 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     width: '90%',
   },
+  button: {
+    backgroundColor: '#0043ae',
+    padding: 8,
+    borderRadius: 5,
+    alignItems: 'center',
+    marginTop: 5,
+    width: responsiveWidth(15),
+  },
+  buttonText: {color: '#fff', fontWeight: 'bold'},
 });

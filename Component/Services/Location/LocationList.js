@@ -35,7 +35,7 @@ const LocationList = ({ navigation }) => {
   return (
     <SafeAreaView style={[styles.container,{backgroundColor:currentTheme.background_v2}]}>
       <View style={{ marginTop: 15 }}>
-        <Text style={styles.name}>Task Location</Text>
+        {/* <Text style={styles.name}>Task Location</Text> */}
         <View style={[styles.tabContainer,{backgroundColor:currentTheme.background}]}>
           <Tab.Navigator tabBarOptions={tabBarOptions}>
             <Tab.Screen name="My Tasks" component={Pending} />

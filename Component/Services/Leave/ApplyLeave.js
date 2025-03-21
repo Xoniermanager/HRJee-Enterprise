@@ -48,6 +48,7 @@ const ApplyLeave = ({navigation}) => {
   const [selectedId2, setSelectedId2] = useState('');
   const [startDate, setStartDate] = useState(null);
   const [endDate, setEndDate] = useState(null);
+  const [availableLeavesList,setAvailableLeavesList]=useState(null)
   const radioButtons: RadioButtonProps[] = useMemo(
     () => [
       {
@@ -146,12 +147,32 @@ const ApplyLeave = ({navigation}) => {
       setLoader(false);
     }
   }
-
+  async function availableLeaves() {
+    try {
+      setLoader(true);
+      let token = await AsyncStorage.getItem('TOKEN');
+      const url = `${BASE_URL}/available-leaves`;
+      const response = await getLeaveType(url, token);
+      if (response?.data?.status) {
+        setLoader(false);
+        setAvailableLeavesList(response?.data?.data);
+      } else {
+        setLoader(false);
+      }
+    } catch (error) {
+      console.log('Error making POST request:', error);
+    
+    }
+  }
   useEffect(() => {
     check();
+    availableLeaves();
   }, []);
+  if(availableLeaves==null){
+    return <ApplyLeaveSkeleton/>
+  }
 
-  const handleSubmit = async () => {
+ const handleSubmit = async () => {
     try {
       if (startDate == '' || startDate == [] || startDate == undefined) {
         showMessage({
@@ -219,13 +240,15 @@ const ApplyLeave = ({navigation}) => {
       setLoader(false);
     }
   };
+
+  const ListData=getleavetypeapidata && getleavetypeapidata?.filter((item)=>{
+    return item.name==availableLeavesList?.map((item)=>item.leave_name)
+  })
   return (
     <SafeAreaView
       style={[styles.container, {backgroundColor: currentTheme.background_v2}]}>
       <View style={{alignSelf: 'center', marginTop: 15}}>
-        {/* <Text style={styles.name}>Apply Leave</Text> */}
       </View>
-
       <ScrollView
         style={{
           width: '100%',
@@ -439,8 +462,10 @@ const ApplyLeave = ({navigation}) => {
                 style={{
                   backgroundColor: '#EDFBFE',
                   padding: 10,
-                  marginBottom: 5,
+                  marginBottom: 10,
                   borderRadius: 10,
+                  marginHorizontal:20,
+                  paddingVertical:15
                 }}>
                 <Dropdown
                   selectedTextProps={{
@@ -448,8 +473,8 @@ const ApplyLeave = ({navigation}) => {
                       color: '#000',
                     },
                   }}
-                  style={styles.input}
-                  data={getleavetypeapidata && getleavetypeapidata}
+                  style={{}}
+                  data={ListData}
                   maxHeight={300}
                   labelField="name"
                   valueField="id"
@@ -472,6 +497,7 @@ const ApplyLeave = ({navigation}) => {
                   backgroundColor: '#EDFBFE',
                   opacity: 1,
                   elevation: 10,
+                  marginHorizontal:20
                 }}>
                 <TextInput
                   placeholder="Reason"

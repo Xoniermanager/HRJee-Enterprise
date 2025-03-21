@@ -3,13 +3,13 @@ import { showMessage } from 'react-native-flash-message';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { navigate } from './NavigationService';
 
-const axiosPost = async (url, data, token) => {
+const axiosPost = async (url, data, token,form) => {
   const config = {
     method: 'post',
     url: url,
     headers: {
       Authorization: `Bearer ${token}`,
-      'Content-Type': 'application/json',
+      'Content-Type': form == 1 ? 'multipart/form-data' : 'application/json',
     },
     data,
   };

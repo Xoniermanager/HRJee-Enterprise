@@ -211,3 +211,40 @@ export const AssetsAPI = (url,token) => {
   let item = axiosGet(url,token);
   return item;
 };
+export const asignTask=(url,token)=>{
+  let item = axiosGet(url,token);
+  return item;
+}
+export const UpdateStatusTask=(url,data,token,form)=>{
+  let item = axiosPost(url,data,token,form);
+  return item;
+}
+export const dispositionCode=(url,token)=>{
+  let item = axiosGet(url,token);
+  return item;
+}
+
+export const PRMCategory=(url,token)=>{
+  let item = axiosGet(url,token);
+  return item;
+}
+export const AddPRM=(url,data,token,form)=>{
+  let item = axiosPost(url,data,token,form);
+  return item
+}
+export const detailsList=(url,token)=>{
+  let item = axiosGet(url,token);
+  return item;
+}
+export const deletePRM=(url,token)=>{
+  let item = axiosGet(url,token);
+  return item;
+}
+export const SalarySlip=(url,token)=>{
+  let item = axiosGet(url,token);
+  return item;
+}
+export const AllPRMList=(url,token)=>{
+  let item = axiosGet(url,token);
+  return item;
+}

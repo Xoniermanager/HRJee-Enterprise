@@ -138,7 +138,6 @@ const Person_Detils = () => {
         : details.date_of_birth,
     );
     data.append('name', details.name);
-    console.log(data, 'ffff');
     let config = {
       method: 'post',
       maxBodyLength: Infinity,

@@ -32,7 +32,7 @@ const Account = () => {
       id: 1,
       uri: require('../../assets/HomeScreen/calendar.png'),
       name: 'Attendance',
-      num: 20,
+     
       backgroundcolor: theme == 'light' ? '#BAAEFC' : '#242B3A',
       nav:'Attendance'
     },
@@ -40,7 +40,7 @@ const Account = () => {
       id: 2,
       uri: require('../../assets/HomeScreen/leave.png'),
       name: 'Leave',
-      num: 20,
+     
       backgroundcolor: theme == 'light' ? '#F9B7D5' : '#242B3A',
       nav:'Leaves'
     },
@@ -48,7 +48,7 @@ const Account = () => {
       id: 3,
       uri: require('../../assets/HomeScreen/medal.png'),
       name: 'Award',
-      num: 20,
+     
       backgroundcolor: theme == 'light' ? '#44D5FB' : '#242B3A',
       nav:'Award'
     },

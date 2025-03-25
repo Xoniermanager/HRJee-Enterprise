@@ -248,3 +248,7 @@ export const AllPRMList=(url,token)=>{
   let item = axiosGet(url,token);
   return item;
 }
+export const AttendanceRequest=(url,data,token,form)=>{
+  let item = axiosPost(url,data,token,form);
+  return item
+}

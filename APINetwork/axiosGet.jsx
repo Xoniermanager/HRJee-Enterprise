@@ -23,7 +23,7 @@ const axiosGet = async (url, token, navigation) => {
           type: "danger",
         })
         AsyncStorage.removeItem('TOKEN')
-        navigate('LoginScreen'); // Navigate using the navigation service
+        navigate('LoginScreen'); 
       }
       else {
         // Server-side error

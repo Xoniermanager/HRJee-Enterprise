@@ -506,6 +506,7 @@ const Attendance = () => {
                   flexDirection: 'row',
                   alignSelf: 'center',
                   marginVertical: 0,
+                 
                 }}>
                 <TouchableOpacity
                   onPress={showFromDatePicker}

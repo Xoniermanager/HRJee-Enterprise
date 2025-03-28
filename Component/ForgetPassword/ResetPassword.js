@@ -55,18 +55,27 @@ const ResetPassword = ({route}) => {
       confirm_password: confirmPassword,
       otp: otp,
     };
-    const token = await AsyncStorage.getItem('token');
+
     if (
       password.trim() === '' ||
       confirmPassword.trim() === '' ||
       otp.trim() === ''
     ) {
-      setLoader(false);
+   
       showMessage({
         message: `Password and OTP Fields are mendatory`,
         type: 'danger',
       });
-    } else if (password != confirmPassword) {
+    } 
+    else if (password.length < 8) {
+      setLoader(false);
+      showMessage({
+        message: `Password must be at least 8 characters`,
+        type: 'danger',
+      });
+    
+    }
+    else if (password != confirmPassword) {
       setLoader(false);
       showMessage({
         message: `Password Mismatched`,
@@ -148,6 +157,7 @@ const ResetPassword = ({route}) => {
               placeholderTextColor={theme == 'dark' ? '#000' : '#000'}
               autoCapitalize="none"
               value={password}
+
               onChangeText={text => setPassword(text)}
             />
           </View>

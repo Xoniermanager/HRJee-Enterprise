@@ -25,9 +25,9 @@ import {BASE_URL} from '../../../utils';
 import CheckBox from 'react-native-check-box';
 import axios from 'axios';
 import {showMessage} from 'react-native-flash-message';
-import { useNavigation } from '@react-navigation/native';
+import {useNavigation} from '@react-navigation/native';
 const Person_Detils = () => {
-  const navigation=useNavigation()
+  const navigation = useNavigation();
   const {currentTheme} = useContext(ThemeContext);
   const [loader, setLoader] = useState(false);
   const [isFromDatePickerVisible, setFromDatePickerVisibility] =
@@ -90,13 +90,13 @@ const Person_Detils = () => {
   var Start_date = fromDate;
   console.log(Start_date);
   var dd = String(Start_date?.getDate()).padStart(2, '0');
-  var mm = String(Start_date?.getMonth() + 1).padStart(2, '0'); //January is 0!
+  var mm = String(Start_date?.getMonth() + 1).padStart(2, '0');
   var yyyy = Start_date?.getFullYear();
   Start_date = yyyy + '-' + mm + '-' + dd;
   async function check() {
     try {
       let token = await AsyncStorage.getItem('TOKEN');
-      const url = `${BASE_URL}/user/details`;
+      const url = `${BASE_URL}/profile/details`;
       const response = await getProfile(url, token);
       if (response?.data?.status === true) {
         setDetails(response.data.data);
@@ -170,12 +170,18 @@ const Person_Detils = () => {
   return (
     <SafeAreaView
       style={[styles.container, {backgroundColor: currentTheme.background_v2}]}>
-        <View style={[styles.headerContainer,{backgroundColor: currentTheme.background_v2}]}>
-      <TouchableOpacity onPress={()=>navigation.goBack()} style={styles.backButton}>
-        <Ionicons name="arrow-back" size={24} color="#fff" />
-      </TouchableOpacity>
-      <Text style={styles.title}>Basic Details</Text>
-    </View>
+      <View
+        style={[
+          styles.headerContainer,
+          {backgroundColor: currentTheme.background_v2},
+        ]}>
+        <TouchableOpacity
+          onPress={() => navigation.goBack()}
+          style={styles.backButton}>
+          <Ionicons name="arrow-back" size={24} color="#fff" />
+        </TouchableOpacity>
+        <Text style={styles.title}>Basic Details</Text>
+      </View>
       <ScrollView showsVerticalScrollIndicator={false}>
         <View
           style={{
@@ -502,7 +508,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     padding: 16,
     backgroundColor: '#f8f8f8', // Change as per design
-   
   },
   backButton: {
     marginRight: 16,

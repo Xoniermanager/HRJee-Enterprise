@@ -41,6 +41,13 @@ import PRMList from '../../Component/Services/PRM/PRMList';
 import AddPRM from '../../Component/Services/PRM/AddPRM';
 import EditPRM from '../../Component/Services/PRM/EditPRM';
 import Attendance from '../../Component/Attendance/Attendance';
+import CompOff from '../../Component/Services/CompOff/CompOff';
+import AddCompoff from '../../Component/Services/CompOff/AddCompoff';
+import RequestList from '../../Component/Services/AttendanceRequest/RequestList';
+import UpdateRequestattendance from '../../Component/Services/AttendanceRequest/UpdateRequestattendance';
+import FirstTimeChangePassword from '../../FirstTimeChangePassword';
+import ListOfficeAddress from '../../Component/Services/OfficeAddress/ListOfficeAddress';
+import AddAddress from '../../Component/Services/OfficeAddress/AddAddress';
 
 const MyStack = () => {
   const {currentTheme} = useContext(ThemeContext);
@@ -68,7 +75,7 @@ const MyStack = () => {
         component={OnboardingScreen}
         options={{headerShown: false}}
       />
-        <Stack.Screen
+      <Stack.Screen
         name="Attendance"
         component={Attendance}
         options={{headerShown: false}}
@@ -88,6 +95,7 @@ const MyStack = () => {
         component={HomePage}
         options={{headerShown: false}}
       />
+
       <Stack.Screen
         name="Salary"
         component={Salary}
@@ -147,6 +155,38 @@ const MyStack = () => {
         }}
       />
       <Stack.Screen
+        name="CompOff"
+        component={CompOff}
+        options={{
+          title: 'Comp Off',
+
+          headerBackTitleVisible: false,
+          headerStyle: {
+            backgroundColor: currentTheme.background_v2,
+          },
+          headerTintColor: '#fff',
+          headerTitleStyle: {
+            fontWeight: '500',
+          },
+        }}
+      />
+      <Stack.Screen
+        name="AddCompoff"
+        component={AddCompoff}
+        options={{
+          title: 'Add Comp Off',
+
+          headerBackTitleVisible: false,
+          headerStyle: {
+            backgroundColor: currentTheme.background_v2,
+          },
+          headerTintColor: '#fff',
+          headerTitleStyle: {
+            fontWeight: '500',
+          },
+        }}
+      />
+      <Stack.Screen
         name="Documents"
         component={Documents}
         options={{headerShown: false}}
@@ -167,7 +207,7 @@ const MyStack = () => {
           },
         }}
       />
-      
+
       <Stack.Screen
         name="ApplyResign"
         component={ApplyResign}
@@ -200,7 +240,7 @@ const MyStack = () => {
           },
         }}
       />
-       <Stack.Screen
+      <Stack.Screen
         name="ResetPassword"
         component={ResetPassword}
         options={{
@@ -253,6 +293,22 @@ const MyStack = () => {
         component={ChangePassword}
         options={{
           title: 'Change Password',
+
+          headerBackTitleVisible: false,
+          headerStyle: {
+            backgroundColor: currentTheme.background_v2,
+          },
+          headerTintColor: '#fff',
+          headerTitleStyle: {
+            fontWeight: '500',
+          },
+        }}
+      />
+      <Stack.Screen
+        name="FirstTimeChangePassword"
+        component={FirstTimeChangePassword}
+        options={{
+          title: 'Reset Password',
 
           headerBackTitleVisible: false,
           headerStyle: {
@@ -393,7 +449,7 @@ const MyStack = () => {
           },
         }}
       />
-       <Stack.Screen
+      <Stack.Screen
         name="PRMList"
         component={PRMList}
         options={{
@@ -408,7 +464,7 @@ const MyStack = () => {
           },
         }}
       />
-       <Stack.Screen
+      <Stack.Screen
         name="AddPRM"
         component={AddPRM}
         options={{
@@ -423,7 +479,7 @@ const MyStack = () => {
           },
         }}
       />
-       <Stack.Screen
+      <Stack.Screen
         name="EditPRM"
         component={EditPRM}
         options={{
@@ -458,6 +514,66 @@ const MyStack = () => {
         name="ProfileDetails"
         component={ProfileDetails}
         options={{headerShown: false}}
+      />
+      <Stack.Screen
+        name="AttendanceRequest"
+        component={RequestList}
+        options={{
+          title: 'Attendance Request',
+          headerBackTitleVisible: false,
+          headerStyle: {
+            backgroundColor: currentTheme.background_v2,
+          },
+          headerTintColor: '#fff',
+          headerTitleStyle: {
+            fontWeight: '500',
+          },
+        }}
+      />
+      <Stack.Screen
+        name="UpdateRequestattendance"
+        component={UpdateRequestattendance}
+        options={{
+          title: 'Attendance Request',
+          headerBackTitleVisible: false,
+          headerStyle: {
+            backgroundColor: currentTheme.background_v2,
+          },
+          headerTintColor: '#fff',
+          headerTitleStyle: {
+            fontWeight: '500',
+          },
+        }}
+      />
+        <Stack.Screen
+        name="ListOfficeAddress"
+        component={ListOfficeAddress}
+        options={{
+          title: 'Address Request',
+          headerBackTitleVisible: false,
+          headerStyle: {
+            backgroundColor: currentTheme.background_v2,
+          },
+          headerTintColor: '#fff',
+          headerTitleStyle: {
+            fontWeight: '500',
+          },
+        }}
+      />
+         <Stack.Screen
+        name="AddAddress"
+        component={AddAddress}
+        options={{
+          title: 'Address Request',
+          headerBackTitleVisible: false,
+          headerStyle: {
+            backgroundColor: currentTheme.background_v2,
+          },
+          headerTintColor: '#fff',
+          headerTitleStyle: {
+            fontWeight: '500',
+          },
+        }}
       />
     </Stack.Navigator>
   );

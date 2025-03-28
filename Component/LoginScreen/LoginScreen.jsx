@@ -10,7 +10,7 @@ import {
   Alert,
   Platform,
 } from 'react-native';
-import messaging from '@react-native-firebase/messaging';
+
 import React, { useState, useEffect } from 'react';
 import { useNavigation } from '@react-navigation/native';
 import { TextInput } from 'react-native-gesture-handler';
@@ -36,25 +36,7 @@ const LoginScreen = () => {
   const toggleShowPassword = () => {
     setShowPassword(!showPassword);
   };
-  async function requestUserPermission() {
-    const authStatus = await messaging().requestPermission();
-    const enabled =
-      authStatus === messaging.AuthorizationStatus.AUTHORIZED ||
-      authStatus === messaging.AuthorizationStatus.PROVISIONAL;
 
-    if (enabled) {
-      getFCMToken()
-    }
-  }
-
-  async function getFCMToken() {
-    const token = await messaging().getToken();
-    console.log(token, 'fcm token');
-  }
-
-  useEffect(() => {
-    requestUserPermission();
-  }, [])
 
   const loginSubmit = async () => {
     try {
@@ -84,23 +66,41 @@ const LoginScreen = () => {
       else {
         setLoader(true);
         const url = `${BASE_URL}/login`;
-        console.log(data,'response')
         const response = await login(url, data);
-        if (response?.data?.status == true) {
-            if(response.data.data.id==2){
-              setEmail('');
-              setPassword('');
-              setEmailError('');
-              setPasswordError('');
-              setLoader(false);
-              if (response && response.data && response?.data?.data?.access_token) {
-                await AsyncStorage.setItem('TOKEN', response?.data?.data?.access_token);
+        if (response?.data?.status) {
+            if(response?.data?.data?.id==2){
+              if(response.data.data.reset_password==1){
+                setEmail('');
+                setPassword('');
+                setEmailError('');
+                setPasswordError('');
+                setLoader(false);
+                if (response && response.data && response?.data?.data?.access_token) {
+                  await AsyncStorage.setItem('TOKEN', response?.data?.data?.access_token);
+                  await AsyncStorage.setItem('reset_password', JSON.stringify(response?.data?.data?.reset_password));
+                }
+                showMessage({
+                  message: `${response?.data?.message}`,
+                  type: "success",
+                });
+                navigation.navigate('FirstTimeChangePassword');
               }
-              showMessage({
-                message: `${response?.data?.message}`,
-                type: "success",
-              });
-              navigation.navigate('MyTabbar');
+              else{
+                setEmail('');
+                setPassword('');
+                setEmailError('');
+                setPasswordError('');
+                setLoader(false);
+                if (response && response.data && response?.data?.data?.access_token) {
+                  await AsyncStorage.setItem('TOKEN', response?.data?.data?.access_token);
+                }
+                showMessage({
+                  message: `${response?.data?.message}`,
+                  type: "success",
+                });
+                navigation.navigate('MyTabbar');
+              }
+             
             }
             else{
               showMessage({

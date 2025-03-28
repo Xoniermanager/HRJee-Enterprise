@@ -7,9 +7,14 @@ const Splash = () => {
   const navigation = useNavigation();
   setTimeout(async () => {
     const token = await AsyncStorage.getItem('TOKEN');
-    if (token !== null) {
+    const reset_password = await AsyncStorage.getItem('reset_password');
+    if (token !== null && reset_password==0) {
       navigation.navigate('MyTabbar')
-    } else {
+    } 
+    else  if (token !== null && reset_password==1) {
+      navigation.navigate('FirstTimeChangePassword')
+    } 
+    else {
       navigation.navigate('OnboardingScreen');
     }
   }, 2000);

@@ -142,11 +142,11 @@ const Account = () => {
   if (loader) {
     return <AccountSkeleton />;
   }
+  
   return (
     <SafeAreaView
       style={[styles.container, {backgroundColor: currentTheme.background_v2}]}>
       <ScrollView showsVerticalScrollIndicator={false}>
-        {/* this is code of profile details */}
         <View
           style={{
             marginTop: 15,

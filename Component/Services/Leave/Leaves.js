@@ -21,10 +21,9 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import {getLeaveType} from '../../../APINetwork/ComponentApi';
 import HomeSkeleton from '../../Skeleton/HomeSkeleton';
 import {useIsFocused} from '@react-navigation/native';
-import PullToRefresh from '../../../PullToRefresh';
 const Leaves = ({navigation}) => {
   const {currentTheme, theme} = useContext(ThemeContext);
-  const isFocused = useIsFocused;
+  const isFocused = useIsFocused();
   const [list, setList] = useState(null);
   const showData = [
     {
@@ -52,7 +51,6 @@ const Leaves = ({navigation}) => {
   async function check() {
     try {
       let token = await AsyncStorage.getItem('TOKEN');
-
       const url = `${BASE_URL}/leaves`;
       const response = await getLeaveType(url, token);
       if (response?.data?.status == true) {
@@ -63,7 +61,6 @@ const Leaves = ({navigation}) => {
       console.error('Error making POST request:', error);
     }
   }
-
   useEffect(() => {
     check();
   }, [isFocused]);
@@ -111,6 +108,11 @@ const Leaves = ({navigation}) => {
         return 'grey';
     }
   };
+  const formatHalfDay = halfDay => {
+    if (halfDay === 'first_half') return 'First Half';
+    if (halfDay === 'second_half') return 'Second Half';
+    return halfDay;
+  };
   const renderLeaveList = ({item}) => {
     return (
       <View style={[styles.leaveStatus]}>
@@ -145,7 +147,30 @@ const Leaves = ({navigation}) => {
               <Text style={[styles.leaveText, {color: currentTheme.text}]}>
                 {item?.from} - {item?.to}
               </Text>
-              <Text style={[styles.leaveText, {color: currentTheme.text}]}>
+              {item.from_half_day != null ? (
+                <Text
+                  style={[
+                    {
+                      color: currentTheme.text,
+                      fontSize: 14,
+                      color: '#000',
+                      textAlign: 'center',
+                    },
+                  ]}>
+                  {`${formatHalfDay(item.from_half_day)} to ${formatHalfDay(
+                    item.to_half_day,
+                  )}`}
+                </Text>
+              ) : null}
+              <Text
+                style={[
+                  {
+                    color: currentTheme.text,
+                    fontSize: 14,
+                    color: '#000',
+                    textAlign: 'center',
+                  },
+                ]}>
                 {getLeaveDays(item?.from, item?.to)} Day - {item?.reason}
               </Text>
             </View>
@@ -174,14 +199,24 @@ const Leaves = ({navigation}) => {
           borderTopRightRadius: 40,
         }}>
         <View style={{margin: 18}}>
-          <TouchableOpacity
-            onPress={() => navigation.navigate('ApplyLeave')}
-            style={[
-              styles.applyButton,
-              {backgroundColor: currentTheme.background_v2},
-            ]}>
-            <Text style={styles.applyButtonText}>Apply Leave</Text>
-          </TouchableOpacity>
+          <View style={{flexDirection: 'row', justifyContent: 'flex-end'}}>
+            <TouchableOpacity
+              onPress={() => navigation.navigate('ApplyLeave')}
+              style={[
+                styles.applyButton,
+                {backgroundColor: currentTheme.background_v2, marginRight: 20},
+              ]}>
+              <Text style={styles.applyButtonText}>Apply Leave</Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              onPress={() => navigation.navigate('CompOff')}
+              style={[
+                styles.applyButton,
+                {backgroundColor: currentTheme.background_v2},
+              ]}>
+              <Text style={styles.applyButtonText}>Comp Off</Text>
+            </TouchableOpacity>
+          </View>
           <View style={styles.menu}>
             <FlatList
               style={{alignSelf: 'center'}}
@@ -210,7 +245,6 @@ const Leaves = ({navigation}) => {
     </SafeAreaView>
   );
 };
-
 const styles = StyleSheet.create({
   container: {
     flex: 1,
@@ -287,7 +321,7 @@ const styles = StyleSheet.create({
     borderLeftColor: 'red',
   },
   applyButton: {
-    padding: 15,
+    padding: 10,
     borderRadius: 10,
     backgroundColor: '#0000ff',
     alignItems: 'center',
@@ -295,8 +329,8 @@ const styles = StyleSheet.create({
   },
   applyButtonText: {
     color: '#ffffff',
-    fontSize: 16,
-    fontWeight: 'bold',
+    fontSize: 14,
+    // fontWeight: 'bold',
   },
   emptyContainer: {
     alignItems: 'center',

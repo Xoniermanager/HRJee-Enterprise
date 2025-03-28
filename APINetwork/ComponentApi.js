@@ -1,4 +1,5 @@
 import axiosDelete from './axiosDelete';
+import axiosGePunchIn from './axiosGePunchIn';
 import axiosGet from './axiosGet';
 import AxiosPost from './axiosPost';
 import axiosPost from './axiosPost';
@@ -167,8 +168,8 @@ export const setTokenDone=(url,data,token) => {
   let item = axiosPost(url,data,token);
   return item;
 };
-export const punchin=(url,token) => {
-  let item = axiosGet(url,token);
+export const punchin=(url,data,token) => {
+  let item = axiosGePunchIn(url,data,token);
   return item;
 };
 export const gettodayattendance=(url,token) => {
@@ -249,6 +250,10 @@ export const AllPRMList=(url,token)=>{
   return item;
 }
 export const AttendanceRequest=(url,data,token,form)=>{
+  let item = axiosPost(url,data,token,form);
+  return item
+}
+export const faceuploadKyc=(url,data,token,form)=>{
   let item = axiosPost(url,data,token,form);
   return item
 }

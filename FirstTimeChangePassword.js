@@ -11,20 +11,19 @@ import {
   Alert,
 } from 'react-native';
 import Ionicons from 'react-native-vector-icons/Ionicons';
-import {BASE_URL} from '../../utils';
-import {changePasswords} from '../../APINetwork/ComponentApi';
-import LoginGuestStyle from '../LoginScreen/LoginGuestStyle';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import {
   responsiveFontSize,
   responsiveHeight,
   responsiveWidth,
 } from 'react-native-responsive-dimensions';
-import Themes from '../Theme/Theme';
-import {ThemeContext} from '../../Store/ConetxtApi.jsx/ConextApi';
 import {useNavigation} from '@react-navigation/native';
 import {showMessage} from 'react-native-flash-message';
-const ChangePassword = () => {
+import {ThemeContext} from './Store/ConetxtApi.jsx/ConextApi';
+import {BASE_URL} from './utils';
+import {changePasswords} from './APINetwork/ComponentApi';
+import LoginGuestStyle from './Component/LoginScreen/LoginGuestStyle';
+const FirstTimeChangePassword = () => {
   const navigation = useNavigation();
   const {currentTheme} = useContext(ThemeContext);
   const [oldPassword, setOldPassword] = useState('');
@@ -58,6 +57,8 @@ const ChangePassword = () => {
         const url = `${BASE_URL}/change/password`;
         const response = await changePasswords(url, data, token, form);
         if (response?.data?.status == true) {
+            let reset_password=0;
+            await AsyncStorage.setItem('reset_password', JSON.stringify(reset_password));
           setLoader(false);
           setOldPassword('');
           setNewPassword('');
@@ -66,7 +67,7 @@ const ChangePassword = () => {
             message: `${response?.data?.message}`,
             type: 'success',
           });
-          navigation.goBack();
+          navigation.navigate('MyTabbar');
         } else {
           showMessage({
             message: `${response?.data?.message}`,
@@ -101,7 +102,7 @@ const ChangePassword = () => {
               marginVertical: 20,
               resizeMode: 'contain',
             }}
-            source={require('../../assets/ForgetPassword/reset-password.png')}
+            source={require('./assets/ForgetPassword/reset-password.png')}
           />
           <TextInput
             style={[
@@ -230,4 +231,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default ChangePassword;
+export default FirstTimeChangePassword;

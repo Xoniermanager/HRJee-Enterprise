@@ -8,7 +8,7 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native';
-import React, {useEffect, useState} from 'react';
+import React, {useContext, useEffect, useState} from 'react';
 import {Dropdown} from 'react-native-element-dropdown';
 import EvilIcons from 'react-native-vector-icons/EvilIcons';
 import DatePicker from 'react-native-date-picker';
@@ -24,9 +24,10 @@ import axios from 'axios';
 import { showMessage } from 'react-native-flash-message';
 import { AttendanceRequest } from '../../../APINetwork/ComponentApi';
 import { useNavigation } from '@react-navigation/native';
+import { ThemeContext } from '../../../Store/ConetxtApi.jsx/ConextApi';
 const UpdateRequestattendance = ({route}) => {
     const { id } = route?.params || {};
-    console.log(id)
+    const {currentTheme} = useContext(ThemeContext);
     const navigation=useNavigation();
     const [loader,setLoader]=useState(false);
   const timeOptions = [
@@ -261,7 +262,7 @@ const UpdateRequestattendance = ({route}) => {
           />
           <View style={styles.buttonRow}>
             <TouchableOpacity
-              style={styles.saveButton}
+              style={[styles.saveButton ,{  backgroundColor: currentTheme.background_v2,}]}
               onPress={() => attendance_Request()}>
                  {loader ? (
             <ActivityIndicator size="small" color="#fff" />

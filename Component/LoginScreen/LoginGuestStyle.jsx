@@ -6,7 +6,6 @@ import {
   } from 'react-native-responsive-dimensions';
 import Themes from '../Theme/Theme';
 const LoginGuestStyle = StyleSheet.create({
-
     contanier: {
         flex: 1,
         backgroundColor:'#0E0E64'
@@ -45,14 +44,14 @@ const LoginGuestStyle = StyleSheet.create({
         alignSelf: 'center',
         backgroundColor: '#0433DA',
         marginTop: responsiveHeight(5),
-        height: responsiveHeight(6.25),
+        height: responsiveHeight(5.25),
         justifyContent: 'center',
         alignItems: 'center',
       },
       submit_text: {
         color: '#fff',
-        fontSize: responsiveFontSize(2.1),
-        fontWeight: '500',
+        fontSize: responsiveFontSize(2),
+        fontWeight: '400',
       },
       account_text:{
         flexDirection:'row',
@@ -131,8 +130,58 @@ const LoginGuestStyle = StyleSheet.create({
     InputPassword:{
       width: responsiveWidth(68),
       color: Themes == 'dark' ? '#000' : '#000'
-    }
+    },
+    modalContainer: {
+      justifyContent: 'center',
+      alignItems: 'center',
+      backgroundColor: 'rgba(0,0,0,0.5)',
+      width: '100%',
+      flex:1
+    },
+    modalContent: {
+      width: '80%',
+      backgroundColor: '#fff',
+      padding: 20,
+      borderRadius: 10,
+    },
+    modalTitle: {
+      fontSize: 20,
+      fontWeight: 'bold',
+      marginBottom: 10,
+      textAlign: 'center',
+      color: '#000',
+    },
+    input: {
+      borderWidth: 1,
+      borderColor: '#ccc',
+      borderRadius: 5,
+      padding: 10,
+      fontSize: 16,
+      marginBottom: 10,
+      color: '#000',
+    },
+  
+    buttonRow: {
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      marginTop: 10,
+    },
+    saveButton: {
+      backgroundColor: '#0043ae',
+      padding: 10,
+      borderRadius: 5,
+      flex: 1,
+      marginRight: 5,
+    },
+    closeButton: {
+      backgroundColor: '#dc3545',
+      padding: 10,
+      borderRadius: 5,
+      flex: 1,
+      marginLeft: 5,
+    },
+    buttonText: {color: '#fff', textAlign: 'center', fontWeight: 'bold'},
+  
 
 });
-
 export default LoginGuestStyle;

@@ -77,14 +77,12 @@ const Attendance = () => {
   const [fromDate, setFromDate] = useState(null);
   const [toDate, setToDate] = useState(null);
   const [dailyDate, setDailyDate] = useState();
-
   const StatusItem = ({color, text, value}) => (
     <View style={[styles.statusItem, {backgroundColor: color}]}>
       <Text style={styles.statusText}>{text}</Text>
       <Text style={styles.statusValue}>{value}</Text>
     </View>
   );
-
   const LegendItem = ({color, text}) => (
     <View style={styles.legendItem}>
       <View style={[styles.legendColor, {backgroundColor: color}]} />
@@ -93,11 +91,6 @@ const Attendance = () => {
       </Text>
     </View>
   );
-
-  {
-    /* This is Services card List */
-  }
-
   const renderServicesList = ({item}) => (
     <View
       style={{
@@ -122,10 +115,8 @@ const Attendance = () => {
       </View>
     </View>
   );
-
   const onDayPress = day => {
     setSelectedDate(day.dateString);
-    console.log(day.dateString, 'day.dateString');
     attendance_by_date(day.dateString);
     setModalVisible(true);
   };
@@ -142,7 +133,6 @@ const Attendance = () => {
       console.error('Error making POST request:', error);
     }
   };
-
   async function getTodayAttendance() {
     let token = await AsyncStorage.getItem('TOKEN');
     try {
@@ -160,11 +150,9 @@ const Attendance = () => {
       setLoader(false);
     }
   }
-
   useEffect(() => {
     getTodayAttendance();
   }, []);
-
   useEffect(() => {
     if (fromDate && toDate) {
       getSearchAttendence();

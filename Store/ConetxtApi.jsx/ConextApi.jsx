@@ -23,6 +23,10 @@ const ConextApi = ({children}) => {
   const [empyId,setEmpyId]=useState();
   const [empyName,setEmpyName]=useState('')
   const [face_kyc_img, setFace_kyc_img] = useState();
+  const [requestAttendance,setRequestAttendance]=useState();
+  const [requestAnnouncements,setRequestAnnouncements]=useState();
+  const [menuAccessServies,setMenuAccessServies]=useState()
+  const [compOff,setCompOff]=useState();
   const services = [
     {
       id: '1',
@@ -53,6 +57,8 @@ const ConextApi = ({children}) => {
       nav: 'Announcement',
     },
   ];
+
+
   async function menuAccess() {
     try {
       let token = await AsyncStorage.getItem('TOKEN');
@@ -80,8 +86,78 @@ const ConextApi = ({children}) => {
       let token = await AsyncStorage.getItem('TOKEN');
       const url = `${BASE_URL}/profile/details`;
       const response = await getProfile(url, token);
+      let options = []
+      const serviesData=[ {
+        id: 1,
+        uri: require('../../assets/Services/s2.png'),
+        name: 'Leave',
+        nav: 'Leaves',
+      },
+      {
+        id: 3,
+        uri: require('../../assets/Services/s4.png'),
+        name: 'Visit Location',
+        nav: 'LocationList',
+      },]
+      response?.data?.data.menu_access?.map((item) => {
+        if (item.id=="76") {
+          options.push({
+            id: 76,
+            uri: require('../../assets/Services/s5.png'),
+            name: 'Attendance Request',
+            nav: 'AttendanceRequest',
+          })
+        } else if (item.id=="77") {
+          options.push({
+            id: 77,
+            uri: require('../../assets/ofiiceAddress.png'),
+            name: 'Office Address',
+            nav: 'ListOfficeAddress',
+          })
+        }
+        else if (item.id=="85") {
+          options.push({
+            id: 85,
+            uri: require('../../assets/Services/s3.png'),
+            name: 'Holiday',
+            nav: 'Holiday',
+          })
+        }
+        else if (item.id=="86") {
+          options.push({
+            id: 86,
+            uri: require('../../assets/Services/s6.png'),
+            name: 'Resign',
+            nav: 'Resign',
+          })
+        }
+        else if (item.id=="87") {
+          options.push({
+            id: 87,
+            uri: require('../../assets/Services/s5.png'),
+            name: 'PRM',
+            nav: 'PRMList',
+          })
+          
+        }    
+        return item;
+      })
+      setMenuAccessServies([...serviesData, ...options]);
 
       if (response?.data?.status === true) {
+        const RequestAttendance = response?.data?.data?.menu_access?.filter(
+          item => item?.id == '76',
+        );
+        console.log(RequestAttendance,'RequestAttendance')
+        setRequestAttendance(RequestAttendance);
+        const Announcements = response?.data?.data?.menu_access?.filter(
+          item => item?.id == '78',
+        );
+        setRequestAnnouncements(Announcements);
+        const CompOffs = response?.data?.data?.menu_access?.filter(
+          item => item?.id == '91',
+        );
+        setCompOff(CompOffs);
         setEmpyId(response?.data?.data?.details?.user_id);
         setEmpyName(response?.data?.data?.name);
         let facekycPermission=response?.data?.data?.details?.face_recognition
@@ -149,7 +225,6 @@ const ConextApi = ({children}) => {
     }
   }, [isManual]);
   const currentTheme = theme === 'light' ? lightTheme : darkTheme;
-
   return (
     <ThemeContext.Provider
       value={{
@@ -178,7 +253,11 @@ const ConextApi = ({children}) => {
         user_details,
         empyId,
         face_kyc_img,
-        empyName
+        empyName,
+        requestAttendance,
+        requestAnnouncements,
+        compOff,
+        menuAccessServies
       }}>
       {children}
     </ThemeContext.Provider>

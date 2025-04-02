@@ -21,7 +21,7 @@ import Themes from '../Theme/Theme';
 import {ThemeContext} from '../../Store/ConetxtApi.jsx/ConextApi';
 
 const Services = ({navigation}) => {
-  const {currentTheme} = useContext(ThemeContext);
+  const {currentTheme,menuAccessServies} = useContext(ThemeContext);
 
   const services = [
     {
@@ -95,7 +95,7 @@ const Services = ({navigation}) => {
           marginTop: 15,
         }}>
         <Text style={styles.name}>Services</Text>
-        <View
+        <ScrollView
           style={{
             backgroundColor: currentTheme.background,
             borderTopLeftRadius: 40,
@@ -103,14 +103,14 @@ const Services = ({navigation}) => {
             height: '100%',
           }}>
           <FlatList
-            data={services}
+            data={menuAccessServies}
             renderItem={renderServicesList}
             numColumns={2}
             keyExtractor={item => item.id}
             columnWrapperStyle={styles.row}
             contentContainerStyle={styles.containerlist}
           />
-        </View>
+        </ScrollView>
       </View>
     </SafeAreaView>
   );

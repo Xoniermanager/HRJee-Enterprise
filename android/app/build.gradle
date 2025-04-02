@@ -80,8 +80,8 @@ android {
         applicationId "com.hrjee_enterprise"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
-        versionCode 4
-        versionName "1.3"
+        versionCode 8
+        versionName "1.7"
     }
     signingConfigs {
         debug {

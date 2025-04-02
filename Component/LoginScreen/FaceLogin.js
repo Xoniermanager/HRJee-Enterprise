@@ -8,16 +8,16 @@ import {
 } from 'react-native-vision-camera';
 import {BlurView} from '@react-native-community/blur';
 import {ProgressBar} from 'react-native-paper';
-import {ThemeContext} from '../../Store/ConetxtApi.jsx/ConextApi';
 import AWS, {Rekognition, S3} from 'aws-sdk';
 import RNFS from 'react-native-fs';
 import {Buffer} from 'buffer';
 import {showMessage} from 'react-native-flash-message';
+import { useNavigation } from '@react-navigation/native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import {BASE_URL} from '../../utils';
-import {faceuploadKyc} from '../../APINetwork/ComponentApi';
 const {width, height} = Dimensions.get('window');
-const FaceCamera = ({punchIn}) => {
+const FaceLogin = ({route}) => {
+    const {FaceData}=route?.params
+    const navigation=useNavigation()
   const s3 = new S3({
     accessKeyId: AWS_ACCESS_KEY,
     secretAccessKey: AWS_SECRET_KEY,
@@ -30,18 +30,9 @@ const FaceCamera = ({punchIn}) => {
   });
   const cameraRef = useRef(null);
   const {requestPermission} = useCameraPermission();
-  const {
-    isCameraOpen,
-    setIsCameraOpen,
-    kycModal,
-    empyId,
-    face_kyc_img,
-    setKycModal,
-    user_details,
-  } = useContext(ThemeContext);
   const [matchProgress, setMatchProgress] = useState(0);
   const [pictureTaken, setPictureTaken] = useState(false);
-  const device = useCameraDevice('front');
+  const device = useCameraDevice('back');
   useEffect(() => {
     (async () => {
       const status = await Camera.getCameraPermissionStatus();
@@ -52,7 +43,6 @@ const FaceCamera = ({punchIn}) => {
   }, []);
 
   useEffect(() => {
-    if (isCameraOpen) {
       setPictureTaken(false);
       let progressInterval = setInterval(() => {
         setMatchProgress(prev => {
@@ -66,14 +56,13 @@ const FaceCamera = ({punchIn}) => {
       }, 1000);
 
       return () => clearInterval(progressInterval);
-    }
-  }, [isCameraOpen]);
+  }, []);
 
   useEffect(() => {
-    if (isCameraOpen && !pictureTaken) {
+    if (!pictureTaken) {
       setTimeout(() => takePicture(), 2000);
     }
-  }, [isCameraOpen, pictureTaken]);
+  }, [pictureTaken]);
 
   const takePicture = async () => {
     if (cameraRef.current && !pictureTaken) {
@@ -81,123 +70,20 @@ const FaceCamera = ({punchIn}) => {
       try {
         const options = {quality: 0.5, base64: true};
         const data = await cameraRef.current.takePhoto(options);
-        if (face_kyc_img == null) {
-          let uploaddata = await uploadFirstImage(data.path);
-          const s3ObjectKey = uploaddata.key;
-          uploadFaceKYC(s3ObjectKey);
-        } else {
-          let uploaddata = await uploadTmpImage(data.path);
+        console.log(data,'data')
+        let uploaddata = await uploadTmpImage(data.path);
+        console.log(uploaddata,'uploaddata')
           const s3ObjectKey = uploaddata?.key;
+          console.log(s3ObjectKey,'s3ObjectKey')
           const ss = await compareFaces(s3ObjectKey);
-        }
       } catch (error) {
         console.error('Error capturing image:', error);
       }
     }
   };
-  const uploadFaceKYC = async key => {
-    const token = await AsyncStorage.getItem('TOKEN');
-    const url = `${BASE_URL}/user/kyc/registration`;
-    let form = 0;
-    const data = {
-      face_kyc: key,
-    };
-    const response = await faceuploadKyc(url, data, token, form);
-    if (response.data.status) {
-      setIsCameraOpen(false);
-      user_details();
-      setKycModal(false);
-      showMessage({
-        message: response.data.message,
-        type: 'success',
-      });
-    }
-  };
-  const punchInFaceKyc = async () => {
-    const token = await AsyncStorage.getItem('TOKEN');
-    const url = `${BASE_URL}/user/punchIn/image`;
-    let form = 0;
-    const data = {
-      face_punchin_kyc: '12345678.png',
-    };
-    const response = await faceuploadKyc(url, data, token, form);
-    if (response.data.status) {
-      showMessage({
-        message: response.data.message,
-        type: 'success',
-      });
-    }
-  };
-  const uploadFirstImage = async uri => {
-    try {
-      let employeeNumber = empyId;
-      const fileData = await RNFS.readFile(uri, 'base64');
-      const buffer = Buffer.from(fileData, 'base64');
-      const rekognitionParams = {
-        Image: {Bytes: buffer},
-        Attributes: ['ALL'],
-      };
-      const rekognitionResponse = await rekognition
-        .detectFaces(rekognitionParams)
-        .promise();
-      const facesWithEyeContact = rekognitionResponse.FaceDetails.filter(
-        face => {
-          const eyesOpen = face.EyesOpen && face.EyesOpen.Value;
-          const yaw = face.Pose.Yaw;
-          const pitch = face.Pose.Pitch;
-          return eyesOpen && Math.abs(yaw) < 20 && Math.abs(pitch) < 20;
-        },
-      );
-      if (rekognitionResponse.FaceDetails.length > 1) {
-        setKycModal(false);
-        setIsCameraOpen(false);
-        showMessage({
-          message:
-            'Multiple faces detected. Please ensure only one face is in the image for KYC verification.',
-          type: 'danger',
-        });
-
-        return;
-      }
-
-      if (rekognitionResponse.FaceDetails.length === 0) {
-        setKycModal(false);
-        setIsCameraOpen(false);
-        showMessage({
-          message: 'No human faces detected. Upload aborted',
-          type: 'danger',
-        });
-
-        return;
-      }
-
-      if (facesWithEyeContact.length === 0) {
-        setKycModal(false);
-        setIsCameraOpen(false);
-        showMessage({
-          message:
-            'No front-facing faces with eye contact detected. Upload aborted.',
-          type: 'danger',
-        });
-        setIsCameraOpen(false);
-        return;
-      }
-      const params = {
-        Bucket: AWS_S3_BUCKET,
-        Key: `kyc-registration/${employeeNumber}.jpg`,
-        Body: buffer,
-        ContentType: 'image/jpeg',
-      };
-      const uploadResponse = await s3.upload(params).promise();
-      console.log('✅ Upload successful!', uploadResponse);
-      return uploadResponse;
-    } catch (error) {
-      console.error('S3 Upload Error:', error);
-    }
-  };
   const uploadTmpImage = async uri => {
     try {
-      let employeeNumber = empyId;
+      let employeeNumber = FaceData.emp_id;
       const fileData = await RNFS.readFile(uri, 'base64');
       const buffer = Buffer.from(fileData, 'base64');
       const rekognitionParams = {
@@ -221,31 +107,27 @@ const FaceCamera = ({punchIn}) => {
             'Multiple faces detected. Please ensure only one face is in the image for KYC verification.',
           type: 'danger',
         });
-        setIsCameraOpen(false);
         return;
       }
-
       if (rekognitionResponse.FaceDetails.length === 0) {
         showMessage({
           message: 'No human faces detected. Upload aborted',
           type: 'danger',
         });
-        setIsCameraOpen(false);
+       
         return;
       }
-
       if (facesWithEyeContact.length === 0) {
         showMessage({
           message:
             'No front-facing faces with eye contact detected. Upload aborted.',
           type: 'danger',
         });
-        setIsCameraOpen(false);
         return;
       }
       const params = {
         Bucket: AWS_S3_BUCKET,
-        Key: `hrjee_face_kyc/${employeeNumber}.jpg`,
+        Key: `hrjee_face_login/${employeeNumber}.jpg`,
         Body: buffer,
         ContentType: 'image/jpeg',
       };
@@ -267,7 +149,7 @@ const FaceCamera = ({punchIn}) => {
       TargetImage: {
         S3Object: {
           Bucket: AWS_S3_BUCKET,
-          Name: face_kyc_img,
+          Name: FaceData.faceImage,
         },
       },
       SimilarityThreshold: 90,
@@ -279,33 +161,44 @@ const FaceCamera = ({punchIn}) => {
           err.message ===
           'Requested image should either contain bytes or s3 object.'
         ) {
+            navigation.goBack();
           showMessage({
             message: 'Keep Your Face front to the camera',
             type: 'danger',
           });
-          setIsCameraOpen(false);
+         
         } else if (err.message === 'Request has invalid parameters') {
-          setIsCameraOpen(false);
+            navigation.goBack();
           showMessage({
             message: 'Keep Your Face front to the camera',
             type: 'danger',
           });
         } else {
+            navigation.goBack();
           showMessage({
             message: err.message,
             type: 'danger',
           });
-          setIsCameraOpen(false);
+         
         }
       } else if (data?.UnmatchedFaces.length > 0) {
+        navigation.goBack();
         showMessage({
           message: 'Face do not match',
           type: 'danger',
         });
-        setIsCameraOpen(false);
+       
       } else {
-        punchIn();
-        setIsCameraOpen(false);
+          AsyncStorage.setItem(
+            'TOKEN',
+            FaceData.token,
+          );
+        showMessage({
+            message: 'Face match success' ,
+            type: 'success',
+          });
+          navigation.navigate('MyTabbar');
+       
       }
     });
   };
@@ -317,7 +210,7 @@ const FaceCamera = ({punchIn}) => {
   return (
     <View style={styles.container}>
       <BlurView style={styles.blurOverlay} blurType="dark" blurAmount={20} />
-      {isCameraOpen && device ? (
+      {device ? (
         <View style={styles.cameraContainer}>
           <View style={styles.outerCircle}>
             <View style={styles.innerCircle}>
@@ -332,8 +225,7 @@ const FaceCamera = ({punchIn}) => {
           </View>
         </View>
       ) : null}
-      {isCameraOpen && (
-        <View style={styles.progressContainer}>
+     <View style={styles.progressContainer}>
           <Text style={styles.progressText}>
             Face Match: {Math.round(matchProgress * 100)}%
           </Text>
@@ -343,7 +235,6 @@ const FaceCamera = ({punchIn}) => {
             style={styles.progressBar}
           />
         </View>
-      )}
     </View>
   );
 };
@@ -388,4 +279,4 @@ const styles = StyleSheet.create({
   progressBar: {height: 12, borderRadius: 6, backgroundColor: '#444'},
 });
 
-export default FaceCamera;
+export default FaceLogin;

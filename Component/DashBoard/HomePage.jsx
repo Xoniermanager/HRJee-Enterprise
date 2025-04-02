@@ -72,7 +72,12 @@ const HomePage = ({navigation}) => {
     isCameraOpen,
     kycModal,
     setKycModal,
-    user_details
+    user_details,
+    empyName,
+    facePermission,
+    face_kyc_img,
+    requestAttendance
+    
   } = useContext(ThemeContext);
   const [getleavetypeapidata, setGetLeaveTypeApiData] = useState([]);
   const [loader, setLoader] = useState(false);
@@ -95,12 +100,12 @@ const HomePage = ({navigation}) => {
   const [fullTime, setfullTime] = useState(null);
   const [disabledBtn, setDisabledBtn] = useState(false);
   const [loading, setloading] = useState(false);
-  const [availableLeavesList,setAvailableLeavesList]=useState(null)
+  const [availableLeavesList, setAvailableLeavesList] = useState(null);
 
   const toggleModal = () => {
     setModalVisible(!isModalVisible);
   };
- 
+
   const timeOptions = [
     {label: '08:00 AM', value: '08:00 AM'},
     {label: '08:15 AM', value: '08:15 AM'},
@@ -233,7 +238,7 @@ const HomePage = ({navigation}) => {
     try {
       setLoader(true);
       let token = await AsyncStorage.getItem('TOKEN');
-      const url = `${BASE_URL}/profile`;
+      const url = `${BASE_URL}/profile/details`;
       const response = await getProfile(url, token, navigation);
 
       if (response?.data?.status === true) {
@@ -357,11 +362,10 @@ const HomePage = ({navigation}) => {
       }
     } catch (error) {
       console.log('Error making POST request:', error);
-    
     }
   }
   const handleRefresh = async () => {
-    user_details()
+    user_details();
     menuAccess();
     check();
     CheckDailyAttendances();
@@ -369,13 +373,13 @@ const HomePage = ({navigation}) => {
     getLastAttendance();
   };
   useEffect(() => {
-    user_details()
+    user_details();
     menuAccess();
     check();
     CheckDailyAttendances();
     checkleave();
     getLastAttendance();
-    availableLeaves()
+    availableLeaves();
   }, [ISFoucs]);
 
   const radioButtons: RadioButtonProps[] = useMemo(
@@ -532,15 +536,16 @@ const HomePage = ({navigation}) => {
           punch_in_longitude: long,
           punch_in_address: address.data?.results[0]?.formatted_address,
         };
-        console.log(body,'body')
+        console.log(body, 'body');
         setDisabledBtn(true);
         try {
-         
           const url = `${BASE_URL}/employee/make/attendance`;
           let token = await AsyncStorage.getItem('TOKEN');
-          const response = await punchin(url,body,token);
+          const response = await punchin(url, body, token);
           CheckDailyAttendances();
           if (response?.data?.status) {
+            setKycModal(false);
+            user_details()
             CheckDailyAttendances();
             setLoader(false);
             setloading(false);
@@ -550,7 +555,14 @@ const HomePage = ({navigation}) => {
               message: `${response?.data?.message}`,
               type: 'success',
             });
-          } else {
+          }
+          
+          else {
+            showMessage({
+              message: `${response?.data?.message}`,
+              type: 'danger',
+            });
+            setKycModal(false);
             setLoader(false);
             setloading(false);
             setDisabledBtn(false);
@@ -558,20 +570,29 @@ const HomePage = ({navigation}) => {
         } catch (error) {
           console.error('Error making POST request:', error);
           setloading(false);
+          setKycModal(false);
           setDisabledBtn(false);
           setLoader(false);
         }
-       
       })
       .catch(error => {
         const {code, message} = error;
-        console.log(message,'message')
+        console.log(message, 'message');
         setloading(false);
         showMessage({
           message: message,
           type: 'danger',
         });
       });
+  };
+  const handlePunchIn = async () => {
+    if (facePermission == 0) {
+      punch_IN();
+    } else if (face_kyc_img == null) {
+      setKycModal(true);
+    } else {
+      handleOpenCamera();
+    }
   };
   const punch_Out_EMP = async () => {
     setloading(true);
@@ -589,13 +610,12 @@ const HomePage = ({navigation}) => {
           punch_out_longitude: long,
           punch_out_address: address.data?.results[0]?.formatted_address,
         };
-        console.log(body,'body')
+        console.log(body, 'body');
         setDisabledBtn(true);
         try {
-         
           const url = `${BASE_URL}/employee/make/attendance`;
           let token = await AsyncStorage.getItem('TOKEN');
-          const response = await punchin(url,body,token);
+          const response = await punchin(url, body, token);
           CheckDailyAttendances();
           if (response?.data?.status) {
             CheckDailyAttendances();
@@ -608,6 +628,10 @@ const HomePage = ({navigation}) => {
               type: 'success',
             });
           } else {
+            showMessage({
+              message: `${response?.data?.message}`,
+              type: 'danger',
+            });
             setLoader(false);
             setloading(false);
             setDisabledBtn(false);
@@ -618,11 +642,10 @@ const HomePage = ({navigation}) => {
           setDisabledBtn(false);
           setLoader(false);
         }
-       
       })
       .catch(error => {
         const {code, message} = error;
-        console.log(message,'message')
+        console.log(message, 'message');
         setloading(false);
         showMessage({
           message: message,
@@ -677,9 +700,11 @@ const HomePage = ({navigation}) => {
   if (loader) {
     return <HomeSkeleton />;
   }
-  const ListData=getleavetypeapidata && getleavetypeapidata?.filter((item)=>{
-    return item.name==availableLeavesList?.map((item)=>item.leave_name)
-  })
+  const ListData =
+    getleavetypeapidata &&
+    getleavetypeapidata?.filter(item => {
+      return item.name == availableLeavesList?.map(item => item.leave_name);
+    });
   function convertTo24Hour(time) {
     let [hours, minutes] = time.match(/\d+/g);
     let period = time.match(/AM|PM/i);
@@ -882,11 +907,10 @@ const HomePage = ({navigation}) => {
   };
 
   if (isCameraOpen) {
-    return <FaceCamera  punchIn={punch_IN}/>;
+    return <FaceCamera punchIn={punch_IN} />;
   } else {
     return (
       <>
-   
         <View style={{flex: 1, backgroundColor: currentTheme.background}}>
           <View style={styles.parent}>
             <View
@@ -900,9 +924,10 @@ const HomePage = ({navigation}) => {
                   alignItems: 'center',
                   marginLeft: 15,
                 }}>
-                {getProfileApiData?.profile_image == '' ||
-                getProfileApiData?.profile_image == [] ||
-                getProfileApiData?.profile_image == null ? (
+                {getProfileApiData?.details?.profile_image ==
+                  'https://hrjee-dev.xonierconnect.com/storage' ||
+                getProfileApiData?.details?.profile_image == [] ||
+                getProfileApiData?.details?.profile_image == null ? (
                   <Image
                     style={{
                       height: 120,
@@ -921,7 +946,7 @@ const HomePage = ({navigation}) => {
                       alignSelf: 'center',
                       borderRadius: 50,
                     }}
-                    source={{uri: getProfileApiData?.profile_image}}
+                    source={{uri: getProfileApiData?.details?.profile_image}}
                   />
                 )}
                 <View style={{marginHorizontal: 15}}>
@@ -934,7 +959,7 @@ const HomePage = ({navigation}) => {
                   /> */}
                   <Text
                     style={{color: '#fff', fontSize: 15, fontWeight: 'bold'}}>
-                    {getProfileApiData?.name}
+                    {empyName}
                   </Text>
                   <Text style={{color: '#fff', fontSize: 18}}>
                     {formattedDate}
@@ -1054,7 +1079,7 @@ const HomePage = ({navigation}) => {
 
                   {!inTime && !outTime && (
                     <TouchableOpacity
-                      onPress={() => handleOpenCamera()}
+                      onPress={() => handlePunchIn()}
                       disabled={disabledBtn == true ? true : false}
                       style={{
                         backgroundColor: currentTheme.buttonText,
@@ -1107,21 +1132,28 @@ const HomePage = ({navigation}) => {
                   )}
                 </View>
               </View>
-              <TouchableOpacity onPress={() => setModalRequest(true)}>
-                <Text
-                  style={[
-                    {
-                      fontSize: 18,
-                      fontWeight: '600',
-                      textDecorationLine: 'underline',
-                      textAlign: 'right',
-                      marginRight: 8,
-                    },
-                    {color: theme == 'dark' ? '#000' : '#000'},
-                  ]}>
-                  Attendance Request
-                </Text>
-              </TouchableOpacity>
+              {
+                requestAttendance?.length>0?
+                (
+                  <TouchableOpacity onPress={() => setModalRequest(true)}>
+                  <Text
+                    style={[
+                      {
+                        fontSize: 18,
+                        fontWeight: '600',
+                        textDecorationLine: 'underline',
+                        textAlign: 'right',
+                        marginRight: 8,
+                      },
+                      {color: theme == 'dark' ? '#000' : '#000'},
+                    ]}>
+                    Attendance Request
+                  </Text>
+                </TouchableOpacity>
+                ):
+                null
+              }
+             
 
               <View>
                 <View
@@ -1688,9 +1720,7 @@ const HomePage = ({navigation}) => {
                 alignItems: 'center',
                 marginTop: responsiveHeight(1),
               }}
-              onPress={() => [
-                handleOpenCamera()
-              ]}>
+              onPress={() => [handleOpenCamera()]}>
               <Text
                 style={{
                   color: '#fff',
@@ -1799,7 +1829,6 @@ const HomePage = ({navigation}) => {
             setOpenStartDate(false);
           }}
         />
-     
       </>
     );
   }

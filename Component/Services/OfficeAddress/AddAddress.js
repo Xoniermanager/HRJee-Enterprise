@@ -8,15 +8,17 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native';
-import React, {useEffect, useState} from 'react';
+import React, {useContext, useEffect, useState} from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import {BASE_URL} from '../../../utils';
 import axios from 'axios';
 import {showMessage} from 'react-native-flash-message';
 import {AttendanceRequest} from '../../../APINetwork/ComponentApi';
 import {useNavigation} from '@react-navigation/native';
+import { ThemeContext } from '../../../Store/ConetxtApi.jsx/ConextApi';
 const AddAddress = ({route}) => {
   const id = route?.params?.id;
+  const {currentTheme} = useContext(ThemeContext);
   const navigation = useNavigation();
   const [loader, setLoader] = useState(false);
   const [reasonText, setReasonText] = useState('');
@@ -162,9 +164,9 @@ const AddAddress = ({route}) => {
             placeholderTextColor="#999"
             multiline
           />
-          <View style={styles.buttonRow}>
+          <View style={[styles.buttonRow]}>
             <TouchableOpacity
-              style={styles.saveButton}
+              style={[styles.saveButton,{  backgroundColor: currentTheme.background_v2,}]}
               onPress={() => address_Request()}>
               {loader ? (
                 <ActivityIndicator size="small" color="#fff" />

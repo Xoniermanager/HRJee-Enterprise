@@ -48,6 +48,7 @@ import UpdateRequestattendance from '../../Component/Services/AttendanceRequest/
 import FirstTimeChangePassword from '../../FirstTimeChangePassword';
 import ListOfficeAddress from '../../Component/Services/OfficeAddress/ListOfficeAddress';
 import AddAddress from '../../Component/Services/OfficeAddress/AddAddress';
+import FaceLogin from '../../Component/LoginScreen/FaceLogin';
 
 const MyStack = () => {
   const {currentTheme} = useContext(ThemeContext);
@@ -93,6 +94,11 @@ const MyStack = () => {
       <Stack.Screen
         name="HomePage"
         component={HomePage}
+        options={{headerShown: false}}
+      />
+       <Stack.Screen
+        name="FaceLogin"
+        component={FaceLogin}
         options={{headerShown: false}}
       />
 

@@ -14,6 +14,9 @@ const Splash = () => {
     else  if (token !== null && reset_password==1) {
       navigation.navigate('FirstTimeChangePassword')
     } 
+    else  if (token !== null) {
+      navigation.navigate('MyTabbar')
+    } 
     else {
       navigation.navigate('OnboardingScreen');
     }

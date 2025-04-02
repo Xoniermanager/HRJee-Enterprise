@@ -99,7 +99,15 @@ const Person_Detils = () => {
       const url = `${BASE_URL}/profile/details`;
       const response = await getProfile(url, token);
       if (response?.data?.status === true) {
-        setDetails(response.data.data);
+        setDetails({
+          name: response.data.data.name,
+          email: response.data.data.email,
+          father_name: response.data.data.details.father_name,
+          mother_name: response.data.data.details.mother_name,
+          blood_group: response.data.data.details.blood_group,
+          phone: response.data.data.details.phone,
+          profile_image: response.data.data.details.profile_image,
+        });
         handleGenderChange(response.data.data.gender);
         handleMerridChange(response.data.data.marital_status);
       } else {
@@ -122,6 +130,7 @@ const Person_Detils = () => {
     data.append('gender', details.gender);
     data.append('marital_status', details.marital_status);
     data.append('phone', details.phone);
+    console.log(data);
     if (image && image.path && image.mime && image.modificationDate) {
       var imagepath = {
         uri: image.path,
@@ -141,7 +150,7 @@ const Person_Detils = () => {
     let config = {
       method: 'post',
       maxBodyLength: Infinity,
-      url: 'https://hrjee-v2.xonierconnect.com/api/update/profile',
+      url: `${BASE_URL}/update/profile`,
       headers: {
         'Content-Type': 'multipart/form-data',
         Authorization: `Bearer ${token}`,
@@ -157,14 +166,20 @@ const Person_Detils = () => {
           type: 'success',
         });
         check();
+        navigation.goBack();
       })
       .catch(error => {
         setLoader(false);
-        console.log(error);
-        // showMessage({
-        //   message: Object.values(error.response.errors)[0][0],
-        //   type: 'danger',
-        // });
+        console.log(error.response.data);
+        if (error.response?.data?.message) {
+          const errorMessages = Object.values(error.response.data.message);
+          if (errorMessages.length > 0) {
+            showMessage({
+              message: errorMessages[0][0], // Display the first error message
+              type: 'danger',
+            });
+          }
+        }
       });
   };
   return (
@@ -230,9 +245,6 @@ const Person_Detils = () => {
               />
             </TouchableOpacity>
           </View>
-          <Text style={[styles.name, {color: currentTheme.text}]}>
-            Aditya Chauhan
-          </Text>
           <View
             style={[
               styles.inputContainer,

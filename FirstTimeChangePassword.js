@@ -1,4 +1,4 @@
-import React, {useContext, useState} from 'react';
+import React, {useContext, useState, useEffect} from 'react';
 import {
   View,
   TextInput,
@@ -9,8 +9,9 @@ import {
   Text,
   StyleSheet,
   Alert,
+  BackHandler,
+  ActivityIndicator,
 } from 'react-native';
-import Ionicons from 'react-native-vector-icons/Ionicons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import {
   responsiveFontSize,
@@ -23,6 +24,7 @@ import {ThemeContext} from './Store/ConetxtApi.jsx/ConextApi';
 import {BASE_URL} from './utils';
 import {changePasswords} from './APINetwork/ComponentApi';
 import LoginGuestStyle from './Component/LoginScreen/LoginGuestStyle';
+import Themes from './Component/Theme/Theme';
 const FirstTimeChangePassword = () => {
   const navigation = useNavigation();
   const {currentTheme} = useContext(ThemeContext);
@@ -33,6 +35,29 @@ const FirstTimeChangePassword = () => {
   const [newPasswordError, setNewPasswordError] = useState('');
   const [confirmPasswordError, setConfirmPasswordError] = useState('');
   const [loader, setLoader] = useState(false);
+  const [showOldPassword, setShowOldPassword] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
+  const [showconfirmPassword, setShowconfirmPassword] = useState(false);
+  const toggleShowOldPassword = () => {
+    setShowOldPassword(!showOldPassword);
+  };
+  const toggleShowPassword = () => {
+    setShowPassword(!showPassword);
+  };
+  const toggleShowconfirmPassword = () => {
+    setShowconfirmPassword(!showconfirmPassword);
+  };
+  useEffect(() => {
+    const backAction = () => {
+      Alert.alert("Exit App", "Are you sure you want to exit?", [
+        { text: "Cancel", style: "cancel" },
+        { text: "Exit", onPress: () => BackHandler.exitApp() },
+      ]);
+      return true;
+    };
+    const backHandler = BackHandler.addEventListener('hardwareBackPress', backAction);
+    return () => backHandler.remove();
+  }, []);
 
   let data = {
     old_password: oldPassword,
@@ -42,9 +67,23 @@ const FirstTimeChangePassword = () => {
 
   const handleChangePassword = async () => {
     const token = await AsyncStorage.getItem('TOKEN');
-    console.log(token, 'token');
     try {
-      if (newPassword !== confirmPassword) {
+      if (oldPassword.trim() === '') {
+        showMessage({
+          message: `Enter the old Password`,
+          type: 'danger',
+        });
+      } else if (newPassword.trim() === '') {
+        showMessage({
+          message: `Enter the new Password`,
+          type: 'danger',
+        });
+      } else if (confirmPassword.trim() === '') {
+        showMessage({
+          message: `Confirm your Password`,
+          type: 'danger',
+        });
+      } else if (newPassword !== confirmPassword) {
         showMessage({
           message: 'New passwords do not match',
           type: 'danger',
@@ -57,8 +96,11 @@ const FirstTimeChangePassword = () => {
         const url = `${BASE_URL}/change/password`;
         const response = await changePasswords(url, data, token, form);
         if (response?.data?.status == true) {
-            let reset_password=0;
-            await AsyncStorage.setItem('reset_password', JSON.stringify(reset_password));
+          let reset_password = 0;
+          await AsyncStorage.setItem(
+            'reset_password',
+            JSON.stringify(reset_password),
+          );
           setLoader(false);
           setOldPassword('');
           setNewPassword('');
@@ -78,6 +120,7 @@ const FirstTimeChangePassword = () => {
       }
     } catch (error) {
       console.error('Error making POST request:', error);
+      setLoader(false);
     }
   };
 
@@ -104,67 +147,109 @@ const FirstTimeChangePassword = () => {
             }}
             source={require('./assets/ForgetPassword/reset-password.png')}
           />
-          <TextInput
+          <View
             style={[
-              styles.input,
-              {
-                backgroundColor: currentTheme.inputText_color,
-                color: currentTheme.text,
-              },
-            ]}
-            placeholder="Old Password"
-            secureTextEntry
-            value={oldPassword}
-            onChangeText={setOldPassword}
-            onChange={() => setOldPasswordError(null)}
-            placeholderTextColor={currentTheme.text}
-          />
-          <TextInput
+              LoginGuestStyle.passInput,
+              {backgroundColor: currentTheme.inputText_color},
+            ]}>
+            <TextInput
+              placeholder="Old Password"
+              value={oldPassword}
+              onChangeText={prev => setOldPassword(prev)}
+              secureTextEntry={!showOldPassword}
+              style={LoginGuestStyle.InputPassword}
+              onChange={() => setOldPasswordError(null)}
+              placeholderTextColor={Themes == 'dark' ? '#000' : '#000'}
+            />
+            <TouchableOpacity onPress={() => toggleShowOldPassword()}>
+              {showOldPassword ? (
+                <Image
+                  source={require('./assets/Login/hide.png')}
+                  style={{width: 25, height: 25, marginRight: 10}}
+                />
+              ) : (
+                <Image
+                  source={require('./assets/Login/show.png')}
+                  style={{width: 25, height: 25, marginRight: 10}}
+                />
+              )}
+            </TouchableOpacity>
+          </View>
+          <View
             style={[
-              styles.input,
-              {
-                backgroundColor: currentTheme.inputText_color,
-                color: currentTheme.text,
-              },
-            ]}
-            placeholder="New Password"
-            secureTextEntry
-            value={newPassword}
-            onChangeText={setNewPassword}
-            onChange={() => setNewPasswordError(null)}
-            placeholderTextColor={currentTheme.text}
-          />
+              LoginGuestStyle.passInput,
+              {backgroundColor: currentTheme.inputText_color},
+            ]}>
+            <TextInput
+              placeholder="New Password"
+              value={newPassword}
+              onChangeText={prev => setNewPassword(prev)}
+              secureTextEntry={!showPassword}
+              style={LoginGuestStyle.InputPassword}
+              onChange={() => setNewPasswordError(null)}
+              placeholderTextColor={Themes == 'dark' ? '#000' : '#000'}
+            />
+            <TouchableOpacity onPress={() => toggleShowPassword()}>
+              {showPassword ? (
+                <Image
+                  source={require('./assets/Login/hide.png')}
+                  style={{width: 25, height: 25, marginRight: 10}}
+                />
+              ) : (
+                <Image
+                  source={require('./assets/Login/show.png')}
+                  style={{width: 25, height: 25, marginRight: 10}}
+                />
+              )}
+            </TouchableOpacity>
+          </View>
+
           {newPasswordError ? (
             <Text style={LoginGuestStyle.error}>{newPasswordError}</Text>
           ) : null}
-          <TextInput
+          <View
             style={[
-              styles.input,
-              {
-                backgroundColor: currentTheme.inputText_color,
-                color: currentTheme.text,
-              },
-            ]}
-            placeholder="Confirm New Password"
-            placeholderTextColor={currentTheme.text}
-            secureTextEntry
-            value={confirmPassword}
-            onChangeText={setConfirmPassword}
-            onChange={() => setConfirmPasswordError(null)}
-            // placeholderTextColor={Themes == 'dark' ? '#000' : '#000'}
-            setNewPasswordError
-          />
+              LoginGuestStyle.passInput,
+              {backgroundColor: currentTheme.inputText_color},
+            ]}>
+            <TextInput
+              placeholder="Confirm New Password"
+              value={confirmPassword}
+              onChangeText={prev => setConfirmPassword(prev)}
+              secureTextEntry={!showconfirmPassword}
+              style={LoginGuestStyle.InputPassword}
+              onChange={() => setConfirmPasswordError(null)}
+              placeholderTextColor={Themes == 'dark' ? '#000' : '#000'}
+            />
+            <TouchableOpacity onPress={() => toggleShowconfirmPassword()}>
+              {showconfirmPassword ? (
+                <Image
+                  source={require('./assets/Login/hide.png')}
+                  style={{width: 25, height: 25, marginRight: 10}}
+                />
+              ) : (
+                <Image
+                  source={require('./assets/Login/show.png')}
+                  style={{width: 25, height: 25, marginRight: 10}}
+                />
+              )}
+            </TouchableOpacity>
+          </View>
           {confirmPasswordError ? (
             <Text style={LoginGuestStyle.error}>{confirmPasswordError}</Text>
           ) : null}
-          {/* <Button title="Change Password" onPress={handleChangePassword} /> */}
           <TouchableOpacity
             onPress={handleChangePassword}
             style={[
               styles.updateButton,
-              {backgroundColor: currentTheme.background_v2},
+              {backgroundColor: currentTheme.background_v2, marginTop: 20},
             ]}>
+               {loader ? (
+            <ActivityIndicator size="small" color="#fff" />
+          ) : (
             <Text style={styles.updateButtonText}>Submit</Text>
+          )}
+         
           </TouchableOpacity>
         </View>
       </ScrollView>

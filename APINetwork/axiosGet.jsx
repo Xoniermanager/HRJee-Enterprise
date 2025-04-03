@@ -18,10 +18,7 @@ const axiosGet = async (url, token, navigation) => {
     if (error.response) {
       const { status } = error.response;
       if (status === 401) {
-        showMessage({
-          message: 'Your session has expired. Please log in again.',
-          type: "danger",
-        })
+      
         AsyncStorage.removeItem('TOKEN')
         navigate('LoginScreen'); 
       }

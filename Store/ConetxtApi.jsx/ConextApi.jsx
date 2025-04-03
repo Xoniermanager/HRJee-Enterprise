@@ -27,6 +27,8 @@ const ConextApi = ({children}) => {
   const [requestAnnouncements,setRequestAnnouncements]=useState();
   const [menuAccessServies,setMenuAccessServies]=useState()
   const [compOff,setCompOff]=useState();
+  const [rewardList,setRewardList]=useState('');
+  const [teamUser,setTeamUser]=useState()
   const services = [
     {
       id: '1',
@@ -86,6 +88,8 @@ const ConextApi = ({children}) => {
       let token = await AsyncStorage.getItem('TOKEN');
       const url = `${BASE_URL}/profile/details`;
       const response = await getProfile(url, token);
+      setRewardList(response?.data?.data?.user_reward);
+      setTeamUser(response?.data?.data?.manager_employees);
       let options = []
       const serviesData=[ {
         id: 1,
@@ -98,45 +102,62 @@ const ConextApi = ({children}) => {
         uri: require('../../assets/Services/s4.png'),
         name: 'Visit Location',
         nav: 'LocationList',
-      },]
+      },
+      {
+        id: 4,
+        uri: require('../../assets/Services/s4.png'),
+        name: 'Team',
+        nav: 'Team',
+      },
+   
+    ]
       response?.data?.data.menu_access?.map((item) => {
-        if (item.id=="76") {
+        if (item.id=="94") {
           options.push({
-            id: 76,
+            id: 94,
             uri: require('../../assets/Services/s5.png'),
             name: 'Attendance Request',
             nav: 'AttendanceRequest',
           })
-        } else if (item.id=="77") {
+        } else if (item.id=="95") {
           options.push({
-            id: 77,
+            id: 95,
             uri: require('../../assets/ofiiceAddress.png'),
             name: 'Office Address',
             nav: 'ListOfficeAddress',
           })
         }
-        else if (item.id=="85") {
+        else if (item.id=="103") {
           options.push({
-            id: 85,
+            id: 103,
             uri: require('../../assets/Services/s3.png'),
             name: 'Holiday',
             nav: 'Holiday',
           })
         }
-        else if (item.id=="86") {
+        else if (item.id=="104") {
           options.push({
-            id: 86,
+            id: 104,
             uri: require('../../assets/Services/s6.png'),
             name: 'Resign',
             nav: 'Resign',
           })
         }
-        else if (item.id=="87") {
+        else if (item.id=="105") {
           options.push({
-            id: 87,
+            id: 105,
             uri: require('../../assets/Services/s5.png'),
             name: 'PRM',
             nav: 'PRMList',
+          })
+          
+        } 
+        else if (item.id=="110") {
+          options.push({
+            id: 110,
+            uri: require('../../assets/HomeScreen/medal.png'),
+            name: 'Reward',
+            nav: 'Reward',
           })
           
         }    
@@ -257,7 +278,9 @@ const ConextApi = ({children}) => {
         requestAttendance,
         requestAnnouncements,
         compOff,
-        menuAccessServies
+        menuAccessServies,
+        rewardList,
+        teamUser
       }}>
       {children}
     </ThemeContext.Provider>

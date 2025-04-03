@@ -49,6 +49,10 @@ import FirstTimeChangePassword from '../../FirstTimeChangePassword';
 import ListOfficeAddress from '../../Component/Services/OfficeAddress/ListOfficeAddress';
 import AddAddress from '../../Component/Services/OfficeAddress/AddAddress';
 import FaceLogin from '../../Component/LoginScreen/FaceLogin';
+import Reward from '../../Component/Services/Reward/Reward';
+import Team from '../../Component/Services/Team/Team';
+import UserAttendance from '../../Component/Services/Team/UserAttendance';
+import UserLeave from '../../Component/Services/Team/UserLeave';
 
 const MyStack = () => {
   const {currentTheme} = useContext(ThemeContext);
@@ -181,6 +185,70 @@ const MyStack = () => {
         component={AddCompoff}
         options={{
           title: 'Add Comp Off',
+
+          headerBackTitleVisible: false,
+          headerStyle: {
+            backgroundColor: currentTheme.background_v2,
+          },
+          headerTintColor: '#fff',
+          headerTitleStyle: {
+            fontWeight: '500',
+          },
+        }}
+      />
+       <Stack.Screen
+        name="UserAttendance"
+        component={UserAttendance}
+        options={{
+          title: 'User Attendance',
+
+          headerBackTitleVisible: false,
+          headerStyle: {
+            backgroundColor: currentTheme.background_v2,
+          },
+          headerTintColor: '#fff',
+          headerTitleStyle: {
+            fontWeight: '500',
+          },
+        }}
+      />
+       <Stack.Screen
+        name="Team"
+        component={Team}
+        options={{
+          title: 'Team',
+
+          headerBackTitleVisible: false,
+          headerStyle: {
+            backgroundColor: currentTheme.background_v2,
+          },
+          headerTintColor: '#fff',
+          headerTitleStyle: {
+            fontWeight: '500',
+          },
+        }}
+      />
+       <Stack.Screen
+        name="UserLeave"
+        component={UserLeave}
+        options={{
+          title: 'User Leave',
+
+          headerBackTitleVisible: false,
+          headerStyle: {
+            backgroundColor: currentTheme.background_v2,
+          },
+          headerTintColor: '#fff',
+          headerTitleStyle: {
+            fontWeight: '500',
+          },
+        }}
+      />
+       <Stack.Screen
+        name="Reward"
+        component={Reward}
+        options={{
+          title: 'Reward',
 
           headerBackTitleVisible: false,
           headerStyle: {

@@ -25,11 +25,6 @@ const axiosDelete = async (url, data, token) => {
       if (error.response) {
         const { status } = error.response;
         if (status === 401) {
-          // Handle token expired
-          showMessage({
-            message: 'Your session has expired. Please log in again.',
-            type: "danger",
-          })
           AsyncStorage.removeItem('TOKEN')
           navigate('LoginScreen'); // Navigate using the navigation service
         }

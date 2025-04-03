@@ -143,7 +143,7 @@ const ListOfficeAddress = () => {
               borderRadius: 5,
               alignItems: 'center',
               width: responsiveWidth(40),
-              marginRight: 20,
+             
             }}>
             <Text style={{color: 'white', fontWeight: '700'}}>ADD ADDRESS</Text>
           </TouchableOpacity>

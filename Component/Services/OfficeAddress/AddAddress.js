@@ -77,12 +77,12 @@ const AddAddress = ({route}) => {
     const token = await AsyncStorage.getItem('TOKEN');
     if (address.trim() === '') {
       showMessage({
-        message: 'Please Enter Address',
+        message: 'Please enter your address.',
         type: 'danger',
       });
     } else if (reasonText.trim() === '') {
       showMessage({
-        message: 'Please Enter Reason',
+        message: 'Please enter a reason.',
         type: 'danger',
       });
     } else {

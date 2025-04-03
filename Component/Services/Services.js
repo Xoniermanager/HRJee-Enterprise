@@ -95,13 +95,14 @@ const Services = ({navigation}) => {
           marginTop: 15,
         }}>
         <Text style={styles.name}>Services</Text>
-        <ScrollView
+        <View
           style={{
             backgroundColor: currentTheme.background,
             borderTopLeftRadius: 40,
             borderTopRightRadius: 40,
             height: '100%',
-          }}>
+
+               }}>
           <FlatList
             data={menuAccessServies}
             renderItem={renderServicesList}
@@ -109,8 +110,10 @@ const Services = ({navigation}) => {
             keyExtractor={item => item.id}
             columnWrapperStyle={styles.row}
             contentContainerStyle={styles.containerlist}
+          
+            
           />
-        </ScrollView>
+        </View>
       </View>
     </SafeAreaView>
   );
@@ -157,4 +160,5 @@ const styles = StyleSheet.create({
     elevation: 7,
     borderWidth: Platform.OS == 'ios' ? 0.3 : null,
   },
+ 
 });

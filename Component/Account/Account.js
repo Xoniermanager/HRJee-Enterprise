@@ -50,7 +50,7 @@ const Account = () => {
       name: 'Award',
      
       backgroundcolor: theme == 'light' ? '#44D5FB' : '#242B3A',
-      nav:'Award'
+      nav:'Reward'
     },
   ];
   const [getProfileApiData, setGetProfileApiData] = useState('');

@@ -510,16 +510,7 @@ const Attendance = () => {
                     borderWidth: 0.5,
                     borderColor: currentTheme.text,
                   }}>
-                  <Image
-                    style={{
-                      height: 50,
-                      width: 50,
-                      resizeMode: 'contain',
-                      alignSelf: 'center',
-                      tintColor: currentTheme.text,
-                    }}
-                    source={require('../../assets/Attendence/thumb.png')}
-                  />
+                 
                   <Text
                     style={{
                       fontSize: 20,
@@ -569,16 +560,7 @@ const Attendance = () => {
                     borderWidth: 0.5,
                     borderColor: currentTheme.text,
                   }}>
-                  <Image
-                    style={{
-                      height: 50,
-                      width: 50,
-                      resizeMode: 'contain',
-                      alignSelf: 'center',
-                      tintColor: currentTheme.text,
-                    }}
-                    source={require('../../assets/Attendence/thumb.png')}
-                  />
+                  
                   <Text
                     style={{
                       fontSize: 20,

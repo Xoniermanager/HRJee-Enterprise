@@ -32,7 +32,7 @@ const FaceLogin = ({route}) => {
   const {requestPermission} = useCameraPermission();
   const [matchProgress, setMatchProgress] = useState(0);
   const [pictureTaken, setPictureTaken] = useState(false);
-  const device = useCameraDevice('back');
+  const device = useCameraDevice('front');
   useEffect(() => {
     (async () => {
       const status = await Camera.getCameraPermissionStatus();

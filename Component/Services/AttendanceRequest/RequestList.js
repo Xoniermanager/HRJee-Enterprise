@@ -178,7 +178,7 @@ const styles = StyleSheet.create({
     padding: 20,
   },
   emptyText: {
-    fontSize: 16,
+    fontSize: 18,
     color: '#999',
     fontWeight: 'bold',
   },

@@ -26,10 +26,7 @@ const axiosPut = async (url, data, token, form) => {
         const { status } = error.response;
         if (status === 401) {
           // Handle token expired
-          showMessage({
-            message: 'Your session has expired. Please log in again.',
-            type: "danger",
-          })
+       
           AsyncStorage.removeItem('TOKEN')
           navigation.navigate('LoginScreen'); // Navigate to the login screen
           navigate('LoginScreen'); // Navigate using the navigation service

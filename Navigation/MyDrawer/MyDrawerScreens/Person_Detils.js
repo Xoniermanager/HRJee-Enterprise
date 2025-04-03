@@ -54,6 +54,7 @@ const Person_Detils = () => {
     setDetails(prev => ({...prev, [key]: value}));
   };
   const handleGenderChange = gender => {
+    console.log(gender, 'gender');
     setDetails(prev => ({...prev, gender}));
     if (gender === 'M') {
       setIsMale(true);
@@ -108,8 +109,8 @@ const Person_Detils = () => {
           phone: response.data.data.details.phone,
           profile_image: response.data.data.details.profile_image,
         });
-        handleGenderChange(response.data.data.gender);
-        handleMerridChange(response.data.data.marital_status);
+        handleGenderChange(response.data.data.details.gender);
+        handleMerridChange(response.data.data.details.marital_status);
       } else {
       }
     } catch (error) {
@@ -139,7 +140,7 @@ const Person_Detils = () => {
       };
       data.append('image', imagepath);
     }
-    data.append('profile_image', imagepath);
+    data.append('profile_image', imagepath ? imagepath : details.profile_image);
     data.append(
       'date_of_birth',
       Start_date != 'undefined-NaN-undefined'
@@ -212,16 +213,22 @@ const Person_Detils = () => {
               styles.profileSection,
               {borderWidth: 1, borderColor: currentTheme.text},
             ]}>
-            {image ? (
+            {image?.path ? (
               <Image
                 source={{
-                  uri: image ? image.path : 'https://via.placeholder.com/100',
+                  uri: image.path,
                 }}
                 style={[styles.profileImage]}
               />
             ) : (
               <Image
-                source={{uri: details?.profile_image}}
+                source={{
+                  uri:
+                    details?.profile_image ==
+                    'https://hrjee-dev.xonierconnect.com/storage'
+                      ? 'https://cdn-icons-png.flaticon.com/512/149/149071.png'
+                      : details?.profile_image,
+                }}
                 style={[styles.profileImage]}
               />
             )}

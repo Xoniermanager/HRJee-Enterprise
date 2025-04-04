@@ -261,3 +261,12 @@ export const faceLogin=(url,data,token,form)=>{
   let item = axiosPost(url,data,token,form);
   return item
 }
+export const courseeList=(url,token)=>{
+  let item = axiosGet(url,token);
+  return item;
+}
+export const coourseDeatils=(url,token)=>{
+  let item =axiosGet(url,token)
+  return item;
+}
+

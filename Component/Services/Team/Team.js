@@ -16,7 +16,7 @@ const Team = () => {
   const [selectedUser, setSelectedUser] = useState(null);
   const [userId,setUserId]=useState(null)
   const [modalVisible, setModalVisible] = useState(false);
-  const {teamUser} = useContext(ThemeContext);
+  const {teamUser,currentTheme} = useContext(ThemeContext);
   const navigation = useNavigation();
   const handleMenuClick = user => {
     setSelectedUser(user);
@@ -44,8 +44,8 @@ const Team = () => {
   );
 
   return (
-    <View style={styles.container}>
-      <Text style={styles.header}>Team Management</Text>
+    <View style={[styles.container ,{backgroundColor: currentTheme.background}]}>
+      <Text style={[styles.header,{color:currentTheme.text}]}>Team Management</Text>
       <FlatList
         data={teamUser}
         renderItem={renderItem}

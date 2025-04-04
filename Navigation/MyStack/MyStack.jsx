@@ -53,6 +53,8 @@ import Reward from '../../Component/Services/Reward/Reward';
 import Team from '../../Component/Services/Team/Team';
 import UserAttendance from '../../Component/Services/Team/UserAttendance';
 import UserLeave from '../../Component/Services/Team/UserLeave';
+import Course from '../../Component/Services/Course/Course';
+import CourseDetails from '../../Component/Services/Course/CourseDetails';
 
 const MyStack = () => {
   const {currentTheme} = useContext(ThemeContext);
@@ -181,10 +183,40 @@ const MyStack = () => {
         }}
       />
       <Stack.Screen
+      name='CourseDetails'
+      component={CourseDetails}
+      options={{
+        title:'Course Details',
+        headerBackTitleVisible: false,
+        headerStyle:{
+          backgroundColor:currentTheme.background_v2
+        },
+        headerTintColor: '#fff',
+          headerTitleStyle: {
+            fontWeight: '500',
+          },
+      }}
+      />
+      <Stack.Screen
         name="AddCompoff"
         component={AddCompoff}
         options={{
           title: 'Add Comp Off',
+          headerBackTitleVisible: false,
+          headerStyle: {
+            backgroundColor: currentTheme.background_v2,
+          },
+          headerTintColor: '#fff',
+          headerTitleStyle: {
+            fontWeight: '500',
+          },
+        }}
+      />
+       <Stack.Screen
+        name="Course"
+        component={Course}
+        options={{
+          title: 'Latest Course',
 
           headerBackTitleVisible: false,
           headerStyle: {

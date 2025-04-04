@@ -23,18 +23,38 @@ const UserAttendance = ({route}) => {
   const navigation = useNavigation();
   const isFocuesd = useIsFocused();
   const [list, setList] = useState(null);
+  const [lastPage, setLastPage] = useState('');
+  const [currentPage, setCurrentPage] = useState(1);
+  const [loader, setLoader] = useState('');
   const {currentTheme} = useContext(ThemeContext);
   const getRequestlist = async () => {
     const token = await AsyncStorage.getItem('TOKEN');
     const url = `${BASE_URL}/get/team/details/${id}`;
     const response = await asignTask(url, token);
     setList(response?.data?.data?.attendance?.data);
+    setLastPage(response?.data?.data?.attendance.last_page);
   };
   useEffect(() => {
     getRequestlist();
   }, [isFocuesd]);
   const handleRefresh = () => {
     getRequestlist();
+  };
+  const fetchMore = async () => {
+    if (currentPage < lastPage) {
+      const nextPage = currentPage + 1;
+      const token = await AsyncStorage.getItem('TOKEN');
+      const url = `${BASE_URL}/get/team/details/${id}?page=${nextPage}`;
+      const response = await courseeList(url, token);
+      setLoader(response?.data?.data?.attendance?.data);
+      setCurrentPage(nextPage);
+      setList(prevData => [
+        ...prevData,
+        ...response?.data?.data?.attendance?.data,
+      ]);
+    } else {
+      setLoader([]);
+    }
   };
 
   const renderItem = ({item, index}) => {
@@ -85,6 +105,13 @@ const UserAttendance = ({route}) => {
           renderItem={renderItem}
           keyExtractor={item => item.id}
           contentContainerStyle={styles.container}
+          onEndReached={() => fetchMore()}
+          ListFooterComponent={() =>
+            loader && loader?.length == 0 ? null : loader?.length <
+              10 ? null : (
+              <Reload />
+            )
+          }
           ListEmptyComponent={
             <View style={styles.emptyContainer}>
               <Text style={styles.emptyText}>No data found</Text>

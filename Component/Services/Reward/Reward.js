@@ -6,8 +6,8 @@ import {ThemeContext} from '../../../Store/ConetxtApi.jsx/ConextApi';
 export default function Reward() {
   const {rewardList, currentTheme} = useContext(ThemeContext);
   return (
-    <View style={styles.container}>
-      <Text style={styles.sectionTitle}>Available Rewards</Text>
+    <View style={[styles.container,{backgroundColor: currentTheme.background}]}>
+      <Text style={[styles.sectionTitle,{color:currentTheme.text}]}>Available Rewards</Text>
       <FlatList
         data={rewardList}
         keyExtractor={item => item.id.toString()}
@@ -17,16 +17,16 @@ export default function Reward() {
           </View>
         }
         renderItem={({item}) => (
-          <Card style={styles.rewardCard}>
+          <Card style={[styles.rewardCard,{backgroundColor: currentTheme.background_v2}]}>
             <Card.Content>
               <View style={styles.rewardRow}>
                 <Image source={{uri: item.image}} style={styles.rewardImage} />
                 <View style={styles.rewardDetails}>
-                  <Text style={styles.rewardText}>{item.reward_name}</Text>
-                  <Text style={styles.rewardSubText}>
+                  <Text style={[styles.rewardText ,{color:currentTheme.text}]}>{item.reward_name}</Text>
+                  <Text style={[styles.rewardSubText ,{color:currentTheme.text}]}>
                     {item.date} - {item.reward_category.name}
                   </Text>
-                  <Text style={styles.rewardMessage}>{item.description}</Text>
+                  <Text style={[styles.rewardMessage,{color:currentTheme.text}]}>{item.description}</Text>
                 </View>
                 <CheckCircle size={24} color="green" />
               </View>

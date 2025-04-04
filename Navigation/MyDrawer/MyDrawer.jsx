@@ -67,39 +67,7 @@ const MyDrawer = () => {
     ),
   }}
 />
-      {/* <Drawer.Screen
-        name="Address"
-        component={Address}
-        options={{
-          drawerIcon: ({}) => (
-            <View style={styles.drawerBox}>
-              <Text style={styles.drawerText}>Address</Text>
-            </View>
-          ),
-        }}
-      /> */}
-      {/* <Drawer.Screen
-        name="PunchIn"
-        component={PunchIn}
-        options={{
-          drawerIcon: ({}) => (
-            <View style={styles.drawerBox}>
-              <Text style={styles.drawerText}>Punch In</Text>
-            </View>
-          ),
-        }}
-      />
-      <Drawer.Screen
-        name="PunchOut"
-        component={PunchOut}
-        options={{
-          drawerIcon: ({}) => (
-            <View style={styles.drawerBox}>
-              <Text style={styles.drawerText}>Punch Out</Text>
-            </View>
-          ),
-        }}
-      /> */}
+      
       <Drawer.Screen
         name="ChangePassword"
         component={ChangePassword}

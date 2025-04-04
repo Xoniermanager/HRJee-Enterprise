@@ -1,4 +1,4 @@
-import { StyleSheet, Text, View, Image, TouchableOpacity, Alert, Switch } from 'react-native';
+import { StyleSheet, Text, View, TouchableOpacity, Alert, Switch, Platform } from 'react-native';
 import React, { useContext, useEffect, useState } from 'react';
 import {
   DrawerContentScrollView,
@@ -7,30 +7,42 @@ import {
 import { logout } from '../../APINetwork/ComponentApi';
 import { BASE_URL } from '../../utils';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import axios from 'axios';
 import { showMessage } from "react-native-flash-message";
 import { useNavigation } from '@react-navigation/native';
 import { ThemeContext } from '../../Store/ConetxtApi.jsx/ConextApi';
 import { responsiveFontSize } from 'react-native-responsive-dimensions';
-
+import VersionCheck from 'react-native-version-check';
 
 export default function CustomDrawer(props) {
-  const [loader, setLoader] = useState(false)
-  const navigation = useNavigation()
-  const {toggleTheme, currentTheme, theme, isEnabled} =
-  useContext(ThemeContext);
+  const [loader, setLoader] = useState(false);
+  const [version, setVersion] = useState('');
+  const navigation = useNavigation();
+  const { toggleTheme, isEnabled } = useContext(ThemeContext);
+
+  useEffect(() => {
+    const checkAppVersion = async () => {
+      try {
+        const latestVersion = await VersionCheck.getLatestVersion({
+          packageName: Platform.OS === 'ios' ? 'com.appHrjeeEnterprise' : 'com.hrjee_enterprise',
+          ignoreErrors: true,
+        });
+        const currentVersion = VersionCheck.getCurrentVersion();
+        setVersion(currentVersion);
+      } catch (error) {
+        console.error('Error checking app version:', error);
+      }
+    };
+
+    checkAppVersion();
+  }, []);
 
   const confirmLogout = () => {
     Alert.alert(
       "Logout",
       "Are you sure you want to logout?",
       [
-        {
-          text: "Cancel",
-          onPress: () => console.log("Cancel Pressed"),
-          style: "cancel"
-        },
-        { text: "Yes", onPress: () => handleLogout() }
+        { text: "Cancel", style: "cancel" },
+        { text: "Yes", onPress: handleLogout }
       ],
       { cancelable: false }
     );
@@ -38,70 +50,53 @@ export default function CustomDrawer(props) {
 
   const handleLogout = async () => {
     try {
-      const token = await AsyncStorage.getItem('TOKEN')
-      console.log("TOKEN", token)
+      const token = await AsyncStorage.getItem('TOKEN');
       const url = `${BASE_URL}/logout`;
-      console.log("url", url, token)
       const response = await logout(url, token);
-      if (response?.data?.status == true) {
-        showMessage({
-          message: `${response?.data?.message}`,
-          type: "success",
-        });
-        await AsyncStorage.removeItem('TOKEN')
-        navigation.navigate('LoginScreen')
-        setLoader(false);
-      }
-      else {
-        setLoader(false);
+
+      if (response?.data?.status) {
+        showMessage({ message: response.data.message, type: "success" });
+        await AsyncStorage.removeItem('TOKEN');
+        navigation.navigate('LoginScreen');
       }
     } catch (error) {
       console.log('Error making POST request:', error);
+    } finally {
       setLoader(false);
     }
   };
 
   return (
-    <View style={{ flex: 1 }}>
+    <View style={styles.container}>
       <DrawerContentScrollView {...props}>
         <DrawerItemList {...props} />
         <View style={styles.themeToggleContainer}>
-            <Text style={[styles.toggleText]}>Theme</Text>
-            <Switch
-              trackColor={{ false: '#767577', true: '#81B0FF' }}
-              thumbColor={isEnabled ? '#F5DD4B' : '#F4F3F4'}
-              ios_backgroundColor="#3E3E3E"
-              onValueChange={toggleTheme}
-              value={isEnabled}
-              style={{marginRight:60}}
-            />
-          </View>
-        <TouchableOpacity onPress={() => confirmLogout()}>
-          <Text style={{ color: '#fff', marginLeft: 35, fontSize: 17, marginTop: 8 }}>Logout</Text>
+          <Text style={styles.toggleText}>Theme</Text>
+          <Switch
+            trackColor={{ false: '#767577', true: '#81B0FF' }}
+            thumbColor={isEnabled ? '#F5DD4B' : '#F4F3F4'}
+            ios_backgroundColor="#3E3E3E"
+            onValueChange={toggleTheme}
+            value={isEnabled}
+            style={styles.switch}
+          />
+        </View>
+        <TouchableOpacity onPress={confirmLogout} style={styles.logoutButton}>
+          <Text style={styles.logoutText}>Logout</Text>
         </TouchableOpacity>
       </DrawerContentScrollView>
+
+      {/* Version Display at Bottom */}
+      <View style={styles.versionContainer}>
+        <Text style={styles.versionText}>Version: {version}</Text>
+      </View>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  drawer_image: {
-    width: 20,
-    height: 20,
-
-    borderWidth: 0.5,
-    borderColor: '#000',
-    borderRadius: 20
-  },
-  drawerText: {
-    color: '#000',
-    fontSize: 20,
-    marginLeft: 15,
-    fontWeight: "bold"
-  },
-  drawerBox: {
-    flexDirection: 'row',
-    alignItems: 'center',
+  container: {
+    flex: 1,
   },
   themeToggleContainer: {
     flexDirection: 'row',
@@ -112,6 +107,29 @@ const styles = StyleSheet.create({
   toggleText: {
     fontSize: responsiveFontSize(2),
     color: '#fff',
-    marginLeft:20
+    marginLeft: 20,
+  },
+  switch: {
+    marginRight: 60,
+  },
+  logoutButton: {
+    marginLeft: 35,
+    marginTop: 8,
+  },
+  logoutText: {
+    color: '#fff',
+    fontSize: 17,
+  },
+  versionContainer: {
+    position: 'absolute',
+    bottom: 110,
+    left: 0,
+    right: 140,
+    alignItems: 'center',
+  },
+  versionText: {
+    color: '#fff',
+    fontSize: 14,
   },
 });
+

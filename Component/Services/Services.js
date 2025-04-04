@@ -100,16 +100,16 @@ const Services = ({navigation}) => {
             backgroundColor: currentTheme.background,
             borderTopLeftRadius: 40,
             borderTopRightRadius: 40,
-            height: '100%',
-
-               }}>
+            height: '100%',  }}>
           <FlatList
             data={menuAccessServies}
             renderItem={renderServicesList}
             numColumns={2}
             keyExtractor={item => item.id}
             columnWrapperStyle={styles.row}
-            contentContainerStyle={styles.containerlist}
+            contentContainerStyle={[styles.containerlist, { paddingBottom: 20 }]}
+            ListFooterComponent={<View style={{ height:responsiveHeight(30) }} />} 
+            
           
             
           />

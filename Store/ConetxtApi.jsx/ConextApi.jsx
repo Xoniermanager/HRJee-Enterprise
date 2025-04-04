@@ -109,6 +109,12 @@ const ConextApi = ({children}) => {
         name: 'Team',
         nav: 'Team',
       },
+      {
+        id: 5,
+        uri: require('../../assets/HomeScreen/course.webp'),
+        name: 'Course',
+        nav: 'Course',
+      },
    
     ]
       response?.data?.data.menu_access?.map((item) => {

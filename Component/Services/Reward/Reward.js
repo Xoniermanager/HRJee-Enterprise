@@ -22,11 +22,11 @@ export default function Reward() {
               <View style={styles.rewardRow}>
                 <Image source={{uri: item.image}} style={styles.rewardImage} />
                 <View style={styles.rewardDetails}>
-                  <Text style={[styles.rewardText ,{color:currentTheme.text}]}>{item.reward_name}</Text>
-                  <Text style={[styles.rewardSubText ,{color:currentTheme.text}]}>
+                  <Text style={[styles.rewardText ,{color:'#fff'}]}>{item.reward_name}</Text>
+                  <Text style={[styles.rewardSubText ,{color:'#fff'}]}>
                     {item.date} - {item.reward_category.name}
                   </Text>
-                  <Text style={[styles.rewardMessage,{color:currentTheme.text}]}>{item.description}</Text>
+                  <Text style={[styles.rewardMessage,{color:'#fff'}]}>{item.description}</Text>
                 </View>
                 <CheckCircle size={24} color="green" />
               </View>

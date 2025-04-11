@@ -55,6 +55,7 @@ import UserAttendance from '../../Component/Services/Team/UserAttendance';
 import UserLeave from '../../Component/Services/Team/UserLeave';
 import Course from '../../Component/Services/Course/Course';
 import CourseDetails from '../../Component/Services/Course/CourseDetails';
+import Maps from '../../Component/Tracking/Maps';
 
 const MyStack = () => {
   const {currentTheme} = useContext(ThemeContext);
@@ -525,6 +526,23 @@ const MyStack = () => {
           },
         }}
       />
+       <Stack.Screen
+        name="Maps"
+        component={Maps}
+        options={{
+          title: 'Track Location',
+
+          headerBackTitleVisible: false,
+          headerStyle: {
+            backgroundColor: currentTheme.background_v2,
+          },
+          headerTintColor: '#fff',
+          headerTitleStyle: {
+            fontWeight: '500',
+          },
+        }}
+      />
+      
       <Stack.Screen
         name="Pending"
         component={Pending}

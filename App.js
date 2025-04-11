@@ -1,11 +1,20 @@
-import React, { useState, useEffect } from 'react';
-import { StyleSheet, StatusBar, Modal, View, Image, Text,Alert } from 'react-native';
-import { NavigationContainer } from '@react-navigation/native';
+import React, {useState, useEffect} from 'react';
+import {
+  StyleSheet,
+  StatusBar,
+  Modal,
+  View,
+  Image,
+  Text,
+  Alert,
+  Linking,
+} from 'react-native';
+import {NavigationContainer} from '@react-navigation/native';
 import ConextApi from './Store/ConetxtApi.jsx/ConextApi';
 import MyStack from './Navigation/MyStack/MyStack';
 import 'react-native-gesture-handler';
-import FlashMessage from "react-native-flash-message";
-import { navigationRef } from './APINetwork/NavigationService';
+import FlashMessage from 'react-native-flash-message';
+import {navigationRef} from './APINetwork/NavigationService';
 import NetInfo from '@react-native-community/netinfo';
 import VersionCheck from 'react-native-version-check';
 const App = () => {
@@ -19,15 +28,35 @@ const App = () => {
   };
 
   useEffect(() => {
+    const compareVersions = (v1, v2) => {
+      const clean = version => version.split('-')[0]; // Remove -beta, -alpha etc.
+      const v1Parts = clean(v1).split('.').map(Number);
+      const v2Parts = clean(v2).split('.').map(Number);
+      const len = Math.max(v1Parts.length, v2Parts.length);
+
+      for (let i = 0; i < len; i++) {
+        const a = v1Parts[i] || 0;
+        const b = v2Parts[i] || 0;
+        if (a > b) return 1;
+        if (a < b) return -1;
+      }
+      return 0;
+    };
+
     const checkAppVersion = async () => {
       try {
         const latestVersion = await VersionCheck.getLatestVersion({
-          packageName: Platform.OS === 'ios' ? 'com.appHrjeeEnterprise' : 'com.hrjee_enterprise',
+          packageName:
+            Platform.OS === 'ios'
+              ? 'com.appHrjeeEnterprise'
+              : 'com.hrjee_enterprise',
           ignoreErrors: true,
-        })
+        });
+
         const currentVersion = VersionCheck.getCurrentVersion();
-        console.log(currentVersion,latestVersion,'hellox')
-        if (latestVersion>currentVersion) {
+        console.log('Latest:', latestVersion, 'Current:', currentVersion);
+
+        if (compareVersions(latestVersion, currentVersion) === 1) {
           Alert.alert(
             'Update Required',
             'A new version of the app is available. Please update to continue using the app.',
@@ -35,22 +64,23 @@ const App = () => {
               {
                 text: 'Update Now',
                 onPress: () => {
-                  update();
+                  VersionCheck.getStoreUrl().then(url => {
+                    Linking.openURL(url);
+                  });
                 },
               },
             ],
-            { cancelable: false },
+            {cancelable: false},
           );
-        } else {
         }
       } catch (error) {
-        // Handle error while checking app version
         console.error('Error checking app version:', error);
       }
     };
 
     checkAppVersion();
   }, []);
+
   useEffect(() => {
     const unsubscribe = NetInfo.addEventListener(state => {
       if (!state.isConnected) {
@@ -71,26 +101,26 @@ const App = () => {
       <NavigationContainer ref={navigationRef}>
         <MyStack />
       </NavigationContainer>
-      <FlashMessage position="top" />  
+      <FlashMessage position="top" />
       <Modal
         transparent={true}
         visible={isModalVisible}
-        onRequestClose={handleCloseModal}
-      >
+        onRequestClose={handleCloseModal}>
         <View style={styles.modalContainer}>
           <View style={styles.modalContent}>
-            <Image  
-              source={ require('./assets/no-signal.png') } 
+            <Image
+              source={require('./assets/no-signal.png')}
               style={styles.image}
             />
-            <Text style={styles.modalText}>Your internet is turned off. Please check your connection.</Text>
-           
+            <Text style={styles.modalText}>
+              Your internet is turned off. Please check your connection.
+            </Text>
           </View>
         </View>
       </Modal>
     </ConextApi>
   );
-}
+};
 const styles = StyleSheet.create({
   modalContainer: {
     flex: 1,

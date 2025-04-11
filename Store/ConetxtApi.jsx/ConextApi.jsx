@@ -1,14 +1,12 @@
 import {StyleSheet, Text, View} from 'react-native';
-import {Appearance, Switch} from 'react-native';
+import {Appearance,} from 'react-native';
 import React, {createContext, useContext, useState, useEffect} from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import {lightTheme, darkTheme} from '../../Theme/theme';
 import {getProfile, menuaccess} from '../../APINetwork/ComponentApi';
 import {BASE_URL} from '../../utils';
-import { Camera, useCameraPermission, useCameraDevice } from 'react-native-vision-camera';
 export const ThemeContext = createContext();
 const ConextApi = ({children}) => {
-  const { hasPermission, requestPermission } = useCameraPermission();
   const [isCameraOpen, setIsCameraOpen] = useState(false);
   const [alrmNoti, setAlrmNoti] = useState([]);
   const [viewMedi, setViewMedi] = useState(false);
@@ -28,7 +26,9 @@ const ConextApi = ({children}) => {
   const [menuAccessServies,setMenuAccessServies]=useState()
   const [compOff,setCompOff]=useState();
   const [rewardList,setRewardList]=useState('');
-  const [teamUser,setTeamUser]=useState()
+  const [teamUser,setTeamUser]=useState();
+  const [locationTracking,setLocationTracking]=useState(null);
+  const [liveLocationActive,setLiveLocationActive]=useState(null);
   const services = [
     {
       id: '1',
@@ -59,8 +59,6 @@ const ConextApi = ({children}) => {
       nav: 'Announcement',
     },
   ];
-
-
   async function menuAccess() {
     try {
       let token = await AsyncStorage.getItem('TOKEN');
@@ -88,8 +86,6 @@ const ConextApi = ({children}) => {
       let token = await AsyncStorage.getItem('TOKEN');
       const url = `${BASE_URL}/profile/details`;
       const response = await getProfile(url, token);
-      setRewardList(response?.data?.data?.user_reward);
-      setTeamUser(response?.data?.data?.manager_employees);
       let options = []
       const serviesData=[ {
         id: 1,
@@ -114,6 +110,12 @@ const ConextApi = ({children}) => {
         uri: require('../../assets/HomeScreen/course.webp'),
         name: 'Course',
         nav: 'Course',
+      },
+      {
+        id: 6,
+        uri: require('../../assets/HomeScreen/GPS5.jpg'),
+        name: 'Tracking Location',
+        nav: 'Maps',
       },
    
     ]
@@ -175,7 +177,6 @@ const ConextApi = ({children}) => {
         const RequestAttendance = response?.data?.data?.menu_access?.filter(
           item => item?.id == '76',
         );
-        console.log(RequestAttendance,'RequestAttendance')
         setRequestAttendance(RequestAttendance);
         const Announcements = response?.data?.data?.menu_access?.filter(
           item => item?.id == '78',
@@ -191,6 +192,10 @@ const ConextApi = ({children}) => {
         let facekycAdd=response?.data?.data?.details?.face_kyc
         setFace_kyc_img(facekycAdd);
         setFacePermission(response?.data?.data?.details?.face_recognition);
+        setRewardList(response?.data?.data?.user_reward);
+        setTeamUser(response?.data?.data?.manager_employees);
+        setLocationTracking(response.data.data.details.location_tracking);
+        setLiveLocationActive(response.data.data.details.live_location_active);
         if(facekycPermission==1){
           if(facekycAdd==null)
           setKycModal(true)
@@ -207,7 +212,6 @@ const ConextApi = ({children}) => {
   const handleOpenCamera = () => {
     setIsCameraOpen(true);
   };
-
   useEffect(() => {
     const loadTheme = async () => {
       const savedTheme = await AsyncStorage.getItem('theme');
@@ -286,7 +290,9 @@ const ConextApi = ({children}) => {
         compOff,
         menuAccessServies,
         rewardList,
-        teamUser
+        teamUser,
+        locationTracking,
+        liveLocationActive,
       }}>
       {children}
     </ThemeContext.Provider>

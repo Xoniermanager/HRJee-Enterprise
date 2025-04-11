@@ -17,6 +17,7 @@ import {asignTask} from '../../../APINetwork/ComponentApi';
 import {ThemeContext} from '../../../Store/ConetxtApi.jsx/ConextApi';
 import {useIsFocused, useNavigation} from '@react-navigation/native';
 import PullToRefresh from '../../../PullToRefresh';
+import Reload from '../../../Reload';
 const RequestList = () => {
   const navigation = useNavigation();
   const isFocuesd = useIsFocused();
@@ -44,6 +45,10 @@ const RequestList = () => {
       ],
     );
   };
+  if(list==null){
+    return <Reload/>
+  }
+  
   const deleteItem = async id => {
     console.log(id, 'id');
     const token = await AsyncStorage.getItem('TOKEN');

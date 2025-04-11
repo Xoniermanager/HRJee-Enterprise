@@ -10,6 +10,7 @@ import {
   Alert,
   Platform,
   Dimensions,
+  PermissionsAndroid,
 } from 'react-native';
 import React, {useState, useEffect, useMemo, useContext, useRef} from 'react';
 import {
@@ -19,6 +20,7 @@ import {
 } from 'react-native-responsive-dimensions';
 import DatePicker from 'react-native-date-picker';
 import LinearGradient from 'react-native-linear-gradient';
+import Geolocation from 'react-native-geolocation-service';
 import {Calendar} from 'react-native-calendars';
 import {ScrollView} from 'react-native-gesture-handler';
 import CheckBox from '@react-native-community/checkbox';
@@ -46,7 +48,8 @@ import {useIsFocused} from '@react-navigation/native';
 import FaceCamera from './FaceCamera';
 import GetLocation from 'react-native-get-location';
 import axios from 'axios';
-import PullToRefresh from '../../PullToRefresh';
+import BackgroundService from 'react-native-background-actions';
+import NotificationController from '../../PushNotification/NotificationController';
 const HomePage = ({navigation}) => {
   const [monthDay, setMonth] = useState('');
 
@@ -76,7 +79,9 @@ const HomePage = ({navigation}) => {
     empyName,
     facePermission,
     face_kyc_img,
-    requestAttendance
+    requestAttendance,
+    locationTracking,
+    liveLocationActive,
     
   } = useContext(ThemeContext);
   const [getleavetypeapidata, setGetLeaveTypeApiData] = useState([]);
@@ -697,6 +702,142 @@ const HomePage = ({navigation}) => {
       {text: 'OK', onPress: () => punch_Out_EMP()},
     ]);
   };
+  const requestLocationPermission = async () => {
+    if (Platform.OS === 'ios') {
+      try {
+        const result = await Geolocation.requestAuthorization('always');
+        // You can optionally check for 'granted', 'denied', or 'disabled'
+        return result === 'granted';
+      } catch (error) {
+        console.warn('iOS location permission error:', error);
+        return false;
+      }
+    } else {
+      try {
+        const fineLocationGranted = await PermissionsAndroid.request(
+          PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION,
+          {
+            title: 'Location Permission',
+            message:
+              'We need access to your location ' +
+              'so we can provide location-based services.',
+            buttonNeutral: 'Ask Me Later',
+            buttonNegative: 'Cancel',
+            buttonPositive: 'OK',
+          },
+        );
+  
+        if (fineLocationGranted !== PermissionsAndroid.RESULTS.GRANTED) {
+          Alert.alert('Fine location permission denied');
+          return false;
+        }
+  
+        const backgroundGranted = await PermissionsAndroid.request(
+          PermissionsAndroid.PERMISSIONS.ACCESS_BACKGROUND_LOCATION,
+        );
+  
+        if (backgroundGranted !== PermissionsAndroid.RESULTS.GRANTED) {
+          Alert.alert('Background location permission denied');
+          return false;
+        }
+  
+        return true;
+      } catch (err) {
+        console.warn('Android location permission error:', err);
+        return false;
+      }
+    }
+  };
+  useEffect(() => {
+    async function fetchMyAPI() {
+      const token = await AsyncStorage.getItem('TOKEN');
+      if (token &&  locationTracking==0 &&
+        liveLocationActive==0) {
+        startBackgroundService();
+      } else {
+        EndBackgroundService();
+      }
+    }
+    fetchMyAPI();
+  }, [
+    timerOn,
+    locationTracking,
+    liveLocationActive
+  ]);
+  const EndBackgroundService = async () => {
+    Geolocation.stopObserving();
+    BackgroundService.on('expiration', () => {
+      console.log('Background service is being closed :(');
+    });
+    await BackgroundService.stop();
+  };
+  const sleep = time => new Promise(resolve => setTimeout(resolve, time));
+  const [watchId, setWatchId] = useState(null);
+  const startBackgroundService = async () => {
+    const veryIntensiveTask = async ({delay}) => {
+      const cleanup = () => {
+        if (watchId !== null) Geolocation.clearWatch(watchId);
+      };
+      cleanup();
+      while (BackgroundService.isRunning(veryIntensiveTask)) {
+        if (!timerOn) {
+          cleanup();
+          break;
+        }
+        if (!(await requestLocationPermission())) {
+          Alert.alert('Permission Denied', 'Location permission is required.');
+          return;
+        }
+        watchId = Geolocation.watchPosition(
+          async ({coords: {latitude, longitude}}) => {
+            try {
+              const newLocation = {latitude, longitude};
+              console.log(newLocation,'newLocation')
+            } catch (error) {
+              console.error('Error handling location update:', error);
+            }
+          },
+          error => console.error('Location Error:', error),
+          {
+            enableHighAccuracy: true,
+            distanceFilter: 5,
+            interval: 0,
+            maximumAge: 0,
+            showLocationDialog: true,
+          },
+        );
+        setWatchId(watchId);
+        await sleep(delay);
+      }
+      cleanup();
+    };
+    try {
+      await BackgroundService.start(veryIntensiveTask, {
+        taskName: 'HRJee Track',
+        taskTitle: 'Tracking Location',
+        taskDesc: 'Tracking started',
+        taskIcon: {name: 'ic_launcher', type: 'mipmap'},
+        color: '#FF00FF',
+        linkingURI: 'yourSchemeHere://chat/jane',
+        parameters: {delay: 1000},
+      });
+    } catch (e) {
+      console.error('Error starting background service:', e);
+    }
+  };
+
+
+
+
+
+
+
+
+
+
+
+
+
   if (loader) {
     return <HomeSkeleton />;
   }
@@ -906,12 +1047,15 @@ const HomePage = ({navigation}) => {
     }
   };
 
+
   if (isCameraOpen) {
     return <FaceCamera punchIn={punch_IN} />;
   } else {
     return (
       <>
+
         <View style={{flex: 1, backgroundColor: currentTheme.background}}>
+          <NotificationController/>
           <View style={styles.parent}>
             <View
               style={[

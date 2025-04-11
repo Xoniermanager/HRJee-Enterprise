@@ -45,6 +45,9 @@ const Course = () => {
       setLoader([]);
     }
   };
+  if(list==null){
+    return <Reload/>
+  }
   
   return (
     <View style={styles.container}>

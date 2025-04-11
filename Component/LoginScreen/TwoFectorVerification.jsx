@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   StyleSheet,
   Text,
@@ -7,6 +7,7 @@ import {
   ActivityIndicator,
   SafeAreaView,
 } from 'react-native';
+import messaging from "@react-native-firebase/messaging";
 import {
   responsiveFontSize,
   responsiveHeight,
@@ -32,7 +33,24 @@ const TwoFectorVerification = ({ route }) => {
   const { email } = route?.params;
   const { password } = route?.params;
   const { token } = route?.params;
-
+  const [fcmtoken, setfcmtoken] = useState();
+  async function requestUserPermission() {
+    const authStatus = await messaging().requestPermission();
+    const enabled =
+      authStatus === messaging.AuthorizationStatus.AUTHORIZED ||
+      authStatus === messaging.AuthorizationStatus.PROVISIONAL;
+    if (enabled) {
+      getFCMToken();
+    }
+  }
+  async function getFCMToken() {
+    const token = await messaging().getToken();
+    console.log(token);
+    setfcmtoken(token);
+  }
+  useEffect(() => {
+    requestUserPermission();
+  }, []);
   const loginSubmit = async () => {
     let data = { otp, email, password, token };
     setLoader(true);

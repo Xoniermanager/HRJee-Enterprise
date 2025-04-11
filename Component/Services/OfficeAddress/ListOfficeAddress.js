@@ -18,6 +18,7 @@ import {ThemeContext} from '../../../Store/ConetxtApi.jsx/ConextApi';
 import {useIsFocused, useNavigation} from '@react-navigation/native';
 import PullToRefresh from '../../../PullToRefresh';
 import {responsiveWidth} from 'react-native-responsive-dimensions';
+import Reload from '../../../Reload';
 const ListOfficeAddress = () => {
   const navigation = useNavigation();
   const isFocuesd = useIsFocused();
@@ -45,6 +46,9 @@ const ListOfficeAddress = () => {
       ],
     );
   };
+  if(list==null){
+    return <Reload/>
+  }
   const deleteItem = async id => {
     console.log(id, 'id');
     const token = await AsyncStorage.getItem('TOKEN');

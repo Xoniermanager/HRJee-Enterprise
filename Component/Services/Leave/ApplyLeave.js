@@ -8,6 +8,7 @@ import {
   ScrollView,
   TextInput,
   Platform,
+  ActivityIndicator,
 } from 'react-native';
 import React, {useState, useEffect, useMemo, useContext} from 'react';
 import {
@@ -40,6 +41,7 @@ const ApplyLeave = ({navigation}) => {
   const [toggleCheckBox, setToggleCheckBox] = useState(false);
   const [getleavetypeapidata, setGetLeaveTypeApiData] = useState([]);
   const [loader, setLoader] = useState(false);
+  const [loaderApply, setLoaderApply] = useState(false);
   const [value1, setValue1] = useState();
   const [isFocus, setIsFocus] = useState(false);
   const [reason, setReason] = useState(false);
@@ -48,7 +50,7 @@ const ApplyLeave = ({navigation}) => {
   const [selectedId2, setSelectedId2] = useState('');
   const [startDate, setStartDate] = useState(null);
   const [endDate, setEndDate] = useState(null);
-  const [availableLeavesList,setAvailableLeavesList]=useState(null)
+  const [availableLeavesList, setAvailableLeavesList] = useState(null);
   const radioButtons: RadioButtonProps[] = useMemo(
     () => [
       {
@@ -100,7 +102,6 @@ const ApplyLeave = ({navigation}) => {
     ],
     [],
   );
-  console.log(selectedId1, selectedId2, 'jjjjj');
   const calculateDaysBetweenDates = () => {
     // Ensure startDate and endDate are valid dates
     if (!startDate || !endDate) {
@@ -161,18 +162,17 @@ const ApplyLeave = ({navigation}) => {
       }
     } catch (error) {
       console.log('Error making POST request:', error);
-    
     }
   }
   useEffect(() => {
     check();
     availableLeaves();
   }, []);
-  if(availableLeaves==null){
-    return <ApplyLeaveSkeleton/>
+  if (availableLeaves == null) {
+    return <ApplyLeaveSkeleton />;
   }
 
- const handleSubmit = async () => {
+  const handleSubmit = async () => {
     try {
       if (startDate == '' || startDate == [] || startDate == undefined) {
         showMessage({
@@ -195,9 +195,9 @@ const ApplyLeave = ({navigation}) => {
           type: 'danger',
         });
       } else {
+        setLoaderApply(true);
         const token = await AsyncStorage.getItem('TOKEN');
         const url = `${BASE_URL}/apply/leave`;
-
         let data = {
           leave_type_id: value1,
           from: startDate,
@@ -223,6 +223,7 @@ const ApplyLeave = ({navigation}) => {
         }
 
         const response = await LeaveApply(url, data, token);
+        setLoaderApply(false);
         if (response?.data?.status == true) {
           showMessage({
             message: `${response?.data?.message}`,
@@ -233,6 +234,7 @@ const ApplyLeave = ({navigation}) => {
         }
       }
     } catch (error) {
+      setLoaderApply(false);
       showMessage({
         message: `${error.response.data.message}`,
         type: 'danger',
@@ -241,14 +243,15 @@ const ApplyLeave = ({navigation}) => {
     }
   };
 
-  const ListData=getleavetypeapidata && getleavetypeapidata?.filter((item)=>{
-    return item.name==availableLeavesList?.map((item)=>item.leave_name)
-  })
+  const ListData =
+    getleavetypeapidata &&
+    getleavetypeapidata?.filter(item => {
+      return item.name == availableLeavesList?.map(item => item.leave_name);
+    });
   return (
     <SafeAreaView
       style={[styles.container, {backgroundColor: currentTheme.background_v2}]}>
-      <View style={{alignSelf: 'center', marginTop: 15}}>
-      </View>
+      <View style={{alignSelf: 'center', marginTop: 15}}></View>
       <ScrollView
         style={{
           width: '100%',
@@ -464,8 +467,8 @@ const ApplyLeave = ({navigation}) => {
                   padding: 10,
                   marginBottom: 10,
                   borderRadius: 10,
-                  marginHorizontal:20,
-                  paddingVertical:15
+                  marginHorizontal: 20,
+                  paddingVertical: 15,
                 }}>
                 <Dropdown
                   selectedTextProps={{
@@ -497,7 +500,7 @@ const ApplyLeave = ({navigation}) => {
                   backgroundColor: '#EDFBFE',
                   opacity: 1,
                   elevation: 10,
-                  marginHorizontal:20
+                  marginHorizontal: 20,
                 }}>
                 <TextInput
                   placeholder="Reason"
@@ -520,15 +523,19 @@ const ApplyLeave = ({navigation}) => {
                 alignSelf: 'center',
                 borderRadius: 50,
               }}>
-              <Text
-                style={{
-                  textAlign: 'center',
-                  color: '#fff',
-                  fontSize: 18,
-                  fontWeight: 'bold',
-                }}>
-                Submit
-              </Text>
+              {loaderApply ? (
+                <ActivityIndicator size="small" color="#fff" />
+              ) : (
+                <Text
+                  style={{
+                    textAlign: 'center',
+                    color: '#fff',
+                    fontSize: 18,
+                    fontWeight: 'bold',
+                  }}>
+                  Submit
+                </Text>
+              )}
             </TouchableOpacity>
           </>
         )}

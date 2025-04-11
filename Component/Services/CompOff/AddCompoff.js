@@ -245,6 +245,7 @@ const styles = StyleSheet.create({
     borderRadius: 5,
     padding: 10,
     backgroundColor: '#f0f0f0',
+    color:'#333'
   },
   balanceText: {
     fontSize: 16,

@@ -18,6 +18,7 @@ import {ThemeContext} from '../../../Store/ConetxtApi.jsx/ConextApi';
 import {useIsFocused, useNavigation} from '@react-navigation/native';
 import PullToRefresh from '../../../PullToRefresh';
 import {responsiveWidth} from 'react-native-responsive-dimensions';
+import Reload from '../../../Reload';
 const UserLeave = ({route}) => {
   const {id} = route?.params;
   const navigation = useNavigation();
@@ -40,7 +41,9 @@ const UserLeave = ({route}) => {
   const handleRefresh = () => {
     getRequestlist();
   };
-
+  if(list==null){
+    return <Reload/>
+  }
   const fetchMore = async () => {
     if (currentPage < lastPage) {
       const nextPage = currentPage + 1;

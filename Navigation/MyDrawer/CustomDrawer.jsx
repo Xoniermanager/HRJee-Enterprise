@@ -70,7 +70,7 @@ export default function CustomDrawer(props) {
     <View style={styles.container}>
       <DrawerContentScrollView {...props}>
         <DrawerItemList {...props} />
-        <View style={styles.themeToggleContainer}>
+        {/* <View style={styles.themeToggleContainer}>
           <Text style={styles.toggleText}>Theme</Text>
           <Switch
             trackColor={{ false: '#767577', true: '#81B0FF' }}
@@ -80,7 +80,7 @@ export default function CustomDrawer(props) {
             value={isEnabled}
             style={styles.switch}
           />
-        </View>
+        </View> */}
         <TouchableOpacity onPress={confirmLogout} style={styles.logoutButton}>
           <Text style={styles.logoutText}>Logout</Text>
         </TouchableOpacity>

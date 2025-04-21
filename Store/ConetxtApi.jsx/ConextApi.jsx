@@ -36,7 +36,7 @@ const ConextApi = ({children}) => {
       id: '1',
       name: 'Policies',
       uri:
-        theme === 'light'
+        'light' === 'light'
           ? require('../../assets/HomeScreen/h1.png')
           : require('../../assets/home2.png'),
       nav: 'Policy',
@@ -45,7 +45,7 @@ const ConextApi = ({children}) => {
       id: '2',
       name: 'Employee News',
       uri:
-        theme === 'light'
+        'light' === 'light'
           ? require('../../assets/HomeScreen/h2.png')
           : require('../../assets/home3.png'),
       nav: 'News',
@@ -55,7 +55,7 @@ const ConextApi = ({children}) => {
       id: '3',
       name: 'Announcements',
       uri:
-        theme === 'light'
+        'light' === 'light'
           ? require('../../assets/announcement.png')
           : require('../../assets/announcement1.png'),
       nav: 'Announcement',
@@ -64,7 +64,7 @@ const ConextApi = ({children}) => {
       id: '4',
       name: 'Payslip',
       uri:
-        theme === 'light'
+        'light' === 'light'
         ? require('../../assets/HomeScreen/h3.png')
         : require('../../assets/HomeScreen/h3.png'),
       nav: 'Salary',

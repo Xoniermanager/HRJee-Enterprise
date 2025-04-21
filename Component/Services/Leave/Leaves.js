@@ -93,7 +93,7 @@ const Leaves = ({navigation}) => {
     <View
       style={{
         justifyContent: 'center',
-        backgroundColor: theme === 'light' ? '#BAAEFC' : '#242B3A',
+        backgroundColor:'#BAAEFC',
         width: responsiveWidth(28),
         height: responsiveHeight(20),
         marginHorizontal: 5,

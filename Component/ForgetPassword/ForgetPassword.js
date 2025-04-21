@@ -40,11 +40,13 @@ const ForgetPassword = () => {
         showMessage({
           message: 'Please enter email',
           type: 'danger',
+          duration: 2000,
         });
       } else if (!emailRegex.test(email)) {
         showMessage({
           message: 'Invalid email address',
           type: 'danger',
+          duration:2000,
         });
       } else {
         setLoader(true);
@@ -55,6 +57,7 @@ const ForgetPassword = () => {
           showMessage({
             message: `${response?.data?.message}`,
             type: 'success',
+            duration: 3000,
           });
           setLoader(false);
           navigation.navigate('ResetPassword', {email: email});

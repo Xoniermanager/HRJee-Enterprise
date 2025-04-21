@@ -14,13 +14,13 @@ import {useNavigation} from '@react-navigation/native';
 
 const Team = () => {
   const [selectedUser, setSelectedUser] = useState(null);
-  const [userId,setUserId]=useState(null)
+  const [userId, setUserId] = useState(null);
   const [modalVisible, setModalVisible] = useState(false);
-  const {teamUser,currentTheme} = useContext(ThemeContext);
+  const {teamUser, currentTheme} = useContext(ThemeContext);
   const navigation = useNavigation();
   const handleMenuClick = user => {
     setSelectedUser(user);
-    setUserId(user)
+    setUserId(user);
     setModalVisible(true);
   };
 
@@ -44,12 +44,20 @@ const Team = () => {
   );
 
   return (
-    <View style={[styles.container ,{backgroundColor: currentTheme.background}]}>
-      <Text style={[styles.header,{color:currentTheme.text}]}>Team Management</Text>
+    <View
+      style={[styles.container, {backgroundColor: currentTheme.background}]}>
+      <Text style={[styles.header, {color: currentTheme.text}]}>
+        Team Management
+      </Text>
       <FlatList
         data={teamUser}
         renderItem={renderItem}
         keyExtractor={item => item.id}
+        ListEmptyComponent={
+          <View style={styles.emptyContainer}>
+            <Text style={styles.emptyText}>No data found</Text>
+          </View>
+        }
       />
 
       <Modal visible={modalVisible} transparent animationType="slide">
@@ -61,7 +69,7 @@ const Team = () => {
             <TouchableOpacity
               style={styles.modalButton}
               onPress={() => [
-                navigation.navigate('UserAttendance',{id:userId?.user_id}),
+                navigation.navigate('UserAttendance', {id: userId?.user_id}),
                 setModalVisible(false),
               ]}>
               <Text style={styles.modalButtonText}>Attendance</Text>
@@ -69,7 +77,7 @@ const Team = () => {
             <TouchableOpacity
               style={[styles.modalButton]}
               onPress={() => [
-                navigation.navigate('UserLeave',{id:userId?.user_id}),
+                navigation.navigate('UserLeave', {id: userId?.user_id}),
                 setModalVisible(false),
               ]}>
               <Text style={styles.modalButtonText}>Leave</Text>
@@ -172,6 +180,15 @@ const styles = StyleSheet.create({
     backgroundColor: '#A0AEC0',
     width: '100%',
     alignItems: 'center',
+  },
+  emptyContainer: {
+    alignItems: 'center',
+    padding: 20,
+  },
+  emptyText: {
+    fontSize: 16,
+    color: '#999',
+    fontWeight: 'bold',
   },
 });
 

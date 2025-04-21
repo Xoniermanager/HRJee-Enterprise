@@ -110,6 +110,7 @@ const FaceCamera = ({punchIn}) => {
       showMessage({
         message: response.data.message,
         type: 'success',
+        duration: 3000,
       });
     }
   };
@@ -155,6 +156,7 @@ const FaceCamera = ({punchIn}) => {
           message:
             'Multiple faces detected. Please ensure only one face is in the image for KYC verification.',
           type: 'danger',
+          duration: 2000,
         });
 
         return;
@@ -166,6 +168,7 @@ const FaceCamera = ({punchIn}) => {
         showMessage({
           message: 'No human faces detected. Upload aborted',
           type: 'danger',
+          duration: 2000,
         });
 
         return;
@@ -220,6 +223,7 @@ const FaceCamera = ({punchIn}) => {
           message:
             'Multiple faces detected. Please ensure only one face is in the image for KYC verification.',
           type: 'danger',
+          duration: 3000,
         });
         setIsCameraOpen(false);
         return;
@@ -229,6 +233,7 @@ const FaceCamera = ({punchIn}) => {
         showMessage({
           message: 'No human faces detected. Upload aborted',
           type: 'danger',
+          duration: 3000,
         });
         setIsCameraOpen(false);
         return;
@@ -239,6 +244,7 @@ const FaceCamera = ({punchIn}) => {
           message:
             'No front-facing faces with eye contact detected. Upload aborted.',
           type: 'danger',
+          duration: 3000,
         });
         setIsCameraOpen(false);
         return;
@@ -282,6 +288,7 @@ const FaceCamera = ({punchIn}) => {
           showMessage({
             message: 'Keep Your Face front to the camera',
             type: 'danger',
+            duration: 3000,
           });
           setIsCameraOpen(false);
         } else if (err.message === 'Request has invalid parameters') {
@@ -289,11 +296,13 @@ const FaceCamera = ({punchIn}) => {
           showMessage({
             message: 'Keep Your Face front to the camera',
             type: 'danger',
+            duration: 3000,
           });
         } else {
           showMessage({
             message: err.message,
             type: 'danger',
+            duration: 3000,
           });
           setIsCameraOpen(false);
         }
@@ -301,6 +310,7 @@ const FaceCamera = ({punchIn}) => {
         showMessage({
           message: 'Face do not match',
           type: 'danger',
+          duration: 3000,
         });
         setIsCameraOpen(false);
       } else {

@@ -101,7 +101,7 @@ const App = () => {
       <NavigationContainer ref={navigationRef}>
         <MyStack />
       </NavigationContainer>
-      <FlashMessage position="top" />
+      <FlashMessage position="top"/>
       <Modal
         transparent={true}
         visible={isModalVisible}

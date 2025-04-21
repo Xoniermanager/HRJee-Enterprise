@@ -3,8 +3,9 @@ import {Appearance,} from 'react-native';
 import React, {createContext, useContext, useState, useEffect} from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import {lightTheme, darkTheme} from '../../Theme/theme';
-import {getProfile, menuaccess} from '../../APINetwork/ComponentApi';
+import {getProfile, log_activity, menuaccess} from '../../APINetwork/ComponentApi';
 import {BASE_URL} from '../../utils';
+import axios from 'axios';
 export const ThemeContext = createContext();
 const ConextApi = ({children}) => {
   const [isCameraOpen, setIsCameraOpen] = useState(false);
@@ -29,6 +30,7 @@ const ConextApi = ({children}) => {
   const [teamUser,setTeamUser]=useState();
   const [locationTracking,setLocationTracking]=useState(null);
   const [liveLocationActive,setLiveLocationActive]=useState(null);
+  const [getProfileApiData, setGetProfileApiData] = useState('');
   const services = [
     {
       id: '1',
@@ -57,6 +59,15 @@ const ConextApi = ({children}) => {
           ? require('../../assets/announcement.png')
           : require('../../assets/announcement1.png'),
       nav: 'Announcement',
+    },
+    {
+      id: '4',
+      name: 'Payslip',
+      uri:
+        theme === 'light'
+        ? require('../../assets/HomeScreen/h3.png')
+        : require('../../assets/HomeScreen/h3.png'),
+      nav: 'Salary',
     },
   ];
   async function menuAccess() {
@@ -120,49 +131,49 @@ const ConextApi = ({children}) => {
    
     ]
       response?.data?.data.menu_access?.map((item) => {
-        if (item.id=="94") {
+        if (item.title=="Request Attendance") {
           options.push({
-            id: 94,
+            id: 113,
             uri: require('../../assets/Services/s5.png'),
             name: 'Attendance Request',
             nav: 'AttendanceRequest',
           })
-        } else if (item.id=="95") {
+        } else if (item.title=="Request Address") {
           options.push({
-            id: 95,
+            id: 114,
             uri: require('../../assets/ofiiceAddress.png'),
             name: 'Office Address',
             nav: 'ListOfficeAddress',
           })
         }
-        else if (item.id=="103") {
+        else if (item.title=="Holidays") {
           options.push({
-            id: 103,
+            id: 122,
             uri: require('../../assets/Services/s3.png'),
             name: 'Holiday',
             nav: 'Holiday',
           })
         }
-        else if (item.id=="104") {
+        else if (item.title=="Resignation") {
           options.push({
-            id: 104,
+            id: 123,
             uri: require('../../assets/Services/s6.png'),
             name: 'Resign',
             nav: 'Resign',
           })
         }
-        else if (item.id=="105") {
+        else if (item.title=="PRM") {
           options.push({
-            id: 105,
+            id: 124,
             uri: require('../../assets/Services/s5.png'),
             name: 'PRM',
             nav: 'PRMList',
           })
           
         } 
-        else if (item.id=="110") {
+        else if (item.title=="My Rewards") {
           options.push({
-            id: 110,
+            id: 129,
             uri: require('../../assets/HomeScreen/medal.png'),
             name: 'Reward',
             nav: 'Reward',
@@ -175,17 +186,18 @@ const ConextApi = ({children}) => {
 
       if (response?.data?.status === true) {
         const RequestAttendance = response?.data?.data?.menu_access?.filter(
-          item => item?.id == '76',
+          item => item?.title == 'Attendance Request',
         );
         setRequestAttendance(RequestAttendance);
         const Announcements = response?.data?.data?.menu_access?.filter(
-          item => item?.id == '78',
+          item => item?.title == 'Announcements',
         );
         setRequestAnnouncements(Announcements);
         const CompOffs = response?.data?.data?.menu_access?.filter(
-          item => item?.id == '91',
+          item => item?.title == 'Comp Offs',
         );
         setCompOff(CompOffs);
+        setGetProfileApiData(response?.data?.data);
         setEmpyId(response?.data?.data?.details?.user_id);
         setEmpyName(response?.data?.data?.name);
         let facekycPermission=response?.data?.data?.details?.face_recognition
@@ -212,6 +224,34 @@ const ConextApi = ({children}) => {
   const handleOpenCamera = () => {
     setIsCameraOpen(true);
   };
+  const activeLog=async(payload)=>{
+    const token=await AsyncStorage.getItem('TOKEN');
+    console.log(token)
+    const data={
+      "request_body":JSON.stringify(payload.data),
+      "response_code":'null',
+      "response_body": payload.message,
+      "url": payload.url,
+      "method": payload.method
+    }
+let config = {
+  method: 'post',
+  maxBodyLength: Infinity,
+  url: `${BASE_URL}/log-activity/create`,
+  headers: { 
+    'Content-Type': 'application/json', 
+    'Authorization': `Bearer ${token}`
+  },
+  data : data
+};
+axios.request(config)
+.then((response) => {
+  console.log(JSON.stringify(response.data));
+})
+.catch((error) => {
+  console.log(error);
+});
+  }
   useEffect(() => {
     const loadTheme = async () => {
       const savedTheme = await AsyncStorage.getItem('theme');
@@ -293,6 +333,8 @@ const ConextApi = ({children}) => {
         teamUser,
         locationTracking,
         liveLocationActive,
+        getProfileApiData,
+        activeLog
       }}>
       {children}
     </ThemeContext.Provider>

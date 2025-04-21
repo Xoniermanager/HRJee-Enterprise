@@ -18,6 +18,7 @@ import {
   responsiveFontSize,
   responsiveHeight,
   responsiveWidth,
+
 } from 'react-native-responsive-dimensions';
 import {Calendar} from 'react-native-calendars';
 import Entypo from 'react-native-vector-icons/Entypo';
@@ -34,36 +35,8 @@ import Themes from '../Theme/Theme';
 import {ThemeContext} from '../../Store/ConetxtApi.jsx/ConextApi';
 import AntDesign from 'react-native-vector-icons/AntDesign';
 const Attendance = () => {
-  const showData = [
-    {
-      id: 1,
-      uri: require('../../assets/HomeScreen/calendar.png'),
-      name: 'Working',
-      num: 13,
-      color: '#F2F4FF',
-      backgroundcolor: '#7B9BF6',
-      fontcolor: '#7B9BF6',
-    },
-    {
-      id: 2,
-      uri: require('../../assets/HomeScreen/leave.png'),
-      name: 'Leave',
-      num: 0,
-      color: '#FFF6ED',
-      backgroundcolor: '#F39331',
-      fontcolor: '#F39331',
-    },
-    {
-      id: 3,
-      uri: require('../../assets/HomeScreen/medal.png'),
-      name: 'Half Day',
-      num: 0,
-      color: '#EDFBFE',
-      backgroundcolor: '#4EC8FA',
-      fontcolor: '#4EC8FA',
-    },
-  ];
-  const {currentTheme} = useContext(ThemeContext);
+  
+  const {currentTheme,activeLog} = useContext(ThemeContext);
   const [startdate, setStartDate] = useState(new Date());
   const [dataExport,setDataExport]=useState()
   const [modalVisible, setModalVisible] = useState(false);
@@ -77,6 +50,17 @@ const Attendance = () => {
   const [fromDate, setFromDate] = useState(null);
   const [toDate, setToDate] = useState(null);
   const [dailyDate, setDailyDate] = useState();
+  const [currentMonth, setCurrentMonth] = useState(moment().format('MM'));
+  const [monthList,setMonthList]=useState();
+  
+  useEffect(() => {
+    const initialMonth = moment().format('MM');
+    setCurrentMonth(initialMonth);
+  }, []);
+  const handleMonthChange = (month) => {
+    const formattedMonth = String(month.month).padStart(2, '0');
+    setCurrentMonth(formattedMonth);
+  };
   const StatusItem = ({color, text, value}) => (
     <View style={[styles.statusItem, {backgroundColor: color}]}>
       <Text style={styles.statusText}>{text}</Text>
@@ -91,30 +75,7 @@ const Attendance = () => {
       </Text>
     </View>
   );
-  const renderServicesList = ({item}) => (
-    <View
-      style={{
-        justifyContent: 'center',
-        backgroundColor: item.backgroundcolor,
-        width: responsiveWidth(22.5),
-        marginHorizontal: 5,
-        borderRadius: 20,
-      }}>
-      <View
-        style={{
-          justifyContent: 'center',
-          backgroundColor: item.color,
-          width: responsiveWidth(22.5),
-          marginTop: 3,
-          borderRadius: 20,
-        }}>
-        <View style={{padding: 10, alignItems: 'center'}}>
-          <Text style={{color: item.fontcolor}}>{item.num}</Text>
-          <Text style={{marginBottom: 2, color: '#000'}}>{item.name}</Text>
-        </View>
-      </View>
-    </View>
-  );
+
   const onDayPress = day => {
     setSelectedDate(day.dateString);
     attendance_by_date(day.dateString);
@@ -127,6 +88,19 @@ const Attendance = () => {
       const response = await gettodayattendance(url, token);
       if (response?.data?.status === true) {
         setDailyDate(response?.data?.data);
+      } else {
+      }
+    } catch (error) {
+      console.error('Error making POST request:', error);
+    }
+  };
+  const attendance_by_month = async day => {
+    let token = await AsyncStorage.getItem('TOKEN');
+    try {
+      const url = `${BASE_URL}/attendance/details/${currentMonth}`;
+      const response = await gettodayattendance(url, token);
+      if (response?.data?.status === true) {
+        setMonthList(response?.data?.data);
       } else {
       }
     } catch (error) {
@@ -152,6 +126,7 @@ const Attendance = () => {
   }
   useEffect(() => {
     getTodayAttendance();
+    attendance_by_month();
   }, []);
   useEffect(() => {
     if (fromDate && toDate) {
@@ -159,7 +134,59 @@ const Attendance = () => {
       getExport()
     }
   }, [fromDate, toDate]);
-
+  const showData = [
+    {
+      id: 1,
+      uri: require('../../assets/HomeScreen/calendar.png'),
+      name: 'Working',
+      num: monthList?.totalPresent,
+      color: '#F2F4FF',
+      backgroundcolor: '#7B9BF6',
+      fontcolor: '#7B9BF6',
+    },
+    {
+      id: 2,
+      uri: require('../../assets/HomeScreen/leave.png'),
+      name: 'Leave',
+      num:monthList?.totalLeave,
+      color: '#FFF6ED',
+      backgroundcolor: '#F39331',
+      fontcolor: '#F39331',
+    },
+    {
+      id: 3,
+      uri: require('../../assets/HomeScreen/medal.png'),
+      name: 'HoliDay',
+      num: monthList?.totalHoliday,
+      color: '#EDFBFE',
+      backgroundcolor: '#4EC8FA',
+      fontcolor: '#4EC8FA',
+    },
+  ];
+  const renderServicesList = ({item}) => (
+    <View
+      style={{
+        justifyContent: 'center',
+        backgroundColor: item.backgroundcolor,
+        width: responsiveWidth(22.5),
+        marginHorizontal: 5,
+        borderRadius: 20,
+      }}>
+      <View
+        style={{
+          justifyContent: 'center',
+          backgroundColor: item.color,
+          width: responsiveWidth(22.5),
+          marginTop: 3,
+          borderRadius: 20,
+        }}>
+        <View style={{padding: 10, alignItems: 'center'}}>
+          <Text style={{color: item.fontcolor}}>{item.num}</Text>
+          <Text style={{marginBottom: 2, color: '#000'}}>{item.name}</Text>
+        </View>
+      </View>
+    </View>
+  );
   const getSearchAttendence = async () => {
     function formatDate(dateStr) {
       const [month, day, year] = dateStr.split('/');
@@ -220,9 +247,8 @@ const Attendance = () => {
         setDataExport(response.data.data)
       } else {
         setLoading(false);
-        console.log(response.data.message,'response.data.message')
+        activeLog(data,url,'post',response?.data?.message);
         setDataExport(response.data.message)
-
       }
     } catch (error) {
       console.error('Error making POST request:', error);
@@ -268,6 +294,7 @@ const Attendance = () => {
         showMessage({
           message: 'No Attendance found for this two respective dates',
           type: 'danger',
+          duration: 3000,
         });
       }
       else if (dataExport){
@@ -279,6 +306,7 @@ const Attendance = () => {
       showMessage({
         message: 'Please Select the Start Date and End Date',
         type: 'danger',
+        duration: 3000,
       });
     }
   }
@@ -309,7 +337,284 @@ const Attendance = () => {
           />
         </View>
       </View>
-      {!isEnabled ? (
+      {!isEnabled ?(
+        <>
+          <View
+            style={{
+              width: '100%',
+              height: '100%',
+              backgroundColor: currentTheme.background,
+              borderTopLeftRadius: 40,
+              marginTop:isEnabled
+                ? responsiveHeight(12)
+                : responsiveHeight(3),
+              borderTopRightRadius: 40,
+            }}>
+            <View style={{marginHorizontal: 15}}>
+              {/* Calendar */}
+              <Calendar
+              
+                theme={{
+                  selectedDayBackgroundColor: currentTheme.text,
+                  todayTextColor: currentTheme.text,
+                  arrowColor: currentTheme.text,
+                  
+                }}
+                dayComponent={({ date, state }) => {
+                  const isSunday = moment(date.dateString).day() === 0;
+          
+                  return (
+                    <TouchableOpacity
+                      style={{
+                        width: 42,
+                        height: 42,
+                        justifyContent: 'center',
+                        alignItems: 'center',
+                        borderWidth: 1,
+                        borderColor: '#ccc',
+                        borderRadius: 8,
+                        backgroundColor: isSunday ? 'red' : '#FFFFFF', // Change this to your desired Sunday color
+                      }}
+                      onPress={onDayPress}
+                    >
+                      <Text
+                        style={{
+                          color: isSunday ?  '#fff' : '#000',
+                          fontWeight: '600',
+                        }}
+                      >
+                        {date.day}
+                      </Text>
+                    </TouchableOpacity>
+                  );
+                }}
+                style={[
+                  styles.calendar,
+                  {backgroundColor: currentTheme.background},
+                ]}
+                markedDates={{
+                  '2024-05-09': {
+                    selected: true,
+                    selectedColor: currentTheme.text,
+                  },
+                }}
+                onMonthChange={handleMonthChange}
+                markingType={'multi-dot'}
+              />
+
+              <Modal
+                animationType="slide"
+                transparent={true}
+                visible={modalVisible}
+                onRequestClose={() => {
+                  setModalVisible(!modalVisible);
+                }}>
+                <View style={styles.modalContainer}>
+                  <View
+                    style={[
+                      styles.modalView,
+                      {backgroundColor: currentTheme.modalBack},
+                    ]}>
+                    <View
+                      style={{
+                        flexDirection: 'row',
+                        alignItems: 'center',
+                        justifyContent: 'space-between',
+                      }}>
+                      <Text
+                        style={{
+                          color: currentTheme.text,
+                          fontWeight: '500',
+                          fontSize: 18,
+                        }}>
+                        Attendance Details
+                      </Text>
+                      <TouchableOpacity
+                        onPress={() => setModalVisible(!modalVisible)}>
+                        <Entypo
+                          style={{}}
+                          name="circle-with-cross"
+                          size={30}
+                          color={currentTheme.text}
+                        />
+                      </TouchableOpacity>
+                    </View>
+                    <View
+                      style={{
+                        borderWidth: 0.5,
+                        marginVertical: 5,
+                        elevation: 1,
+                        opacity: 0.3,
+                        borderColor: currentTheme.text,
+                      }}></View>
+                    <View
+                      style={{
+                        backgroundColor: currentTheme.background,
+                        alignSelf: 'flex-start',
+                        borderRadius: 10,
+                        marginVertical: 5,
+                      }}>
+                      <Text
+                        style={{
+                          color: currentTheme.text,
+                          padding: 5,
+                          marginHorizontal: 5,
+                        }}>
+                        {selectedDate}
+                      </Text>
+                    </View>
+                    <View
+                      style={{
+                        borderWidth: 0.5,
+                        marginVertical: 5,
+                        elevation: 1,
+                        opacity: 0.3,
+                        borderColor: currentTheme.text,
+                      }}></View>
+                    <View
+                      style={{
+                        flexDirection: 'row',
+                        justifyContent: 'space-between',
+                      }}>
+                      <View style={{alignSelf: 'flex-start'}}>
+                        <Text
+                          style={{
+                            color: currentTheme.text,
+                            fontSize: 16,
+                            marginVertical: 10,
+                          }}>
+                          Punch In
+                        </Text>
+                        <Text
+                          style={{
+                            color: currentTheme.text,
+                            fontSize: 16,
+                            marginVertical: 10,
+                          }}>
+                          Punch Out
+                        </Text>
+                        <Text
+                          style={{
+                            color: currentTheme.text,
+                            fontSize: 16,
+                            marginVertical: 10,
+                          }}>
+                          Working Hours
+                        </Text>
+                        <Text
+                          style={{
+                            color: currentTheme.text,
+                            fontSize: 16,
+                            marginVertical: 10,
+                          }}>
+                          Status
+                        </Text>
+                      </View>
+
+                      <View style={{alignSelf: 'flex-end'}}>
+                        <View
+                          style={{
+                            backgroundColor: currentTheme.background,
+                            borderRadius: 10,
+                            marginVertical: 5,
+                          }}>
+                          <Text
+                            style={{
+                              color: currentTheme.text,
+                              fontSize: 16,
+                              padding: 5,
+                            }}>
+                            {dailyDate?.punch_in == null
+                              ? 'N/A'
+                              : dailyDate?.punch_in}
+                          </Text>
+                        </View>
+                        <View
+                          style={{
+                            backgroundColor: currentTheme.background,
+                            borderRadius: 10,
+                            marginVertical: 5,
+                          }}>
+                          <Text
+                            style={{
+                              color: currentTheme.text,
+                              fontSize: 16,
+                              padding: 5,
+                            }}>
+                            {dailyDate?.punch_out == null
+                              ? 'N/A'
+                              : dailyDate?.punch_out}
+                          </Text>
+                        </View>
+                        <View
+                          style={{
+                            backgroundColor: currentTheme.background,
+                            borderRadius: 10,
+                            marginVertical: 5,
+                          }}>
+                          <Text
+                            style={{
+                              color: currentTheme.text,
+                              fontSize: 16,
+                              padding: 5,
+                            }}>
+                            {dailyDate?.total_working_hours}
+                          </Text>
+                        </View>
+                        <View
+                          style={{
+                            backgroundColor: currentTheme.background,
+                            borderRadius: 10,
+                            marginVertical: 5,
+                          }}>
+                          <Text
+                            style={{
+                              color: currentTheme.text,
+                              fontSize: 16,
+                              padding: 5,
+                              textAlign: 'center',
+                            }}>
+                            {dailyDate?.status}
+                          </Text>
+                        </View>
+                      </View>
+                    </View>
+                  </View>
+                </View>
+              </Modal>
+
+              {/* Status Section */}
+              <View
+                style={[
+                  styles.statusContainer,
+                  {backgroundColor: currentTheme.background_v2},
+                ]}>
+                <StatusItem color="green" text="Present" value={monthList?.totalPresent} />
+                <StatusItem color="red" text="Absent" value={monthList?.totalAbsent} />
+                <StatusItem color="orange" text="Leave" value={monthList?.totalLeave} />
+                <StatusItem color="blue" text="Holiday" value={monthList?.totalHoliday} />
+                <StatusItem color="pink" text="Halfday" value={monthList?.shortAttendance} />
+              </View>
+
+              {/* Legend */}
+              <View style={styles.legendContainer}>
+                <LegendItem
+                  color="green"
+                  text="Present"
+                  style={{color: '#fff'}}
+                />
+                <LegendItem color="red" text="Absent" />
+                <LegendItem color="orange" text="Leave" />
+                <LegendItem color="blue" text="Holiday" />
+                <LegendItem color="pink" text="Halfday" />
+                <LegendItem color="peachpuff" text="Outdoor Duty" />
+                <LegendItem color="yellow" text="Leave Without Pay" />
+                <LegendItem color="lightgreen" text="Logged In" />
+              </View>
+            </View>
+          </View>
+        </>
+      ): (
         <>
           <View
             style={{
@@ -728,254 +1033,8 @@ const Attendance = () => {
             </ScrollView>
           </View>
         </>
-      ) : (
-        <>
-          <View
-            style={{
-              width: '100%',
-              height: '100%',
-              backgroundColor: currentTheme.background,
-              borderTopLeftRadius: 40,
-              marginTop: !isEnabled
-                ? responsiveHeight(12)
-                : responsiveHeight(3),
-              borderTopRightRadius: 40,
-            }}>
-            <View style={{marginHorizontal: 15}}>
-              {/* Calendar */}
-              <Calendar
-                // You can customize the calendar here
-                theme={{
-                  selectedDayBackgroundColor: currentTheme.text,
-                  todayTextColor: currentTheme.text,
-                  arrowColor: currentTheme.text,
-                }}
-                style={[
-                  styles.calendar,
-                  {backgroundColor: currentTheme.background},
-                ]}
-                markedDates={{
-                  '2024-05-09': {
-                    selected: true,
-                    selectedColor: currentTheme.text,
-                  },
-                }}
-                onDayPress={onDayPress}
-              />
-
-              <Modal
-                animationType="slide"
-                transparent={true}
-                visible={modalVisible}
-                onRequestClose={() => {
-                  setModalVisible(!modalVisible);
-                }}>
-                <View style={styles.modalContainer}>
-                  <View
-                    style={[
-                      styles.modalView,
-                      {backgroundColor: currentTheme.modalBack},
-                    ]}>
-                    <View
-                      style={{
-                        flexDirection: 'row',
-                        alignItems: 'center',
-                        justifyContent: 'space-between',
-                      }}>
-                      <Text
-                        style={{
-                          color: currentTheme.text,
-                          fontWeight: '500',
-                          fontSize: 18,
-                        }}>
-                        Attendance Details
-                      </Text>
-                      <TouchableOpacity
-                        onPress={() => setModalVisible(!modalVisible)}>
-                        <Entypo
-                          style={{}}
-                          name="circle-with-cross"
-                          size={30}
-                          color={currentTheme.text}
-                        />
-                      </TouchableOpacity>
-                    </View>
-                    <View
-                      style={{
-                        borderWidth: 0.5,
-                        marginVertical: 5,
-                        elevation: 1,
-                        opacity: 0.3,
-                        borderColor: currentTheme.text,
-                      }}></View>
-                    <View
-                      style={{
-                        backgroundColor: currentTheme.background,
-                        alignSelf: 'flex-start',
-                        borderRadius: 10,
-                        marginVertical: 5,
-                      }}>
-                      <Text
-                        style={{
-                          color: currentTheme.text,
-                          padding: 5,
-                          marginHorizontal: 5,
-                        }}>
-                        {selectedDate}
-                      </Text>
-                    </View>
-                    <View
-                      style={{
-                        borderWidth: 0.5,
-                        marginVertical: 5,
-                        elevation: 1,
-                        opacity: 0.3,
-                        borderColor: currentTheme.text,
-                      }}></View>
-                    <View
-                      style={{
-                        flexDirection: 'row',
-                        justifyContent: 'space-between',
-                      }}>
-                      <View style={{alignSelf: 'flex-start'}}>
-                        <Text
-                          style={{
-                            color: currentTheme.text,
-                            fontSize: 16,
-                            marginVertical: 10,
-                          }}>
-                          Punch In
-                        </Text>
-                        <Text
-                          style={{
-                            color: currentTheme.text,
-                            fontSize: 16,
-                            marginVertical: 10,
-                          }}>
-                          Punch Out
-                        </Text>
-                        <Text
-                          style={{
-                            color: currentTheme.text,
-                            fontSize: 16,
-                            marginVertical: 10,
-                          }}>
-                          Working Hours
-                        </Text>
-                        <Text
-                          style={{
-                            color: currentTheme.text,
-                            fontSize: 16,
-                            marginVertical: 10,
-                          }}>
-                          Status
-                        </Text>
-                      </View>
-
-                      <View style={{alignSelf: 'flex-end'}}>
-                        <View
-                          style={{
-                            backgroundColor: currentTheme.background,
-                            borderRadius: 10,
-                            marginVertical: 5,
-                          }}>
-                          <Text
-                            style={{
-                              color: currentTheme.text,
-                              fontSize: 16,
-                              padding: 5,
-                            }}>
-                            {dailyDate?.punch_in == null
-                              ? 'N/A'
-                              : dailyDate?.punch_in}
-                          </Text>
-                        </View>
-                        <View
-                          style={{
-                            backgroundColor: currentTheme.background,
-                            borderRadius: 10,
-                            marginVertical: 5,
-                          }}>
-                          <Text
-                            style={{
-                              color: currentTheme.text,
-                              fontSize: 16,
-                              padding: 5,
-                            }}>
-                            {dailyDate?.punch_out == null
-                              ? 'N/A'
-                              : dailyDate?.punch_out}
-                          </Text>
-                        </View>
-                        <View
-                          style={{
-                            backgroundColor: currentTheme.background,
-                            borderRadius: 10,
-                            marginVertical: 5,
-                          }}>
-                          <Text
-                            style={{
-                              color: currentTheme.text,
-                              fontSize: 16,
-                              padding: 5,
-                            }}>
-                            {dailyDate?.total_working_hours}
-                          </Text>
-                        </View>
-                        <View
-                          style={{
-                            backgroundColor: currentTheme.background,
-                            borderRadius: 10,
-                            marginVertical: 5,
-                          }}>
-                          <Text
-                            style={{
-                              color: currentTheme.text,
-                              fontSize: 16,
-                              padding: 5,
-                              textAlign: 'center',
-                            }}>
-                            {dailyDate?.status}
-                          </Text>
-                        </View>
-                      </View>
-                    </View>
-                  </View>
-                </View>
-              </Modal>
-
-              {/* Status Section */}
-              <View
-                style={[
-                  styles.statusContainer,
-                  {backgroundColor: currentTheme.background_v2},
-                ]}>
-                <StatusItem color="green" text="Present" value="0.0" />
-                <StatusItem color="red" text="Absent" value="0.0" />
-                <StatusItem color="orange" text="Leave" value="0.0" />
-                <StatusItem color="blue" text="Holiday" value="0.0" />
-                <StatusItem color="pink" text="Halfday" value="0.0" />
-              </View>
-
-              {/* Legend */}
-              <View style={styles.legendContainer}>
-                <LegendItem
-                  color="green"
-                  text="Present"
-                  style={{color: '#fff'}}
-                />
-                <LegendItem color="red" text="Absent" />
-                <LegendItem color="orange" text="Leave" />
-                <LegendItem color="blue" text="Holiday" />
-                <LegendItem color="pink" text="Halfday" />
-                <LegendItem color="peachpuff" text="Outdoor Duty" />
-                <LegendItem color="yellow" text="Leave Without Pay" />
-                <LegendItem color="lightgreen" text="Logged In" />
-              </View>
-            </View>
-          </View>
-        </>
-      )}
+      ) 
+      }
     </SafeAreaView>
   );
 };
@@ -995,6 +1054,13 @@ const styles = StyleSheet.create({
   calendar: {
     marginBottom: 20,
     marginTop: 10,
+    borderRadius: 10,
+    elevation: 4, // Android shadow
+    shadowColor: '#000', // iOS shadow
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    padding:20
   },
   statusContainer: {
     flexDirection: 'row',

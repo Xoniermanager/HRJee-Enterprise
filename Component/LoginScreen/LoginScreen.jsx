@@ -58,16 +58,19 @@ const LoginScreen = () => {
         showMessage({
           message: 'Please enter email',
           type: 'danger',
+          duration: 2000,
         });
       } else if (!emailRegex.test(email)) {
         showMessage({
           message: 'Please enter valid email',
           type: 'danger',
+          duration: 2000,
         });
       } else if (password == '') {
         showMessage({
           message: 'Please enter password',
           type: 'danger',
+          duration: 2000,
         });
       } else {
         setLoader(true);
@@ -98,6 +101,7 @@ const LoginScreen = () => {
               showMessage({
                 message: `${response?.data?.message}`,
                 type: 'success',
+                duration: 3000,
               });
               navigation.navigate('FirstTimeChangePassword');
             } else {
@@ -119,6 +123,7 @@ const LoginScreen = () => {
               showMessage({
                 message: `${response?.data?.message}`,
                 type: 'success',
+                duration: 3000,
               });
               navigation.navigate('MyTabbar');
             }
@@ -180,6 +185,7 @@ const LoginScreen = () => {
               message:
                 'Face KYC is mandatory for first-time verification. Please log in using your email and password only.',
               type: 'danger',
+              duration: 3000,
             });
           }
         } else {
@@ -191,6 +197,7 @@ const LoginScreen = () => {
           showMessage({
             message: `You don't have access to Face Login. Please log in with your email and password only or contact the admin`,
             type: 'danger',
+            duration: 3000,
           });
         }
       } else {

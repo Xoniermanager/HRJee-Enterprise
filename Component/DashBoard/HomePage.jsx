@@ -9,7 +9,6 @@ import {
   TextInput,
   Alert,
   Platform,
-  Dimensions,
   PermissionsAndroid,
 } from 'react-native';
 import React, {useState, useEffect, useMemo, useContext, useRef} from 'react';
@@ -31,9 +30,10 @@ import Modal from 'react-native-modal';
 import {
   AttendanceRequest,
   LeaveApply,
-  getHoliday,
+  breakIn,
+  breaklist,
+  breakout,
   getLeaveType,
-  getProfile,
   gettodayattendance,
   punchin,
 } from '../../APINetwork/ComponentApi';
@@ -50,9 +50,9 @@ import GetLocation from 'react-native-get-location';
 import axios from 'axios';
 import BackgroundService from 'react-native-background-actions';
 import NotificationController from '../../PushNotification/NotificationController';
+import PullToRefresh from '../../PullToRefresh';
 const HomePage = ({navigation}) => {
   const [monthDay, setMonth] = useState('');
-
   const ISFoucs = useIsFocused();
   const date = new Date(selected);
   const month = date.toLocaleString('default', {month: 'long'});
@@ -62,6 +62,7 @@ const HomePage = ({navigation}) => {
   const [punchInRequest, setPunchInRequest] = useState(null);
   const [punchOut, setPunchOut] = useState(null);
   const [reasonText, setReasonText] = useState('');
+  const [breakModal, setBreakModal] = useState(false);
   const {
     toggleTheme,
     currentTheme,
@@ -82,7 +83,9 @@ const HomePage = ({navigation}) => {
     requestAttendance,
     locationTracking,
     liveLocationActive,
-    
+    empyId,
+    getProfileApiData,
+    activeLog,
   } = useContext(ThemeContext);
   const [getleavetypeapidata, setGetLeaveTypeApiData] = useState([]);
   const [loader, setLoader] = useState(false);
@@ -94,7 +97,6 @@ const HomePage = ({navigation}) => {
   const [selectedId2, setSelectedId2] = useState('');
   const [startDate, setStartDate] = useState(null);
   const [endDate, setEndDate] = useState(null);
-  const [getProfileApiData, setGetProfileApiData] = useState('');
   const [punch, setPunch] = useState('');
   const [todayAttendanceDetails, setTodayAttendanceDetails] = useState('');
   const [lastAttendanceDetails, setLastAttendanceDetails] = useState('');
@@ -106,11 +108,20 @@ const HomePage = ({navigation}) => {
   const [disabledBtn, setDisabledBtn] = useState(false);
   const [loading, setloading] = useState(false);
   const [availableLeavesList, setAvailableLeavesList] = useState(null);
+  const [inTimeBreak, setInTimeBreak] = useState(null); // When the timer last started
+  const [elapsedTime, setElapsedTime] = useState(0); // Total time accumulated
+  const [breaktime, setBreaktime] = useState('00:00:00');
+  const [listBreak, setListBreak] = useState(null);
+  const [breakValue, setBreakValue] = useState(null);
+  const [attendanceId, setAttendanceId] = useState();
+  const [fullbreakTime, setFullbreakTime] = useState();
+  const [breakTotatimeStatus, setBreakTotatimeStatus] = useState(false);
+  const [breakId, setBreakId] = useState(null);
+  const [breakLoader, setBreakLoader] = useState(false);
 
   const toggleModal = () => {
     setModalVisible(!isModalVisible);
   };
-
   const timeOptions = [
     {label: '08:00 AM', value: '08:00 AM'},
     {label: '08:15 AM', value: '08:15 AM'},
@@ -211,53 +222,24 @@ const HomePage = ({navigation}) => {
     d.getHours() < 10
       ? `0${d.getHours()}`
       : d.getHours() + ':' + d.getMinutes();
-
-  const [holidays, setHolidays] = useState([]);
-  const [monthlyHolidays, setMonthlyHolidays] = useState([]);
-
-  const getMonthlyHolidays = dateString => {
-    const selectedMonth = new Date(dateString).getMonth() + 1;
-    const filteredHolidays = holidays?.filter(holiday => {
-      const holidayMonth = new Date(holiday.date).getMonth() + 1;
-      return holidayMonth === selectedMonth;
-    });
-    setMonthlyHolidays(filteredHolidays);
-  };
-  useEffect(() => {
-    const fetchHolidays = async () => {
-      setLoader(true);
-      try {
-        let token = await AsyncStorage.getItem('TOKEN');
-        const url = `${BASE_URL}/holiday/list`;
-        const response = await getHoliday(url, token);
-        setHolidays(response?.data?.data);
-        getMonthlyHolidays(new Date().toISOString().split('T')[0]);
-      } catch (error) {
-        console.error('Error fetching holiday data:', error?.response?.data);
-      }
-    };
-
-    fetchHolidays();
-  }, []);
-  async function check() {
-    try {
-      setLoader(true);
-      let token = await AsyncStorage.getItem('TOKEN');
-      const url = `${BASE_URL}/profile/details`;
-      const response = await getProfile(url, token, navigation);
-
-      if (response?.data?.status === true) {
-        setGetProfileApiData(response?.data?.data);
-        setLoader(false);
-      } else {
-        setLoader(false);
-      }
-    } catch (error) {
-      console.error('Error making POST request:', error);
-      setLoader(false);
+  const breakingList = async () => {
+    let token = await AsyncStorage.getItem('TOKEN');
+    const url = `${BASE_URL}/break-details/${attendanceId}`;
+    const response = await breaklist(url, token);
+    console.log(response.data, 'response');
+    if (response?.data?.status) {
+      const today = new Date();
+      const year = today.getFullYear();
+      const month = String(today.getMonth() + 1).padStart(2, '0');
+      const day = String(today.getDate()).padStart(2, '0');
+      const currentDate = `${year}-${month}-${day}`;
+      setInTimeBreak(`${currentDate} ${response?.data?.data.start_time}`);
+      setBreakId(response?.data?.data.id);
+      setBreakTotatimeStatus(false);
+    } else {
+      setBreakTotatimeStatus(true);
     }
-  }
-
+  };
   async function CheckDailyAttendances() {
     try {
       setLoader(true);
@@ -267,6 +249,7 @@ const HomePage = ({navigation}) => {
       const response = await gettodayattendance(url, token);
       if (response?.data?.status) {
         const data = response?.data?.todayAttendanceDetails;
+        setAttendanceId(data?.id);
         if (data == null) {
           setinTime(null);
           setOutTime(null);
@@ -278,16 +261,17 @@ const HomePage = ({navigation}) => {
         ) {
           setTodayAttendanceDetails(response?.data?.todayAttendanceDetails);
           setinTime(response?.data?.todayAttendanceDetails?.punch_in);
+          setFullbreakTime(
+            response?.data?.todayAttendanceDetails?.total_break_time,
+          );
           setOutTime(response?.data?.todayAttendanceDetails?.punch_out);
           settimerOn(true);
           setloading(false);
         } else if (data.punch_in != '' && data.punch_out != '') {
-          console.log('2');
           settimerOn(false);
           setinTime(data.punch_in);
           setOutTime(data.punch_out);
           setloading(false);
-
           var timeEnd1 = moment(data.punch_out);
           const startDate = moment(data.punch_in);
           const timeEnd = moment(timeEnd1);
@@ -303,6 +287,7 @@ const HomePage = ({navigation}) => {
             (minutes < 10 ? '0' + minutes : minutes) +
             ':' +
             (seconds < 10 ? '0' + seconds : seconds);
+
           setfullTime(time);
         }
       } else {
@@ -369,23 +354,180 @@ const HomePage = ({navigation}) => {
       console.log('Error making POST request:', error);
     }
   }
+  async function check_leave_type() {
+    try {
+      setLoader(true);
+      let token = await AsyncStorage.getItem('TOKEN');
+      const url = `${BASE_URL}/leave/type`;
+      const response = await getLeaveType(url, token);
+      if (response?.data?.status == true) {
+        setGetLeaveTypeApiData(response?.data?.data);
+        setLoader(false);
+      } else {
+        setLoader(false);
+      }
+    } catch (error) {
+      console.error('Error making POST request:', error);
+      setLoader(false);
+    }
+  }
+  async function breaktypeList() {
+    try {
+      setLoader(true);
+      let token = await AsyncStorage.getItem('TOKEN');
+
+      const url = `${BASE_URL}/break-type/list`;
+      const response = await getLeaveType(url, token);
+      if (response?.data?.status == true) {
+        setListBreak(response?.data?.data);
+      } else {
+      }
+    } catch (error) {
+      console.error('Error making POST request:', error);
+    }
+  }
+
   const handleRefresh = async () => {
-    user_details();
     menuAccess();
-    check();
-    CheckDailyAttendances();
-    checkleave();
-    getLastAttendance();
-  };
-  useEffect(() => {
+    breakingList();
     user_details();
-    menuAccess();
-    check();
     CheckDailyAttendances();
+    breaktypeList();
     checkleave();
     getLastAttendance();
     availableLeaves();
-  }, [ISFoucs]);
+    check_leave_type();
+  };
+
+  useEffect(() => {
+    menuAccess();
+    breakingList();
+    user_details();
+    CheckDailyAttendances();
+    breaktypeList();
+    checkleave();
+    getLastAttendance();
+    availableLeaves();
+    check_leave_type();
+  }, [ISFoucs, attendanceId]);
+  useEffect(() => {
+    let interval = null;
+    if (timerOn == true && inTime != null) {
+      interval = setInterval(() => {
+        var timeEnd1 = parseInt(new Date().getTime());
+        const startDate = moment(inTime);
+        const timeEnd = moment(timeEnd1);
+        const diff = timeEnd.diff(startDate);
+        const diffDuration = moment.duration(diff);
+        var hours = diffDuration.hours();
+        var minutes = diffDuration.minutes();
+        var seconds = diffDuration.seconds();
+        var time =
+          (hours < 10 ? '0' + hours : hours) +
+          ':' +
+          (minutes < 10 ? '0' + minutes : minutes) +
+          ':' +
+          (seconds < 10 ? '0' + seconds : seconds);
+        setactivityTime(time);
+      }, 1000);
+    } else {
+      clearInterval(interval);
+    }
+
+    return () => {
+      clearInterval(interval);
+    };
+  }, [timerOn]);
+  useEffect(() => {
+    let interval = null;
+
+    if (timerOn && inTimeBreak) {
+      interval = setInterval(() => {
+        var timeEnd1 = parseInt(new Date().getTime());
+        const startDate = moment(inTimeBreak);
+        const timeEnd = moment(timeEnd1);
+        const diff = timeEnd.diff(startDate);
+        const diffDuration = moment.duration(diff);
+        var hours = diffDuration.hours();
+        var minutes = diffDuration.minutes();
+        var seconds = diffDuration.seconds();
+        var time =
+          (hours < 10 ? '0' + hours : hours) +
+          ':' +
+          (minutes < 10 ? '0' + minutes : minutes) +
+          ':' +
+          (seconds < 10 ? '0' + seconds : seconds);
+        setBreaktime(time);
+      }, 1000);
+    }
+
+    return () => {
+      if (interval) {
+        clearInterval(interval);
+      }
+    };
+  }, [timerOn, inTimeBreak]);
+  const handleBreakIn = async () => {
+    const token = await AsyncStorage.getItem('TOKEN');
+    if (breakValue == null) {
+      setBreakModal(false);
+      showMessage({
+        message: 'Please enter Break Time',
+        type: 'danger',
+        duration: 2000,
+      });
+    } else if (reasonText.trim() === '') {
+      setBreakModal(false);
+      showMessage({
+        message: 'Please Enter Reason',
+        type: 'danger',
+        duration: 2000,
+      });
+    } else {
+      let data = JSON.stringify({
+        break_type_id: breakValue,
+        employee_attendance_id: attendanceId,
+        comment: reasonText,
+      });
+      const url = `${BASE_URL}/break-in`;
+      let form = 0;
+      const response = await breakIn(url, data, token, form);
+      if (response.data.status) {
+        setBreakModal(false);
+        setBreakValue(null);
+        setReasonText('');
+        breakingList();
+
+        showMessage({
+          message: `${response?.data?.message}`,
+          type: 'success',
+        });
+      } else {
+        setBreakModal(false);
+        setBreakValue(null);
+        setReasonText('');
+
+        showMessage({
+          message: `${response?.data?.message}`,
+          type: 'danger',
+          duration: 3000,
+        });
+      }
+    }
+  };
+  const handleBreakOut = async () => {
+    setBreakLoader(true);
+    let token = await AsyncStorage.getItem('TOKEN');
+    const url = `${BASE_URL}/break-out/${breakId}`;
+    const response = await breakout(url, token);
+    setInTimeBreak(null);
+    setBreakLoader(false);
+    if (response?.data?.status) {
+      setInTimeBreak(null);
+      breakingList();
+      CheckDailyAttendances();
+    }
+  };
 
   const radioButtons: RadioButtonProps[] = useMemo(
     () => [
@@ -433,7 +575,7 @@ const HomePage = ({navigation}) => {
         id: '2',
         label: 'Afternoon',
         value: 'option2',
-        labelStyle: {color: currentTheme.text}, // Customize label style here
+        labelStyle: {color: currentTheme.text},
       },
     ],
     [],
@@ -446,21 +588,13 @@ const HomePage = ({navigation}) => {
     month: 'long',
   };
   const formattedDate = currentDate.toLocaleDateString('en-US', options);
-
   const calculateDaysBetweenDates = () => {
-    // Ensure startDate and endDate are valid dates
     if (!startDate || !endDate) {
-      return 0; // Handle the case where either date is not set
+      return 0;
     }
-
-    // Convert startDate and endDate to Date objects
     const start = new Date(startDate);
     const end = new Date(endDate);
-
-    // Calculate the difference in milliseconds
     const differenceInMs = Math.abs(end - start);
-
-    // Convert milliseconds to days
     const daysDifference = Math.ceil(differenceInMs / (1000 * 60 * 60 * 24));
 
     return daysDifference;
@@ -476,55 +610,16 @@ const HomePage = ({navigation}) => {
     }
     setSelected(currentDate);
   };
-  useEffect(() => {
-    let interval = null;
-    if (timerOn == true && inTime != null) {
-      interval = setInterval(() => {
-        var timeEnd1 = parseInt(new Date().getTime());
-        const startDate = moment(inTime);
-        const timeEnd = moment(timeEnd1);
-        const diff = timeEnd.diff(startDate);
-        const diffDuration = moment.duration(diff);
-        var days = diffDuration.days();
-        var hours = diffDuration.hours();
-        var minutes = diffDuration.minutes();
-        var seconds = diffDuration.seconds();
-        var time =
-          (hours < 10 ? '0' + hours : hours) +
-          ':' +
-          (minutes < 10 ? '0' + minutes : minutes) +
-          ':' +
-          (seconds < 10 ? '0' + seconds : seconds);
-        setactivityTime(time);
-      }, 1000);
-    } else {
-      clearInterval(interval);
-    }
 
-    return () => {
-      clearInterval(interval);
-    };
-  }, [timerOn]);
-  useEffect(() => {
-    async function check() {
-      try {
-        setLoader(true);
-        let token = await AsyncStorage.getItem('TOKEN');
-        const url = `${BASE_URL}/leave/type`;
-        const response = await getLeaveType(url, token);
-        if (response?.data?.status == true) {
-          setGetLeaveTypeApiData(response?.data?.data);
-          setLoader(false);
-        } else {
-          setLoader(false);
-        }
-      } catch (error) {
-        console.error('Error making POST request:', error);
-        setLoader(false);
-      }
+  const handlePunchIn = async () => {
+    if (facePermission == 0) {
+      punch_IN();
+    } else if (face_kyc_img == null) {
+      setKycModal(true);
+    } else {
+      handleOpenCamera();
     }
-    check();
-  }, []);
+  };
   const punch_IN = async () => {
     setloading(true);
     GetLocation.getCurrentPosition({
@@ -541,7 +636,6 @@ const HomePage = ({navigation}) => {
           punch_in_longitude: long,
           punch_in_address: address.data?.results[0]?.formatted_address,
         };
-        console.log(body, 'body');
         setDisabledBtn(true);
         try {
           const url = `${BASE_URL}/employee/make/attendance`;
@@ -549,8 +643,12 @@ const HomePage = ({navigation}) => {
           const response = await punchin(url, body, token);
           CheckDailyAttendances();
           if (response?.data?.status) {
+            AsyncStorage.setItem(
+              'oldLocation',
+              JSON.stringify({latitude: lat, longitude: long}),
+            );
             setKycModal(false);
-            user_details()
+            user_details();
             CheckDailyAttendances();
             setLoader(false);
             setloading(false);
@@ -559,14 +657,22 @@ const HomePage = ({navigation}) => {
             showMessage({
               message: `${response?.data?.message}`,
               type: 'success',
+              duration: 3000,
             });
-          }
-          
-          else {
+          } else {
             showMessage({
               message: `${response?.data?.message}`,
               type: 'danger',
+              duration: 3000,
             });
+            const payload = {
+              data: body,
+              url,
+              url,
+              method: 'post',
+              message: response?.data?.message,
+            };
+            activeLog(payload);
             setKycModal(false);
             setLoader(false);
             setloading(false);
@@ -590,16 +696,7 @@ const HomePage = ({navigation}) => {
         });
       });
   };
-  const handlePunchIn = async () => {
-    if (facePermission == 0) {
-      punch_IN();
-    } else if (face_kyc_img == null) {
-      setKycModal(true);
-    } else {
-      handleOpenCamera();
-    }
-  };
-  const punch_Out_EMP = async () => {
+  const punch_Out_EMP = async punchOutConfirm => {
     setloading(true);
     GetLocation.getCurrentPosition({
       enableHighAccuracy: true,
@@ -614,16 +711,17 @@ const HomePage = ({navigation}) => {
           punch_out_latitude: lat,
           punch_out_longitude: long,
           punch_out_address: address.data?.results[0]?.formatted_address,
+          attendance_id: attendanceId,
+          ...(punchOutConfirm && {force: true}),
         };
-        console.log(body, 'body');
         setDisabledBtn(true);
         try {
           const url = `${BASE_URL}/employee/make/attendance`;
           let token = await AsyncStorage.getItem('TOKEN');
           const response = await punchin(url, body, token);
-          CheckDailyAttendances();
           if (response?.data?.status) {
             CheckDailyAttendances();
+            breakingList();
             setLoader(false);
             setloading(false);
             setPunch(response?.data);
@@ -633,13 +731,25 @@ const HomePage = ({navigation}) => {
               type: 'success',
             });
           } else {
-            showMessage({
-              message: `${response?.data?.message}`,
-              type: 'danger',
-            });
             setLoader(false);
             setloading(false);
             setDisabledBtn(false);
+            if (response.data.before_punchout_confirm_required) {
+              Alert.alert('Punch Out', response?.data?.message, [
+                {
+                  text: 'Cancel',
+                  onPress: () => console.log('Cancel Pressed'),
+                  style: 'cancel',
+                },
+                {
+                  text: 'OK',
+                  onPress: () =>
+                    punch_Out_EMP(
+                      response.data.before_punchout_confirm_required,
+                    ),
+                },
+              ]);
+            }
           }
         } catch (error) {
           console.error('Error making POST request:', error);
@@ -669,7 +779,7 @@ const HomePage = ({navigation}) => {
         }}
         source={item.uri}
       />
-      <Text
+      {/* <Text
         style={{
           position: 'absolute',
           bottom: 5,
@@ -679,7 +789,7 @@ const HomePage = ({navigation}) => {
           fontWeight: '500',
         }}>
         {item.name}
-      </Text>
+      </Text> */}
     </TouchableOpacity>
   );
   const [expandedapplyleave, setExpandedApplyLeave] = useState(false);
@@ -693,13 +803,14 @@ const HomePage = ({navigation}) => {
   const [selected, setSelected] = useState('');
   const [toggleCheckBox, setToggleCheckBox] = useState(false);
   const handleLogout = () => {
+    let punchOutConfirm = false;
     Alert.alert('Are you sure?', 'Do you really want to log out?', [
       {
         text: 'Cancel',
         onPress: () => console.log('Cancel Pressed'),
         style: 'cancel',
       },
-      {text: 'OK', onPress: () => punch_Out_EMP()},
+      {text: 'OK', onPress: () => punch_Out_EMP(punchOutConfirm)},
     ]);
   };
   const requestLocationPermission = async () => {
@@ -726,21 +837,21 @@ const HomePage = ({navigation}) => {
             buttonPositive: 'OK',
           },
         );
-  
+
         if (fineLocationGranted !== PermissionsAndroid.RESULTS.GRANTED) {
           Alert.alert('Fine location permission denied');
           return false;
         }
-  
+
         const backgroundGranted = await PermissionsAndroid.request(
           PermissionsAndroid.PERMISSIONS.ACCESS_BACKGROUND_LOCATION,
         );
-  
+
         if (backgroundGranted !== PermissionsAndroid.RESULTS.GRANTED) {
           Alert.alert('Background location permission denied');
           return false;
         }
-  
+
         return true;
       } catch (err) {
         console.warn('Android location permission error:', err);
@@ -748,22 +859,62 @@ const HomePage = ({navigation}) => {
       }
     }
   };
+  const getDistance = (loc1, loc2) => {
+    const toRad = value => (value * Math.PI) / 180;
+    const R = 6371e3; // Radius of Earth in meters
+
+    const lat1 = toRad(loc1.latitude);
+    const lat2 = toRad(loc2.latitude);
+    const deltaLat = toRad(loc2.latitude - loc1.latitude);
+    const deltaLon = toRad(loc2.longitude - loc1.longitude);
+
+    const a =
+      Math.sin(deltaLat / 2) * Math.sin(deltaLat / 2) +
+      Math.cos(lat1) *
+        Math.cos(lat2) *
+        Math.sin(deltaLon / 2) *
+        Math.sin(deltaLon / 2);
+
+    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+    const distance = R * c; // Distance in meters
+
+    return distance;
+  };
+  const sendStoredLocation = async new_location => {
+    if (timerOn && locationTracking == 1 && liveLocationActive == 1) {
+      try {
+        const token = await AsyncStorage.getItem('TOKEN');
+        const url = `${BASE_URL}/location-tracking/send`;
+        const form = 0;
+        const data = {
+          user_id: empyId,
+          locations: [
+            {
+              latitude: new_location.latitude.toString(),
+              longitude: new_location.longitude.toString(),
+            },
+          ],
+        };
+        const response = await locationSend(url, data, token, form);
+        console.log(response.data);
+      } catch (error) {
+        console.error('Error sending stored location:', error.response.data);
+      }
+    } else {
+      console.log('Location Tracking Blocked for this user');
+    }
+  };
   useEffect(() => {
     async function fetchMyAPI() {
       const token = await AsyncStorage.getItem('TOKEN');
-      if (token &&  locationTracking==0 &&
-        liveLocationActive==0) {
+      if (token && locationTracking == 1 && liveLocationActive == 1) {
         startBackgroundService();
       } else {
         EndBackgroundService();
       }
     }
     fetchMyAPI();
-  }, [
-    timerOn,
-    locationTracking,
-    liveLocationActive
-  ]);
+  }, [timerOn, locationTracking, liveLocationActive]);
   const EndBackgroundService = async () => {
     Geolocation.stopObserving();
     BackgroundService.on('expiration', () => {
@@ -786,13 +937,35 @@ const HomePage = ({navigation}) => {
         }
         if (!(await requestLocationPermission())) {
           Alert.alert('Permission Denied', 'Location permission is required.');
+          setTracking(false);
           return;
         }
         watchId = Geolocation.watchPosition(
           async ({coords: {latitude, longitude}}) => {
             try {
               const newLocation = {latitude, longitude};
-              console.log(newLocation,'newLocation')
+              const oldLocationStr = await AsyncStorage.getItem('oldLocation');
+              const oldLocation = oldLocationStr
+                ? JSON.parse(oldLocationStr)
+                : null;
+
+              if (oldLocation) {
+                const distance = getDistance(oldLocation, newLocation);
+                console.log('Distance:', Math.floor(distance));
+
+                if (Math.floor(distance) >= 0) {
+                  sendStoredLocation(newLocation, distance, oldLocation);
+                  await AsyncStorage.setItem(
+                    'oldLocation',
+                    JSON.stringify(newLocation),
+                  );
+                }
+              } else {
+                await AsyncStorage.setItem(
+                  'oldLocation',
+                  JSON.stringify(newLocation),
+                );
+              }
             } catch (error) {
               console.error('Error handling location update:', error);
             }
@@ -806,18 +979,22 @@ const HomePage = ({navigation}) => {
             showLocationDialog: true,
           },
         );
+
         setWatchId(watchId);
+
         await sleep(delay);
       }
+
       cleanup();
     };
+
     try {
       await BackgroundService.start(veryIntensiveTask, {
         taskName: 'HRJee Track',
         taskTitle: 'Tracking Location',
         taskDesc: 'Tracking started',
         taskIcon: {name: 'ic_launcher', type: 'mipmap'},
-        color: '#FF00FF',
+        color: '#ff00ff',
         linkingURI: 'yourSchemeHere://chat/jane',
         parameters: {delay: 1000},
       });
@@ -826,26 +1003,10 @@ const HomePage = ({navigation}) => {
     }
   };
 
+  // if (getProfileApiData) {
+  //   return <HomeSkeleton />;
+  // }
 
-
-
-
-
-
-
-
-
-
-
-
-  if (loader) {
-    return <HomeSkeleton />;
-  }
-  const ListData =
-    getleavetypeapidata &&
-    getleavetypeapidata?.filter(item => {
-      return item.name == availableLeavesList?.map(item => item.leave_name);
-    });
   function convertTo24Hour(time) {
     let [hours, minutes] = time.match(/\d+/g);
     let period = time.match(/AM|PM/i);
@@ -870,18 +1031,21 @@ const HomePage = ({navigation}) => {
       showMessage({
         message: 'Please enter Punch In Time',
         type: 'danger',
+        duration: 2000,
       });
     } else if (punchInRequest == null) {
       setModalRequest(false);
       showMessage({
         message: 'Please enter Punch out Time',
         type: 'danger',
+        duration: 2000,
       });
     } else if (reasonText.trim() === '') {
       setModalRequest(false);
       showMessage({
         message: 'Please Enter Reason',
         type: 'danger',
+        duration: 2000,
       });
     } else {
       let data = JSON.stringify({
@@ -902,6 +1066,15 @@ const HomePage = ({navigation}) => {
           message: `${response?.data?.message}`,
           type: 'success',
         });
+      } else {
+        const payload = {
+          data: data,
+          url,
+          url,
+          method: 'post',
+          message: response?.data?.message,
+        };
+        activeLog(payload);
       }
     }
   };
@@ -932,36 +1105,48 @@ const HomePage = ({navigation}) => {
               justifyContent: 'space-between',
               marginHorizontal: 10,
               marginVertical: 8,
+              padding: 10,
+              borderRadius: 10,
+              backgroundColor: currentTheme.cardBackground,
+              // elevation: 2,
+              borderWidth: 0.5,
             }}>
-            <View style={{}}>
+            <View style={{flex: 1}}>
               <Text
                 style={{
                   color: currentTheme.text,
-                  fontSize: 20,
-                  fontWeight: '500',
+                  fontSize: 18,
+                  fontWeight: 'bold',
                 }}>
                 {elements?.day}
               </Text>
-              <Text style={{color: currentTheme.text, fontSize: 18}}>
+              <Text style={{color: currentTheme.text, fontSize: 16}}>
                 {elements?.date}
               </Text>
+              <Text
+                style={{color: currentTheme.text, fontSize: 15, marginTop: 4}}>
+                Punch In: {elements?.punch_in_time ?? '--'}
+              </Text>
+              <Text style={{color: currentTheme.text, fontSize: 15}}>
+                Punch Out: {elements?.punch_out_time ?? '--'}
+              </Text>
             </View>
-            <View style={{}}>
+
+            {/* Right Section - Clock and Total Hours */}
+            <View style={{alignItems: 'center', justifyContent: 'center'}}>
               <Image
                 style={{
                   tintColor: currentTheme.text,
-                  fontSize: 20,
-                  fontWeight: '500',
                   height: 30,
                   width: 30,
-                  alignSelf: 'center',
+                  marginBottom: 4,
                 }}
                 source={require('../../assets/HomeScreen/clock.png')}
               />
               <Text
                 style={{
                   color: currentTheme.text,
-                  fontSize: 18,
+                  fontSize: 16,
                   textAlign: 'center',
                 }}>
                 {elements?.total_hours}
@@ -972,6 +1157,70 @@ const HomePage = ({navigation}) => {
       });
     }
   };
+  // const getLastAttendanceDaily = () => {
+  //   if (lastAttendanceDetails == 'No Last Attendance Available') {
+  //     return (
+  //       <View>
+  //         <Text
+  //           style={{
+  //             color: currentTheme.text,
+  //             fontSize: 16,
+  //             textAlign: 'center',
+  //           }}>
+  //           No Last Attendance Available
+  //         </Text>
+  //       </View>
+  //     );
+  //   } else {
+  //     return lastAttendanceDetails?.map((elements, index) => {
+  //       return (
+  //         <View
+  //           key={index}
+  //           style={{
+  //             flexDirection: 'row',
+  //             justifyContent: 'space-between',
+  //             marginHorizontal: 10,
+  //             marginVertical: 8,
+  //           }}>
+  //           <View style={{}}>
+  //             <Text
+  //               style={{
+  //                 color: currentTheme.text,
+  //                 fontSize: 20,
+  //                 fontWeight: '500',
+  //               }}>
+  //               {elements?.day}
+  //             </Text>
+  //             <Text style={{color: currentTheme.text, fontSize: 18}}>
+  //               {elements?.date}
+  //             </Text>
+  //           </View>
+  //           <View style={{}}>
+  //             <Image
+  //               style={{
+  //                 tintColor: currentTheme.text,
+  //                 fontSize: 20,
+  //                 fontWeight: '500',
+  //                 height: 30,
+  //                 width: 30,
+  //                 alignSelf: 'center',
+  //               }}
+  //               source={require('../../assets/HomeScreen/clock.png')}
+  //             />
+  //             <Text
+  //               style={{
+  //                 color: currentTheme.text,
+  //                 fontSize: 18,
+  //                 textAlign: 'center',
+  //               }}>
+  //               {elements?.total_hours}
+  //             </Text>
+  //           </View>
+  //         </View>
+  //       );
+  //     });
+  //   }
+  // };
   const handleSubmit = async () => {
     try {
       if (startDate == '' || startDate == [] || startDate == undefined) {
@@ -1046,16 +1295,12 @@ const HomePage = ({navigation}) => {
       setLoader(false);
     }
   };
-
-
   if (isCameraOpen) {
     return <FaceCamera punchIn={punch_IN} />;
   } else {
     return (
-      <>
-
         <View style={{flex: 1, backgroundColor: currentTheme.background}}>
-          <NotificationController/>
+          <NotificationController />
           <View style={styles.parent}>
             <View
               style={[
@@ -1094,13 +1339,6 @@ const HomePage = ({navigation}) => {
                   />
                 )}
                 <View style={{marginHorizontal: 15}}>
-                  {/* <Switch
-                    trackColor={{false: '#767577', true: '#81B0FF'}}
-                    thumbColor={isEnabled ? '#F5DD4B' : '#F4F3F4'}
-                    ios_backgroundColor="#3E3E3E"
-                    onValueChange={toggleTheme}
-                    value={isEnabled}
-                  /> */}
                   <Text
                     style={{color: '#fff', fontSize: 15, fontWeight: 'bold'}}>
                     {empyName}
@@ -1112,8 +1350,6 @@ const HomePage = ({navigation}) => {
               </View>
             </View>
           </View>
-
-          {/* This is Services list */}
           <ScrollView showsVerticalScrollIndicator={false}>
             <View
               style={{
@@ -1163,6 +1399,16 @@ const HomePage = ({navigation}) => {
                       ' ' +
                       d.getFullYear()}
                   </Text>
+                  {inTime && !outTime && (
+                    <Text
+                      style={{
+                        color: currentTheme.text_v2,
+                        fontSize: 18,
+                        marginTop: 5,
+                      }}>
+                      Break Time
+                    </Text>
+                  )}
                 </View>
                 <View
                   style={{
@@ -1274,30 +1520,108 @@ const HomePage = ({navigation}) => {
                       </Text>
                     </>
                   )}
+                  {breakTotatimeStatus ? (
+                    <View
+                      style={{
+                        flexDirection: 'row',
+                        marginTop: 5,
+                      }}>
+                      <Text
+                        style={{
+                          color: currentTheme.text_v2,
+                          fontSize: 18,
+                          textAlign: 'center',
+                          marginHorizontal: 10,
+                        }}>
+                        {fullbreakTime}
+                      </Text>
+                    </View>
+                  ) : null}
+                  {inTimeBreak != null ? (
+                    <View
+                      style={{
+                        flexDirection: 'row',
+                        marginTop: 5,
+                      }}>
+                      <Text
+                        style={{
+                          color: currentTheme.text_v2,
+                          fontSize: 18,
+                          textAlign: 'center',
+                          marginHorizontal: 10,
+                        }}>
+                        {breaktime}
+                      </Text>
+                    </View>
+                  ) : null}
                 </View>
               </View>
-              {
-                requestAttendance?.length>0?
-                (
-                  <TouchableOpacity onPress={() => setModalRequest(true)}>
-                  <Text
-                    style={[
-                      {
-                        fontSize: 18,
-                        fontWeight: '600',
-                        textDecorationLine: 'underline',
-                        textAlign: 'right',
-                        marginRight: 8,
-                      },
-                      {color: theme == 'dark' ? '#000' : '#000'},
-                    ]}>
-                    Attendance Request
-                  </Text>
-                </TouchableOpacity>
-                ):
-                null
-              }
-             
+
+              <View
+                style={{flexDirection: 'row', justifyContent: 'space-between'}}>
+                {requestAttendance?.length > 0 ? (
+                  <TouchableOpacity
+                    onPress={() => setModalRequest(true)}
+                    style={{marginLeft: 2}}>
+                    <Text
+                      style={[
+                        {
+                          fontSize: 15,
+                          fontWeight: '500',
+                          backgroundColor: currentTheme.background_v2,
+                          padding: 10,
+                          borderRadius: 10,
+                          color: '#fff',
+                        },
+                      ]}>
+                      Attendance Request
+                    </Text>
+                  </TouchableOpacity>
+                ) : null}
+
+                {inTime && inTimeBreak == null && !outTime && (
+                  <TouchableOpacity
+                    onPress={() => setBreakModal(true)}
+                    style={{marginRight: 2}}>
+                    <Text
+                      style={[
+                        {
+                          fontSize: 15,
+                          fontWeight: '500',
+                          backgroundColor: currentTheme.background_v2,
+                          padding: 10,
+                          borderRadius: 10,
+                          color: '#fff',
+                        },
+                      ]}>
+                      Take Break
+                    </Text>
+                  </TouchableOpacity>
+                )}
+                {inTimeBreak != null ? (
+                  <TouchableOpacity
+                    onPress={() => handleBreakOut()}
+                    style={{
+                      marginRight: 2,
+                      backgroundColor: currentTheme.background_v2,
+                    }}>
+                    {breakLoader ? (
+                      <ActivityIndicator size="small" color="#fff" />
+                    ) : (
+                      <Text
+                        style={{
+                          fontSize: 15,
+                          fontWeight: '500',
+                          padding: 10,
+                          borderRadius: 10,
+                          color: '#fff',
+                        }}>
+                        Break out
+                      </Text>
+                    )}
+                  </TouchableOpacity>
+                ) : null}
+              </View>
 
               <View>
                 <View
@@ -1608,7 +1932,7 @@ const HomePage = ({navigation}) => {
                                   color: '#fff',
                                 },
                               }}
-                              data={ListData && ListData}
+                              data={getleavetypeapidata && getleavetypeapidata}
                               maxHeight={300}
                               labelField="name"
                               valueField="id"
@@ -1814,8 +2138,7 @@ const HomePage = ({navigation}) => {
               </TouchableOpacity>
             </View>
           </Modal>
-        </View>
-        <Modal isVisible={kycModal} animationIn="zoomIn" animationOut="zoomOut">
+          <Modal isVisible={kycModal} animationIn="zoomIn" animationOut="zoomOut">
           <View
             style={{
               backgroundColor: 'white',
@@ -1875,105 +2198,154 @@ const HomePage = ({navigation}) => {
               </Text>
             </TouchableOpacity>
           </View>
-        </Modal>
-        <Modal visible={modalRequest} transparent={true} animationType="none">
-          <View style={styles.modalContainer}>
-            <View style={styles.modalContent}>
-              <Text style={styles.modalTitle}>Enter Attendance Details</Text>
-              <View style={styles.Date_box}>
-                <Text style={{color: theme == 'dark' ? '#000' : '#000'}}>
-                  {startdateRequest?.toISOString().split('T')[0]}
+          </Modal>
+          <Modal visible={modalRequest} transparent={true} animationType="none">
+            <View style={styles.modalContainer}>
+              <View style={styles.modalContent}>
+                <Text style={styles.modalTitle}>Enter Attendance Details</Text>
+                <View style={styles.Date_box}>
+                  <Text style={{color: theme == 'dark' ? '#000' : '#000'}}>
+                    {startdateRequest?.toISOString().split('T')[0]}
+                  </Text>
+                  <TouchableOpacity onPress={() => setOpenStartDate(true)}>
+                    <EvilIcons
+                      name="calendar"
+                      style={{
+                        fontSize: 25,
+                        color: theme == 'dark' ? '#000' : '#000',
+                        alignSelf: 'center',
+                      }}
+                    />
+                  </TouchableOpacity>
+                </View>
+
+                <Text style={{color: '#333', fontSize: 15, marginVertical: 5}}>
+                  Punch In Time
                 </Text>
-                <TouchableOpacity onPress={() => setOpenStartDate(true)}>
-                  <EvilIcons
-                    name="calendar"
-                    style={{
-                      fontSize: 25,
-                      color: theme == 'dark' ? '#000' : '#000',
-                      alignSelf: 'center',
-                    }}
-                  />
-                </TouchableOpacity>
-              </View>
+                <Dropdown
+                  style={styles.dropdown}
+                  placeholderStyle={[{color: '#000'}]}
+                  selectedTextStyle={[{color: '#000'}]}
+                  itemTextStyle={{
+                    color: '#000',
+                  }}
+                  data={timeOptions}
+                  labelField="label"
+                  valueField="value"
+                  placeholder="Select Time"
+                  value={punchInRequest}
+                  onChange={item => setPunchInRequest(item.value)}
+                />
+                {/* Punch Out Time Picker */}
+                <Text style={{color: '#333', fontSize: 15, marginVertical: 5}}>
+                  Punch Out Time
+                </Text>
+                <Dropdown
+                  style={styles.dropdown}
+                  placeholderStyle={[{color: '#000'}]}
+                  selectedTextStyle={[{color: '#000'}]}
+                  itemTextStyle={{
+                    color: '#000',
+                  }}
+                  data={timeOptions}
+                  labelField="label"
+                  valueField="value"
+                  placeholder="Select Time"
+                  value={punchOut}
+                  onChange={item => setPunchOut(item.value)}
+                />
 
-              <Text style={{color: '#333', fontSize: 15, marginVertical: 5}}>
-                Punch In Time
-              </Text>
-              <Dropdown
-                style={styles.dropdown}
-                placeholderStyle={[{color: '#000'}]}
-                selectedTextStyle={[{color: '#000'}]}
-                itemTextStyle={{
-                  color: '#000',
-                }}
-                data={timeOptions}
-                labelField="label"
-                valueField="value"
-                placeholder="Select Time"
-                value={punchInRequest}
-                onChange={item => setPunchInRequest(item.value)}
-              />
-              {/* Punch Out Time Picker */}
-              <Text style={{color: '#333', fontSize: 15, marginVertical: 5}}>
-                Punch Out Time
-              </Text>
-              <Dropdown
-                style={styles.dropdown}
-                placeholderStyle={[{color: '#000'}]}
-                selectedTextStyle={[{color: '#000'}]}
-                itemTextStyle={{
-                  color: '#000',
-                }}
-                data={timeOptions}
-                labelField="label"
-                valueField="value"
-                placeholder="Select Time"
-                value={punchOut}
-                onChange={item => setPunchOut(item.value)}
-              />
+                <Text style={{color: '#333', fontSize: 15, marginVertical: 5}}>
+                  Reason
+                </Text>
+                <TextInput
+                  style={styles.input}
+                  placeholder="Reason"
+                  value={reasonText}
+                  onChangeText={prev => setReasonText(prev)}
+                  placeholderTextColor="#999"
+                />
 
-              <Text style={{color: '#333', fontSize: 15, marginVertical: 5}}>
-                Reason
-              </Text>
-              <TextInput
-                style={styles.input}
-                placeholder="Reason"
-                value={reasonText}
-                onChangeText={prev => setReasonText(prev)}
-                placeholderTextColor="#999"
-              />
-
-              {/* Buttons */}
-              <View style={styles.buttonRow}>
-                <TouchableOpacity
-                  style={styles.saveButton}
-                  onPress={() => attendance_Request()}>
-                  <Text style={styles.buttonText}>Save</Text>
-                </TouchableOpacity>
-                <TouchableOpacity
-                  style={styles.closeButton}
-                  onPress={() => setModalRequest(false)}>
-                  <Text style={styles.buttonText}>Close</Text>
-                </TouchableOpacity>
+                {/* Buttons */}
+                <View style={styles.buttonRow}>
+                  <TouchableOpacity
+                    style={styles.saveButton}
+                    onPress={() => attendance_Request()}>
+                    <Text style={styles.buttonText}>Save</Text>
+                  </TouchableOpacity>
+                  <TouchableOpacity
+                    style={styles.closeButton}
+                    onPress={() => setModalRequest(false)}>
+                    <Text style={styles.buttonText}>Close</Text>
+                  </TouchableOpacity>
+                </View>
               </View>
             </View>
-          </View>
-        </Modal>
-        <DatePicker
-          modal
-          open={openstartdate}
-          date={startdateRequest}
-          theme="light"
-          mode="date"
-          onConfirm={startdate => {
-            setOpenStartDate(false);
-            setStartdateRequest(startdate);
-          }}
-          onCancel={() => {
-            setOpenStartDate(false);
-          }}
-        />
-      </>
+          </Modal>
+          <Modal visible={breakModal} animationType="slide" transparent={true}>
+            <View style={styles.modalContainer}>
+              <View style={styles.modalContent}>
+                <Text style={{color: '#333', fontSize: 15, marginVertical: 5}}>
+                  Select Break Type
+                </Text>
+                <Dropdown
+                  style={styles.dropdown}
+                  placeholderStyle={[{color: '#000'}]}
+                  selectedTextStyle={[{color: '#000'}]}
+                  itemTextStyle={{
+                    color: '#000',
+                  }}
+                  data={listBreak}
+                  labelField="name"
+                  valueField="id"
+                  placeholder="Select Break Type"
+                  value={breakValue}
+                  onChange={item => setBreakValue(item.id)}
+                />
+
+                <Text style={{color: '#333', fontSize: 15, marginVertical: 5}}>
+                  Reason
+                </Text>
+                <TextInput
+                  style={styles.input}
+                  placeholder="Reason"
+                  value={reasonText}
+                  onChangeText={prev => setReasonText(prev)}
+                  placeholderTextColor="#999"
+                  multiline
+                />
+
+                {/* Buttons */}
+                <View style={styles.buttonRow}>
+                  <TouchableOpacity
+                    style={styles.saveButton}
+                    onPress={() => handleBreakIn()}>
+                    <Text style={styles.buttonText}>Submit</Text>
+                  </TouchableOpacity>
+                  <TouchableOpacity
+                    style={styles.closeButton}
+                    onPress={() => setBreakModal(false)}>
+                    <Text style={styles.buttonText}>Close</Text>
+                  </TouchableOpacity>
+                </View>
+              </View>
+            </View>
+          </Modal>
+          <DatePicker
+            modal
+            open={openstartdate}
+            date={startdateRequest}
+            theme="light"
+            mode="date"
+            onConfirm={startdate => {
+              setOpenStartDate(false);
+              setStartdateRequest(startdate);
+            }}
+            onCancel={() => {
+              setOpenStartDate(false);
+            }}
+          />
+        </View>
     );
   }
 };

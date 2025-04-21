@@ -23,7 +23,7 @@ import { SalarySlip } from '../../../APINetwork/ComponentApi';
 import { showMessage } from 'react-native-flash-message';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 const Salary = ({navigation}) => {
-  const arr = [1, 2, 3, 4, 5, 6, 7];
+  const arr = [1,];
   const [list,setList]=useState();
   const [expandedprofile, setExpandedProfile] = useState(false);
   const [openStartDate, setOpenStartDate] = useState(false);
@@ -46,22 +46,24 @@ const Salary = ({navigation}) => {
       const url=`${BASE_URL}/generatePaySlip`
       const response=await SalarySlip(url,token);
       if(response.data.status){
-        setList(response.data.data)
+        setList([response.data.file_url])
       }
       else {
         setList([])
         showMessage({
           message: response.data.message,
           type: 'danger',
+          duration: 3000,
+          
         });
       }
     }
     useEffect(()=>{
       SalarySliplist();
     },[])
-  const renderSalrySlip = ({item}) => {
+  const renderSalrySlip = ({item,index}) => {
     return (
-      <View style={{flexDirection: 'row'}}>
+      <View style={{flexDirection: 'row'}} key={index}>
         <View style={{position: 'relative', justifyContent: 'center'}}>
           <View
             style={{
@@ -98,7 +100,7 @@ const Salary = ({navigation}) => {
 
           }}>
           <Text style={{color: '#0E0E64', fontSize: 18, textAlign: 'center'}}>
-            Nov 2023
+           Salary Slip
           </Text>
           <TouchableOpacity style={{marginRight:15}}>
             <MaterialCommunityIcons
@@ -254,15 +256,15 @@ const Salary = ({navigation}) => {
             </Text>
 
             <FlatList
-              data={arr}
+              data={list}
               showsVerticalScrollIndicator={false}
               renderItem={renderSalrySlip}
               keyExtractor={item => item.id}
-              // ListEmptyComponent={()=>
-              // <View style={{}}>
-              //   <Text style={{textAlign:'center',fontSize:responsiveFontSize(2),fontWeight:'500',color:'#000'}}>No Data Found</Text>
-              //   </View>
-              // }
+              ListEmptyComponent={()=>
+              <View style={{}}>
+                <Text style={{textAlign:'center',fontSize:responsiveFontSize(2),fontWeight:'500',color:'#000'}}>No Data Found</Text>
+                </View>
+              }
             />
           </View>
           {openStartDate && (

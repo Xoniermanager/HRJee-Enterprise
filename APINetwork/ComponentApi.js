@@ -4,8 +4,6 @@ import axiosGet from './axiosGet';
 import AxiosPost from './axiosPost';
 import axiosPost from './axiosPost';
 import axiosPut from './axiosPut';
-
-
 export const login = (url,data) => {
   let item = axiosPost(url,data);
   return item;
@@ -266,6 +264,30 @@ export const courseeList=(url,token)=>{
   return item;
 }
 export const coourseDeatils=(url,token)=>{
+  let item =axiosGet(url,token)
+  return item;
+}
+export const locationSend=(url,data,token,form)=>{
+  let item = axiosPost(url,data,token,form);
+  return item
+}
+export const log_activity=(url,data,token,form)=>{
+  let item = axiosPost(url,data,token,form);
+  return item
+}
+export const break_type_list=(url,token)=>{
+  let item =axiosGet(url,token)
+  return item;
+}
+export const breakIn=(url,data,token,form)=>{
+  let item = axiosPost(url,data,token,form);
+  return item
+}
+export const breaklist=(url,token)=>{
+  let item =axiosGet(url,token)
+  return item;
+}
+export const breakout=(url,token)=>{
   let item =axiosGet(url,token)
   return item;
 }

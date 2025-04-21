@@ -25,6 +25,7 @@ const Leaves = ({navigation}) => {
   const {currentTheme, theme} = useContext(ThemeContext);
   const isFocused = useIsFocused();
   const [list, setList] = useState(null);
+  const [aviLeaves, setAviLeaves] = useState(null);
   const showData = [
     {
       id: 1,
@@ -61,8 +62,22 @@ const Leaves = ({navigation}) => {
       console.error('Error making POST request:', error);
     }
   }
+  async function checkLeaves() {
+    try {
+      let token = await AsyncStorage.getItem('TOKEN');
+      const url = `${BASE_URL}/available-leaves`;
+      const response = await getLeaveType(url, token);
+      if (response?.data?.status == true) {
+        setAviLeaves(response?.data?.data);
+      } else {
+      }
+    } catch (error) {
+      console.error('Error making POST request:', error);
+    }
+  }
   useEffect(() => {
     check();
+    checkLeaves();
   }, [isFocused]);
   if (list == null) {
     return <HomeSkeleton />;
@@ -78,24 +93,51 @@ const Leaves = ({navigation}) => {
     <View
       style={{
         justifyContent: 'center',
-        backgroundColor: item.backgroundcolor,
+        backgroundColor: theme === 'light' ? '#BAAEFC' : '#242B3A',
         width: responsiveWidth(28),
-        height: responsiveHeight(18),
+        height: responsiveHeight(20),
         marginHorizontal: 5,
         borderRadius: 20,
+        shadowColor: '#000',
+        shadowOffset: {width: 0, height: 2},
+        shadowOpacity: 0.2,
+        shadowRadius: 4,
+        elevation: 3,
       }}>
       <View style={{padding: 10, alignItems: 'center'}}>
         <Image
-          style={{height: 60, width: 60, marginBottom: 10}}
-          source={item.uri}
+          style={{
+            height: 60,
+            width: 60,
+            marginBottom: 10,
+            resizeMode: 'contain',
+            borderRadius: 20,
+          }}
+          source={require('../../../assets/HomeScreen/leave.png')}
         />
-        <Text style={{marginBottom: 2, fontSize: 16, color: currentTheme.text}}>
-          {item.name}
+        <Text
+          style={{
+            marginBottom: 4,
+            fontSize: 16,
+            fontWeight: '600',
+            color: currentTheme.text,
+            textAlign: 'center',
+          }}>
+          {item.leave_name} Leave
         </Text>
-        <Text style={{fontSize: 16, color: currentTheme.text}}>{item.num}</Text>
+        <Text style={{fontSize: 14, color: currentTheme.text, marginBottom: 2}}>
+          Available: {item.avaialble}
+        </Text>
+        <Text style={{fontSize: 14, color: currentTheme.text, marginBottom: 2}}>
+          Used: {item.used}
+        </Text>
+        <Text style={{fontSize: 14, color: currentTheme.text}}>
+          Total: {item.totalLeaves}
+        </Text>
       </View>
     </View>
   );
+
   const getColor = status => {
     switch (status) {
       case 'Approved':
@@ -195,7 +237,7 @@ const Leaves = ({navigation}) => {
           height: '100%',
           backgroundColor: currentTheme.background,
           borderTopLeftRadius: 40,
-          marginTop: responsiveHeight(3),
+          marginTop: responsiveHeight(1),
           borderTopRightRadius: 40,
         }}>
         <View style={{margin: 18}}>
@@ -217,16 +259,35 @@ const Leaves = ({navigation}) => {
               <Text style={styles.applyButtonText}>Comp Off</Text>
             </TouchableOpacity>
           </View>
+          <View
+            style={{
+              width: '100%',
+              height: 1,
+              backgroundColor: '#000',
+              marginTop: responsiveHeight(1),
+            }}></View>
+          <Text
+            style={{
+              marginBottom: 4,
+              fontSize: 16,
+              fontWeight: '600',
+              color: currentTheme.text,
+              textAlign: 'center',
+            }}>
+            Available Leave
+          </Text>
           <View style={styles.menu}>
             <FlatList
               style={{alignSelf: 'center'}}
               horizontal
               showsHorizontalScrollIndicator={false}
-              data={showData}
+              data={aviLeaves}
               renderItem={renderServicesList}
               keyExtractor={item => item.id}
             />
           </View>
+          <View
+            style={{width: '100%', height: 1, backgroundColor: '#000'}}></View>
           <View style={styles.menu}>
             <FlatList
               style={{alignSelf: 'center'}}

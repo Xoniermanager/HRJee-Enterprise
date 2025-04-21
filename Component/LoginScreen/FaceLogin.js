@@ -106,6 +106,7 @@ const FaceLogin = ({route}) => {
           message:
             'Multiple faces detected. Please ensure only one face is in the image for KYC verification.',
           type: 'danger',
+          duration: 3000,
         });
         return;
       }
@@ -113,6 +114,7 @@ const FaceLogin = ({route}) => {
         showMessage({
           message: 'No human faces detected. Upload aborted',
           type: 'danger',
+          duration: 3000,
         });
        
         return;
@@ -122,6 +124,7 @@ const FaceLogin = ({route}) => {
           message:
             'No front-facing faces with eye contact detected. Upload aborted.',
           type: 'danger',
+          duration: 3000,
         });
         return;
       }
@@ -165,6 +168,7 @@ const FaceLogin = ({route}) => {
           showMessage({
             message: 'Keep Your Face front to the camera',
             type: 'danger',
+            duration: 3000,
           });
          
         } else if (err.message === 'Request has invalid parameters') {
@@ -172,12 +176,14 @@ const FaceLogin = ({route}) => {
           showMessage({
             message: 'Keep Your Face front to the camera',
             type: 'danger',
+            duration: 3000,
           });
         } else {
             navigation.goBack();
           showMessage({
             message: err.message,
             type: 'danger',
+            duration: 3000,
           });
          
         }
@@ -186,6 +192,7 @@ const FaceLogin = ({route}) => {
         showMessage({
           message: 'Face do not match',
           type: 'danger',
+          duration: 3000,
         });
        
       } else {
@@ -196,6 +203,7 @@ const FaceLogin = ({route}) => {
         showMessage({
             message: 'Face match success' ,
             type: 'success',
+            duration: 3000,
           });
           navigation.navigate('MyTabbar');
        

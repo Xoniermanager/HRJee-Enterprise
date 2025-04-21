@@ -6,7 +6,7 @@ import { navigate } from './NavigationService';
 const axiosPut = async (url, data, token,) => {
 
   var config = {
-    method: 'get',
+    method: 'post',
     url: url,
     headers: {
       Authorization: `Bearer ${token}`,

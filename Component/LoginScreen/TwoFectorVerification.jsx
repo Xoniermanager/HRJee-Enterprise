@@ -79,6 +79,7 @@ const TwoFectorVerification = ({ route }) => {
           showMessage({
             message: `${response?.data?.message}`,
             type: "success",
+            duration: 3000,
           });
           navigation.navigate('FirstTimeChangePassword');
         }
@@ -89,6 +90,7 @@ const TwoFectorVerification = ({ route }) => {
           showMessage({
             message: `${response?.data?.message}`,
             type: "success",
+            duration: 3000,
           });
           navigation.navigate('MyTabbar');
           setLoader(false);
@@ -114,18 +116,21 @@ const TwoFectorVerification = ({ route }) => {
           showMessage({
             message: message,
             type: "danger",
+            duration: 3000,
           });
         } else if (error.request) {
           // Network error
           showMessage({
             message: 'Network error, please check your connection.',
             type: "danger",
+            duration: 3000,
           });
         } else {
           // Other errors
           showMessage({
             message: 'An unexpected error occurred.',
             type: "danger",
+            duration: 3000,
           });
         }
         setLoader(false);
@@ -146,6 +151,7 @@ const TwoFectorVerification = ({ route }) => {
         showMessage({
           message: `${response?.data?.message}`,
           type: "success",
+          duration: 3000,
         });
         setResendLoader(false);
       })
@@ -168,18 +174,21 @@ const TwoFectorVerification = ({ route }) => {
           showMessage({
             message: message,
             type: "danger",
+            duration: 3000,
           });
         } else if (error.request) {
           // Network error
           showMessage({
             message: 'Network error, please check your connection.',
             type: "danger",
+            duration: 3000,
           });
         } else {
           // Other errors
           showMessage({
             message: 'An unexpected error occurred.',
             type: "danger",
+            duration: 3000,
           });
         }
         setResendLoader(false);

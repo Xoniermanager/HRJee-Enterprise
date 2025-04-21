@@ -243,11 +243,7 @@ const ApplyLeave = ({navigation}) => {
     }
   };
 
-  const ListData =
-    getleavetypeapidata &&
-    getleavetypeapidata?.filter(item => {
-      return item.name == availableLeavesList?.map(item => item.leave_name);
-    });
+ 
   return (
     <SafeAreaView
       style={[styles.container, {backgroundColor: currentTheme.background_v2}]}>
@@ -477,7 +473,7 @@ const ApplyLeave = ({navigation}) => {
                     },
                   }}
                   style={{}}
-                  data={ListData}
+                  data={getleavetypeapidata}
                   maxHeight={300}
                   labelField="name"
                   valueField="id"

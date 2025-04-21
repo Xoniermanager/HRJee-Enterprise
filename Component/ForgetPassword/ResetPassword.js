@@ -65,6 +65,7 @@ const ResetPassword = ({route}) => {
       showMessage({
         message: `Password and OTP Fields are mendatory`,
         type: 'danger',
+        duration: 2000,
       });
     } 
     else if (password.length < 8) {
@@ -72,6 +73,7 @@ const ResetPassword = ({route}) => {
       showMessage({
         message: `Password must be at least 8 characters`,
         type: 'danger',
+        duration:2000,
       });
     
     }
@@ -80,6 +82,7 @@ const ResetPassword = ({route}) => {
       showMessage({
         message: `Password Mismatched`,
         type: 'danger',
+        duration: 2000,
       });
     } else {
       let config = {
@@ -100,6 +103,7 @@ const ResetPassword = ({route}) => {
             showMessage({
               message: `${response?.data?.message}`,
               type: 'success',
+              duration: 3000,
             });
             navigation.navigate('LoginScreen');
           } else {
@@ -108,6 +112,7 @@ const ResetPassword = ({route}) => {
             showMessage({
               message: response.data.message,
               type: 'danger',
+              duration: 3000,
             });
           }
         })
@@ -117,6 +122,7 @@ const ResetPassword = ({route}) => {
           showMessage({
             message: error.response.data.message,
             type: 'danger',
+            duration: 3000,
           });
           setloading(false);
         });
@@ -138,6 +144,7 @@ const ResetPassword = ({route}) => {
         showMessage({
           message: `${response?.data?.message}`,
           type: 'success',
+          duration: 3000,
         });
       })
       .catch(error => {

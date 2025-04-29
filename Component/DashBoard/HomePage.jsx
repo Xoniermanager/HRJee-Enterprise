@@ -663,7 +663,7 @@ const HomePage = ({navigation}) => {
             showMessage({
               message: `${response?.data?.message}`,
               type: 'danger',
-              duration: 3000,
+              duration: 4000,
             });
             const payload = {
               data: body,
@@ -693,6 +693,7 @@ const HomePage = ({navigation}) => {
         showMessage({
           message: message,
           type: 'danger',
+          duration: 4000,
         });
       });
   };

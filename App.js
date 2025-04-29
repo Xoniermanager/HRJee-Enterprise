@@ -29,7 +29,7 @@ const App = () => {
 
   useEffect(() => {
     const compareVersions = (v1, v2) => {
-      const clean = version => version.split('-')[0]; // Remove -beta, -alpha etc.
+      const clean = version => version.split('-')[0]; 
       const v1Parts = clean(v1).split('.').map(Number);
       const v2Parts = clean(v2).split('.').map(Number);
       const len = Math.max(v1Parts.length, v2Parts.length);

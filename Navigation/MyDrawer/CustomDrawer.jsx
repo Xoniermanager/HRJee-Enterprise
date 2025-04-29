@@ -12,13 +12,11 @@ import { useNavigation } from '@react-navigation/native';
 import { ThemeContext } from '../../Store/ConetxtApi.jsx/ConextApi';
 import { responsiveFontSize } from 'react-native-responsive-dimensions';
 import VersionCheck from 'react-native-version-check';
-
 export default function CustomDrawer(props) {
   const [loader, setLoader] = useState(false);
   const [version, setVersion] = useState('');
   const navigation = useNavigation();
   const { toggleTheme, isEnabled } = useContext(ThemeContext);
-
   useEffect(() => {
     const checkAppVersion = async () => {
       try {
@@ -93,7 +91,6 @@ export default function CustomDrawer(props) {
     </View>
   );
 }
-
 const styles = StyleSheet.create({
   container: {
     flex: 1,

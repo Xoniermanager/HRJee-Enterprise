@@ -9,7 +9,6 @@ import {
   Switch,
   TouchableOpacity,
   ScrollView,
-  Button,
   Platform,
   Linking,
 } from 'react-native';
@@ -18,7 +17,6 @@ import {
   responsiveFontSize,
   responsiveHeight,
   responsiveWidth,
-
 } from 'react-native-responsive-dimensions';
 import {Calendar} from 'react-native-calendars';
 import Entypo from 'react-native-vector-icons/Entypo';
@@ -31,14 +29,11 @@ import {
 } from '../../APINetwork/ComponentApi';
 import moment from 'moment';
 import DateTimePickerModal from 'react-native-modal-datetime-picker';
-import Themes from '../Theme/Theme';
 import {ThemeContext} from '../../Store/ConetxtApi.jsx/ConextApi';
 import AntDesign from 'react-native-vector-icons/AntDesign';
 const Attendance = () => {
-  
-  const {currentTheme,activeLog} = useContext(ThemeContext);
-  const [startdate, setStartDate] = useState(new Date());
-  const [dataExport,setDataExport]=useState()
+  const {currentTheme, activeLog} = useContext(ThemeContext);
+  const [dataExport, setDataExport] = useState();
   const [modalVisible, setModalVisible] = useState(false);
   const [isEnabled, setIsEnabled] = useState(false);
   const toggleSwitch = () => setIsEnabled(previousState => !previousState);
@@ -51,13 +46,13 @@ const Attendance = () => {
   const [toDate, setToDate] = useState(null);
   const [dailyDate, setDailyDate] = useState();
   const [currentMonth, setCurrentMonth] = useState(moment().format('MM'));
-  const [monthList,setMonthList]=useState();
-  
+  const [monthList, setMonthList] = useState();
+
   useEffect(() => {
     const initialMonth = moment().format('MM');
     setCurrentMonth(initialMonth);
   }, []);
-  const handleMonthChange = (month) => {
+  const handleMonthChange = month => {
     const formattedMonth = String(month.month).padStart(2, '0');
     setCurrentMonth(formattedMonth);
   };
@@ -85,8 +80,9 @@ const Attendance = () => {
     let token = await AsyncStorage.getItem('TOKEN');
     try {
       const url = `${BASE_URL}/attendance?date=${day}`;
+      console.log(url);
       const response = await gettodayattendance(url, token);
-      if (response?.data?.status === true) {
+      if (response?.data?.status) {
         setDailyDate(response?.data?.data);
       } else {
       }
@@ -99,7 +95,8 @@ const Attendance = () => {
     try {
       const url = `${BASE_URL}/attendance/details/${currentMonth}`;
       const response = await gettodayattendance(url, token);
-      if (response?.data?.status === true) {
+      if (response?.data?.status) {
+        console.log(response?.data?.data, 'response?.data?.data');
         setMonthList(response?.data?.data);
       } else {
       }
@@ -131,7 +128,7 @@ const Attendance = () => {
   useEffect(() => {
     if (fromDate && toDate) {
       getSearchAttendence();
-      getExport()
+      getExport();
     }
   }, [fromDate, toDate]);
   const showData = [
@@ -148,7 +145,7 @@ const Attendance = () => {
       id: 2,
       uri: require('../../assets/HomeScreen/leave.png'),
       name: 'Leave',
-      num:monthList?.totalLeave,
+      num: monthList?.totalLeave,
       color: '#FFF6ED',
       backgroundcolor: '#F39331',
       fontcolor: '#F39331',
@@ -244,11 +241,11 @@ const Attendance = () => {
       const response = await getrecentattendence(url, data, token);
       if (response?.data?.status) {
         setLoader(false);
-        setDataExport(response.data.data)
+        setDataExport(response.data.data);
       } else {
         setLoading(false);
-        activeLog(data,url,'post',response?.data?.message);
-        setDataExport(response.data.message)
+        activeLog(data, url, 'post', response?.data?.message);
+        setDataExport(response.data.message);
       }
     } catch (error) {
       console.error('Error making POST request:', error);
@@ -288,29 +285,25 @@ const Attendance = () => {
     setToDate(date.toLocaleDateString());
     hideToDatePicker();
   };
-  const handleExport=()=>{
+  const handleExport = () => {
     if (fromDate && toDate) {
-      if(dataExport=='No Attendance found for this two respective dates'){
+      if (dataExport == 'No Attendance found for this two respective dates') {
         showMessage({
           message: 'No Attendance found for this two respective dates',
           type: 'danger',
-          duration: 3000,
+          duration: 4000,
         });
+      } else if (dataExport) {
+        Linking.openURL(dataExport.download_url);
       }
-      else if (dataExport){
-        Linking.openURL(dataExport.download_url)
-
-      }
-    }
-    else {
+    } else {
       showMessage({
         message: 'Please Select the Start Date and End Date',
         type: 'danger',
-        duration: 3000,
+        duration: 4000,
       });
     }
-  }
-
+  };
 
   return (
     <SafeAreaView
@@ -337,7 +330,7 @@ const Attendance = () => {
           />
         </View>
       </View>
-      {!isEnabled ?(
+      {!isEnabled ? (
         <>
           <View
             style={{
@@ -345,24 +338,20 @@ const Attendance = () => {
               height: '100%',
               backgroundColor: currentTheme.background,
               borderTopLeftRadius: 40,
-              marginTop:isEnabled
-                ? responsiveHeight(12)
-                : responsiveHeight(3),
+              marginTop: isEnabled ? responsiveHeight(12) : responsiveHeight(3),
               borderTopRightRadius: 40,
             }}>
             <View style={{marginHorizontal: 15}}>
               {/* Calendar */}
               <Calendar
-              
                 theme={{
                   selectedDayBackgroundColor: currentTheme.text,
                   todayTextColor: currentTheme.text,
                   arrowColor: currentTheme.text,
-                  
                 }}
-                dayComponent={({ date, state }) => {
+                dayComponent={({date, state}) => {
                   const isSunday = moment(date.dateString).day() === 0;
-          
+
                   return (
                     <TouchableOpacity
                       style={{
@@ -375,14 +364,12 @@ const Attendance = () => {
                         borderRadius: 8,
                         backgroundColor: isSunday ? 'red' : '#FFFFFF', // Change this to your desired Sunday color
                       }}
-                      onPress={onDayPress}
-                    >
+                      onPress={() => onDayPress(date)}>
                       <Text
                         style={{
-                          color: isSunday ?  '#fff' : '#000',
+                          color: isSunday ? '#fff' : '#000',
                           fontWeight: '600',
-                        }}
-                      >
+                        }}>
                         {date.day}
                       </Text>
                     </TouchableOpacity>
@@ -406,20 +393,19 @@ const Attendance = () => {
                 animationType="slide"
                 transparent={true}
                 visible={modalVisible}
-                onRequestClose={() => {
-                  setModalVisible(!modalVisible);
-                }}>
+                onRequestClose={() => setModalVisible(false)}>
                 <View style={styles.modalContainer}>
                   <View
                     style={[
                       styles.modalView,
                       {backgroundColor: currentTheme.modalBack},
                     ]}>
+                    {/* Header */}
                     <View
                       style={{
                         flexDirection: 'row',
-                        alignItems: 'center',
                         justifyContent: 'space-between',
+                        alignItems: 'center',
                       }}>
                       <Text
                         style={{
@@ -429,24 +415,26 @@ const Attendance = () => {
                         }}>
                         Attendance Details
                       </Text>
-                      <TouchableOpacity
-                        onPress={() => setModalVisible(!modalVisible)}>
+                      <TouchableOpacity onPress={() => setModalVisible(false)}>
                         <Entypo
-                          style={{}}
                           name="circle-with-cross"
                           size={30}
                           color={currentTheme.text}
                         />
                       </TouchableOpacity>
                     </View>
+
+                    {/* Divider */}
                     <View
                       style={{
                         borderWidth: 0.5,
                         marginVertical: 5,
-                        elevation: 1,
                         opacity: 0.3,
                         borderColor: currentTheme.text,
-                      }}></View>
+                      }}
+                    />
+
+                    {/* Selected Date */}
                     <View
                       style={{
                         backgroundColor: currentTheme.background,
@@ -463,122 +451,107 @@ const Attendance = () => {
                         {selectedDate}
                       </Text>
                     </View>
+
+                    {/* Divider */}
                     <View
                       style={{
                         borderWidth: 0.5,
                         marginVertical: 5,
-                        elevation: 1,
                         opacity: 0.3,
                         borderColor: currentTheme.text,
-                      }}></View>
-                    <View
-                      style={{
-                        flexDirection: 'row',
-                        justifyContent: 'space-between',
-                      }}>
-                      <View style={{alignSelf: 'flex-start'}}>
-                        <Text
-                          style={{
-                            color: currentTheme.text,
-                            fontSize: 16,
-                            marginVertical: 10,
-                          }}>
-                          Punch In
-                        </Text>
-                        <Text
-                          style={{
-                            color: currentTheme.text,
-                            fontSize: 16,
-                            marginVertical: 10,
-                          }}>
-                          Punch Out
-                        </Text>
-                        <Text
-                          style={{
-                            color: currentTheme.text,
-                            fontSize: 16,
-                            marginVertical: 10,
-                          }}>
-                          Working Hours
-                        </Text>
-                        <Text
-                          style={{
-                            color: currentTheme.text,
-                            fontSize: 16,
-                            marginVertical: 10,
-                          }}>
-                          Status
-                        </Text>
-                      </View>
+                      }}
+                    />
 
-                      <View style={{alignSelf: 'flex-end'}}>
+                    {/* FlatList */}
+                    <FlatList
+                      data={dailyDate?.attendance || []}
+                      keyExtractor={(_, index) => index.toString()}
+                      renderItem={({item, index}) => (
                         <View
                           style={{
+                            marginVertical: 8,
+                            padding: 10,
                             backgroundColor: currentTheme.background,
                             borderRadius: 10,
-                            marginVertical: 5,
                           }}>
                           <Text
                             style={{
                               color: currentTheme.text,
+                              fontWeight: '600',
                               fontSize: 16,
-                              padding: 5,
+                              marginBottom: 8,
                             }}>
-                            {dailyDate?.punch_in == null
-                              ? 'N/A'
-                              : dailyDate?.punch_in}
+                            Shift {index + 1}
                           </Text>
-                        </View>
-                        <View
-                          style={{
-                            backgroundColor: currentTheme.background,
-                            borderRadius: 10,
-                            marginVertical: 5,
-                          }}>
-                          <Text
+
+                          <View
                             style={{
-                              color: currentTheme.text,
-                              fontSize: 16,
-                              padding: 5,
+                              flexDirection: 'row',
+                              justifyContent: 'space-between',
                             }}>
-                            {dailyDate?.punch_out == null
-                              ? 'N/A'
-                              : dailyDate?.punch_out}
-                          </Text>
-                        </View>
-                        <View
-                          style={{
-                            backgroundColor: currentTheme.background,
-                            borderRadius: 10,
-                            marginVertical: 5,
-                          }}>
-                          <Text
+                            <View>
+                              <Text
+                                style={{
+                                  color: currentTheme.text,
+                                  marginVertical: 5,
+                                }}>
+                                Punch In
+                              </Text>
+                              <Text
+                                style={{
+                                  color: currentTheme.text,
+                                  marginVertical: 5,
+                                }}>
+                                Punch Out
+                              </Text>
+                              <Text
+                                style={{
+                                  color: currentTheme.text,
+                                  marginVertical: 5,
+                                }}>
+                                Working Hours
+                              </Text>
+                            </View>
+                            <View>
+                              <Text
+                                style={{
+                                  color: currentTheme.text,
+                                  marginVertical: 5,
+                                }}>
+                                {item.punch_in ?? 'N/A'}
+                              </Text>
+                              <Text
+                                style={{
+                                  color: currentTheme.text,
+                                  marginVertical: 5,
+                                }}>
+                                {item.punch_out ?? 'N/A'}
+                              </Text>
+                              <Text
+                                style={{
+                                  color: currentTheme.text,
+                                  marginVertical: 5,
+                                }}>
+                                {item.total_working_hours ?? 'N/A'}
+                              </Text>
+                            </View>
+                          </View>
+                          <View
                             style={{
-                              color: currentTheme.text,
-                              fontSize: 16,
-                              padding: 5,
-                            }}>
-                            {dailyDate?.total_working_hours}
-                          </Text>
+                              borderWidth: 0.5,
+                              marginVertical: 5,
+                              opacity: 0.3,
+                              borderColor: currentTheme.text,
+                            }}
+                          />
                         </View>
-                        <View
-                          style={{
-                            backgroundColor: currentTheme.background,
-                            borderRadius: 10,
-                            marginVertical: 5,
-                          }}>
-                          <Text
-                            style={{
-                              color: currentTheme.text,
-                              fontSize: 16,
-                              padding: 5,
-                              textAlign: 'center',
-                            }}>
-                            {dailyDate?.status}
-                          </Text>
-                        </View>
-                      </View>
-                    </View>
+                      )}
+                      ListEmptyComponent={() => (
+                        <Text style={{color: currentTheme.text, marginTop: 20}}>
+                          No attendance data
+                        </Text>
+                      )}
+                    />
                   </View>
                 </View>
               </Modal>
@@ -589,11 +562,31 @@ const Attendance = () => {
                   styles.statusContainer,
                   {backgroundColor: currentTheme.background_v2},
                 ]}>
-                <StatusItem color="green" text="Present" value={monthList?.totalPresent} />
-                <StatusItem color="red" text="Absent" value={monthList?.totalAbsent} />
-                <StatusItem color="orange" text="Leave" value={monthList?.totalLeave} />
-                <StatusItem color="blue" text="Holiday" value={monthList?.totalHoliday} />
-                <StatusItem color="pink" text="Halfday" value={monthList?.shortAttendance} />
+                <StatusItem
+                  color="green"
+                  text="Present"
+                  value={monthList?.totalPresent}
+                />
+                <StatusItem
+                  color="red"
+                  text="Absent"
+                  value={monthList?.totalAbsent}
+                />
+                <StatusItem
+                  color="orange"
+                  text="Leave"
+                  value={monthList?.totalLeave}
+                />
+                <StatusItem
+                  color="blue"
+                  text="Holiday"
+                  value={monthList?.totalHoliday}
+                />
+                <StatusItem
+                  color="pink"
+                  text="Halfday"
+                  value={monthList?.shortAttendance}
+                />
               </View>
 
               {/* Legend */}
@@ -614,7 +607,7 @@ const Attendance = () => {
             </View>
           </View>
         </>
-      ): (
+      ) : (
         <>
           <View
             style={{
@@ -626,7 +619,7 @@ const Attendance = () => {
               flex: 1,
             }}>
             <ScrollView>
-              <View
+              {/* <View
                 style={{
                   width: responsiveWidth(90),
                   height: responsiveHeight(20),
@@ -745,7 +738,7 @@ const Attendance = () => {
                       : `${hours}h ${minutes}m`}
                   </Text>
                 </View>
-              </View>
+              </View> */}
               <View
                 style={{
                   width: responsiveWidth(90),
@@ -799,7 +792,6 @@ const Attendance = () => {
                   flexDirection: 'row',
                   alignSelf: 'center',
                   marginVertical: 0,
-                 
                 }}>
                 <TouchableOpacity
                   onPress={showFromDatePicker}
@@ -815,7 +807,6 @@ const Attendance = () => {
                     borderWidth: 0.5,
                     borderColor: currentTheme.text,
                   }}>
-                 
                   <Text
                     style={{
                       fontSize: 20,
@@ -823,7 +814,7 @@ const Attendance = () => {
                       textAlign: 'center',
                       marginTop: 5,
                     }}>
-                   Start Date
+                    Start Date
                   </Text>
                   <View
                     style={{
@@ -865,7 +856,6 @@ const Attendance = () => {
                     borderWidth: 0.5,
                     borderColor: currentTheme.text,
                   }}>
-                  
                   <Text
                     style={{
                       fontSize: 20,
@@ -914,33 +904,34 @@ const Attendance = () => {
                   onCancel={hideToDatePicker}
                 />
               </View>
-                      {/*   Export button  */}
-                   <View style={{flexDirection:'row',
-                  alignItems:'center',
-                  justifyContent:'space-between',
-                  marginTop:10,
-                  }}>
-                   <Text
+              {/*   Export button  */}
+              <View
+                style={{
+                  flexDirection: 'row',
+                  alignItems: 'center',
+                  justifyContent: 'space-between',
+                  marginTop: 10,
+                }}>
+                <Text
                   style={{
                     color: currentTheme.text,
                     fontWeight: 'bold',
                     fontSize: 20,
-                    textAlign:'right',
-                    marginLeft:20
-                    
+                    textAlign: 'right',
+                    marginLeft: 20,
                   }}>
-                  Export Attendance 
+                  Export Attendance
                 </Text>
-                      <TouchableOpacity
-                  style={{marginRight:30}}
-                  onPress={() =>handleExport()}>
+                <TouchableOpacity
+                  style={{marginRight: 30}}
+                  onPress={() => handleExport()}>
                   <AntDesign
                     name="export"
                     size={35}
                     color={currentTheme.text}
                   />
                 </TouchableOpacity>
-                   </View>
+              </View>
 
               {/* Logs codes */}
               <View
@@ -1003,18 +994,41 @@ const Attendance = () => {
                               marginLeft: 10,
                               backgroundColor: currentTheme.inputText_color,
                             }}>
-                            <Text
-                              style={{fontSize: 16, color: currentTheme.text}}>
-                              {elements?.date}
-                            </Text>
-                            <Text
-                              style={{
-                                fontSize: 16,
-                                color: currentTheme.text,
-                                fontWeight: 'bold',
-                              }}>
-                              {elements?.total_hours}
-                            </Text>
+                            <View>
+                              <Text
+                                style={{
+                                  fontSize: 16,
+                                  color: currentTheme.text,
+                                }}>
+                                {elements?.date}
+                              </Text>
+
+                              <Text
+                                style={{
+                                  fontSize: 16,
+                                  color: currentTheme.text,
+                                  fontWeight: 'bold',
+                                }}>
+                                {elements?.total_hours}
+                              </Text>
+                            </View>
+                            <View>
+                              <Text
+                                style={{
+                                  color: currentTheme.text,
+                                  fontSize: 15,
+                                  marginTop: 4,
+                                }}>
+                                Punch In: {elements?.punch_in ?? '--'}
+                              </Text>
+                              <Text
+                                style={{
+                                  color: currentTheme.text,
+                                  fontSize: 15,
+                                }}>
+                                Punch Out: {elements?.punch_out ?? '--'}
+                              </Text>
+                            </View>
                           </View>
                         </View>
                       );
@@ -1033,8 +1047,7 @@ const Attendance = () => {
             </ScrollView>
           </View>
         </>
-      ) 
-      }
+      )}
     </SafeAreaView>
   );
 };
@@ -1057,10 +1070,10 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     elevation: 4, // Android shadow
     shadowColor: '#000', // iOS shadow
-    shadowOffset: { width: 0, height: 2 },
+    shadowOffset: {width: 0, height: 2},
     shadowOpacity: 0.1,
     shadowRadius: 4,
-    padding:20
+    padding: 20,
   },
   statusContainer: {
     flexDirection: 'row',

@@ -56,6 +56,7 @@ import UserLeave from '../../Component/Services/Team/UserLeave';
 import Course from '../../Component/Services/Course/Course';
 import CourseDetails from '../../Component/Services/Course/CourseDetails';
 import Maps from '../../Component/Tracking/Maps';
+import AllPunchIn from '../../Component/DashBoard/AllPunchIn';
 
 const MyStack = () => {
   const {currentTheme} = useContext(ThemeContext);
@@ -234,6 +235,22 @@ const MyStack = () => {
         component={UserAttendance}
         options={{
           title: 'User Attendance',
+
+          headerBackTitleVisible: false,
+          headerStyle: {
+            backgroundColor: currentTheme.background_v2,
+          },
+          headerTintColor: '#fff',
+          headerTitleStyle: {
+            fontWeight: '500',
+          },
+        }}
+      />
+       <Stack.Screen
+        name="AllPunchIn"
+        component={AllPunchIn}
+        options={{
+          title: 'All Punch IN',
 
           headerBackTitleVisible: false,
           headerStyle: {

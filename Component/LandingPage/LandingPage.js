@@ -12,6 +12,7 @@ import {
 } from 'react-native';
 import React from 'react';
 import { responsiveHeight, responsiveWidth } from 'react-native-responsive-dimensions';
+import LinearGradient from 'react-native-linear-gradient';
 
 
 const LandingPage = ({ navigation }) => {
@@ -20,17 +21,17 @@ const LandingPage = ({ navigation }) => {
   return (
     <>
       <View style={styles.container}>
-        <Image
-          style={{
-           resizeMode:'contain',
-            alignSelf: 'center',
-            height: responsiveHeight(35),
-            width: responsiveWidth(55),
-            marginTop: responsiveHeight(5)
-            
-          }}
-          source={require('../../assets/logo.png')}
-        />
+      <Image
+                  source={require('../../assets/newLogo.jpg')}
+                  style={{
+                    alignSelf: 'center',
+                    marginTop: 30,
+                    height: 250,
+                    width: 250,
+                    resizeMode: 'contain',
+                    borderRadius: 125,
+                  }}
+                />
         <Text
           style={{
             color: '#fff',
@@ -53,7 +54,11 @@ const LandingPage = ({ navigation }) => {
         <TouchableOpacity
           onPress={() => navigation.navigate('LoginScreen')}
           activeOpacity={0.8}
-          style={styles.btn_style}>
+          // style={styles.btn_style}
+          >
+             <LinearGradient
+            colors={['#4DDBFE', '#33C2F9']}
+            style={styles.btn_style}>
           <Text
             style={{
               fontSize: responsiveHeight(2),
@@ -63,6 +68,7 @@ const LandingPage = ({ navigation }) => {
             }}>
             Login
           </Text>
+          </LinearGradient>
         </TouchableOpacity>
         {/* <TouchableOpacity
           onPress={() => navigation.navigate('Login')}
@@ -98,7 +104,7 @@ const STATUSBAR_HEIGHT = StatusBar.currentHeight;
 const styles = StyleSheet.create({
   container: {
     flex:1,
-    backgroundColor:"#0E0E64"
+    backgroundColor:"#5A6A77"
   },
   image: {
     flex: 1,

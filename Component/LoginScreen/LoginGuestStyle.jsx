@@ -8,12 +8,13 @@ import Themes from '../Theme/Theme';
 const LoginGuestStyle = StyleSheet.create({
     contanier: {
         flex: 1,
-        backgroundColor:'#0E0E64'
+        backgroundColor:'#5A6A77'
       },
       Img_icon: {
         alignSelf: 'center',
         marginTop:30,
-        height: responsiveHeight(25), width: responsiveWidth(45), resizeMode:"contain"
+        height:200, width: 200, resizeMode:"contain",
+        borderRadius:100
       },
       LoginGuest_Text: {
         textAlign: 'center',
@@ -21,6 +22,7 @@ const LoginGuestStyle = StyleSheet.create({
         fontSize:responsiveFontSize(3),
         fontWeight: '600',
         marginTop: 10,
+        
       },
       Phone_number: {
         color: '#fff',
@@ -42,7 +44,7 @@ const LoginGuestStyle = StyleSheet.create({
         width: responsiveWidth(79),
         borderRadius: 20,
         alignSelf: 'center',
-        backgroundColor: '#0433DA',
+        backgroundColor: '#8DEACD',
         marginTop: responsiveHeight(5),
         height: responsiveHeight(5.25),
         justifyContent: 'center',
@@ -167,14 +169,14 @@ const LoginGuestStyle = StyleSheet.create({
       marginTop: 10,
     },
     saveButton: {
-      backgroundColor: '#0043ae',
+      backgroundColor: '#52B8A2',
       padding: 10,
       borderRadius: 5,
       flex: 1,
       marginRight: 5,
     },
     closeButton: {
-      backgroundColor: '#dc3545',
+      backgroundColor: '#33C2F9',
       padding: 10,
       borderRadius: 5,
       flex: 1,

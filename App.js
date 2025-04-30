@@ -97,7 +97,7 @@ const App = () => {
   };
   return (
     <ConextApi>
-      <StatusBar barStyle="light-content" backgroundColor="#0E0E64" />
+      <StatusBar barStyle="light-content" backgroundColor="#5A6A77" />
       <NavigationContainer ref={navigationRef}>
         <MyStack />
       </NavigationContainer>

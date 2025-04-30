@@ -23,7 +23,10 @@ const Splash = () => {
   }, 2000);
   return (
     <View style={styles.conatiner}>
-      <Image source={require('../../assets/logo.png')} style={{ resizeMode: 'contain', width: '75%' }} />
+      <Image source={require('../../assets/newLogo.jpg')} style={{ alignSelf: 'center',
+        marginTop:30,
+        height:250, width: 250, resizeMode:"contain",
+        borderRadius:125}} />
     </View>
   );
 };
@@ -33,7 +36,7 @@ export default Splash;
 const styles = StyleSheet.create({
   conatiner: {
     flex: 1,
-    backgroundColor: '#0E0E64',
+    backgroundColor: '#5A6A77',
     justifyContent: 'center',
     alignItems: 'center',
   },

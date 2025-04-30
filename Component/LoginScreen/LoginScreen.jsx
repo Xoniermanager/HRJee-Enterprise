@@ -1,5 +1,4 @@
 import {
-  Button,
   Image,
   StyleSheet,
   Text,
@@ -7,15 +6,14 @@ import {
   View,
   ActivityIndicator,
   SafeAreaView,
-  Alert,
-  Platform,
   Modal,
 } from 'react-native';
 
 import React, {useState, useEffect} from 'react';
 import {useNavigation} from '@react-navigation/native';
 import {TextInput} from 'react-native-gesture-handler';
-import {Root, Popup, Toast} from 'popup-ui';
+import {Root} from 'popup-ui';
+import LinearGradient from 'react-native-linear-gradient';
 import LoginGuestStyle from './LoginGuestStyle';
 import {
   faceLogin,
@@ -216,7 +214,7 @@ const LoginScreen = () => {
     <SafeAreaView style={LoginGuestStyle.contanier}>
       <Root>
         <Image
-          source={require('../../assets/logo.png')}
+          source={require('../../assets/newLogo.jpg')}
           style={LoginGuestStyle.Img_icon}
         />
         <Text style={LoginGuestStyle.LoginGuest_Text}>
@@ -266,19 +264,27 @@ const LoginScreen = () => {
           <Text style={LoginGuestStyle.forget}>Forget password ?</Text>
         </TouchableOpacity>
         <TouchableOpacity
-          style={LoginGuestStyle.submit_button}
+          // style={LoginGuestStyle.submit_button}
           onPress={() => loginSubmit()}
           disabled={loader}>
-          {loader ? (
-            <ActivityIndicator size="small" color="#fff" />
-          ) : (
-            <Text style={LoginGuestStyle.submit_text}>Login</Text>
-          )}
+          <LinearGradient
+            colors={['#4DDBFE', '#33C2F9']}
+            style={LoginGuestStyle.submit_button}>
+            {loader ? (
+              <ActivityIndicator size="small" color="#fff" />
+            ) : (
+              <Text style={LoginGuestStyle.submit_text}>Login</Text>
+            )}
+          </LinearGradient>
         </TouchableOpacity>
         <TouchableOpacity
-          style={LoginGuestStyle.submit_button}
+          // style={LoginGuestStyle.submit_button}
           onPress={() => setModalRequest(!modalRequest)}>
-          <Text style={LoginGuestStyle.submit_text}>Login with Face ID</Text>
+          <LinearGradient
+            colors={['#8DEACD', '#52B8A2']}
+            style={[LoginGuestStyle.submit_button, {overflow: 'hidden'}]}>
+            <Text style={LoginGuestStyle.submit_text}>Login with Face ID</Text>
+          </LinearGradient>
         </TouchableOpacity>
         <Modal visible={modalRequest} transparent={true} animationType="none">
           <View style={LoginGuestStyle.modalContainer}>

@@ -779,6 +779,7 @@ const HomePage = () => {
           const response = await punchin(url, body, token);
           if (response?.data?.status) {
             CheckDailyAttendances();
+            getLastAttendance
             breakingList();
             setLoader(false);
             setloading(false);
@@ -1128,8 +1129,9 @@ const HomePage = () => {
   function capitalizeFirstLetter(string) {
     return string.charAt(0).toUpperCase() + string.slice(1);
   }
+  console.log(lastAttendanceDetails,'lastAttendanceDetails')
   const getLastAttendanceDaily = () => {
-    if (!lastAttendanceDetails.status) {
+    if (lastAttendanceDetails.data=='No Last Attendance Available') {
       return (
         <View>
           <Text

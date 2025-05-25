@@ -1,13 +1,6 @@
 import React, {useState, useEffect, useRef, useContext} from 'react';
 import {View, Text, StyleSheet, Dimensions} from 'react-native';
 import {AWS_ACCESS_KEY, AWS_SECRET_KEY, AWS_REGION, AWS_S3_BUCKET} from '@env';
-import {
-  Camera,
-  useCameraPermission,
-  useCameraDevice,
-} from 'react-native-vision-camera';
-import {BlurView} from '@react-native-community/blur';
-import {ProgressBar} from 'react-native-paper';
 import {ThemeContext} from '../../Store/ConetxtApi.jsx/ConextApi';
 import AWS, {Rekognition, S3} from 'aws-sdk';
 import RNFS from 'react-native-fs';
@@ -16,6 +9,8 @@ import {showMessage} from 'react-native-flash-message';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import {BASE_URL} from '../../utils';
 import {faceuploadKyc} from '../../APINetwork/ComponentApi';
+import {AnimatedCircularProgress} from 'react-native-circular-progress';
+import {RNCamera} from 'react-native-camera';
 const {width, height} = Dimensions.get('window');
 const FaceCamera = ({punchIn}) => {
   const s3 = new S3({
@@ -29,7 +24,6 @@ const FaceCamera = ({punchIn}) => {
     region: AWS_REGION,
   });
   const cameraRef = useRef(null);
-  const {requestPermission} = useCameraPermission();
   const {
     isCameraOpen,
     setIsCameraOpen,
@@ -40,20 +34,9 @@ const FaceCamera = ({punchIn}) => {
     user_details,
   } = useContext(ThemeContext);
   const [matchProgress, setMatchProgress] = useState(0);
-  const [pictureTaken, setPictureTaken] = useState(false);
-  const device = useCameraDevice('front');
-  useEffect(() => {
-    (async () => {
-      const status = await Camera.getCameraPermissionStatus();
-      if (status !== 'authorized') {
-        await requestPermission();
-      }
-    })();
-  }, []);
 
   useEffect(() => {
     if (isCameraOpen) {
-      setPictureTaken(false);
       let progressInterval = setInterval(() => {
         setMatchProgress(prev => {
           if (prev >= 1) {
@@ -70,23 +53,21 @@ const FaceCamera = ({punchIn}) => {
   }, [isCameraOpen]);
 
   useEffect(() => {
-    if (isCameraOpen && !pictureTaken) {
+    if (isCameraOpen) {
       setTimeout(() => takePicture(), 2000);
     }
-  }, [isCameraOpen, pictureTaken]);
+  }, [isCameraOpen]);
 
   const takePicture = async () => {
-    if (cameraRef.current && !pictureTaken) {
-      setPictureTaken(true);
+    if (cameraRef.current) {
       try {
-        const options = {quality: 0.5, base64: true};
-        const data = await cameraRef.current.takePhoto(options);
+        const photo = await cameraRef.current.takePictureAsync({quality: 0.5});
         if (face_kyc_img == null) {
-          let uploaddata = await uploadFirstImage(data.path);
+          let uploaddata = await uploadFirstImage(photo.uri);
           const s3ObjectKey = uploaddata.key;
           uploadFaceKYC(s3ObjectKey);
         } else {
-          let uploaddata = await uploadTmpImage(data.path);
+          let uploaddata = await uploadTmpImage(photo.uri);
           const s3ObjectKey = uploaddata?.key;
           const ss = await compareFaces(s3ObjectKey);
         }
@@ -326,8 +307,40 @@ const FaceCamera = ({punchIn}) => {
   };
   return (
     <View style={styles.container}>
-      <BlurView style={styles.blurOverlay} blurType="dark" blurAmount={20} />
-      {isCameraOpen && device ? (
+      {isCameraOpen && (
+        <RNCamera
+          ref={cameraRef}
+          style={{
+            flex: 1,
+            justifyContent: 'flex-end',
+            alignItems: 'center',
+            width: '100%',
+            height: '80%',
+          }}
+          type={RNCamera.Constants.Type.front}
+          captureAudio={false}
+          onCameraReady={takePicture}>
+          {isCameraOpen && (
+            <View style={styles.progressContainer}>
+              <AnimatedCircularProgress
+                size={150}
+                width={15}
+                fill={matchProgress * 100}
+                tintColor={getProgressBarColor(matchProgress)}
+                backgroundColor="#e0e0e0"
+                duration={300}
+                rotation={0}>
+                {fill => (
+                  <Text style={styles.progressText}>
+                    {Math.round(fill)}% Recognised
+                  </Text>
+                )}
+              </AnimatedCircularProgress>
+            </View>
+          )}
+        </RNCamera>
+      )}
+      {/* {isCameraOpen && device ? (
         <View style={styles.cameraContainer}>
           <View style={styles.outerCircle}>
             <View style={styles.innerCircle}>
@@ -353,7 +366,7 @@ const FaceCamera = ({punchIn}) => {
             style={styles.progressBar}
           />
         </View>
-      )}
+      )} */}
     </View>
   );
 };
@@ -383,17 +396,16 @@ const styles = StyleSheet.create({
   innerCircle: {width: 280, height: 280, borderRadius: 250, overflow: 'hidden'},
   camera: {width: '100%', height: '100%'},
   progressContainer: {
-    position: 'absolute',
-    bottom: 130,
-    width: '80%',
-    alignSelf: 'center',
-    zIndex: 3,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginTop: 20,
+    marginBottom: 20,
   },
   progressText: {
-    color: '#FFF',
+    fontSize: 20,
+    fontWeight: 'bold',
+    color: '#fff',
     textAlign: 'center',
-    fontSize: 18,
-    marginBottom: 10,
   },
   progressBar: {height: 12, borderRadius: 6, backgroundColor: '#444'},
 });

@@ -56,6 +56,7 @@ import UserLeave from '../../Component/Services/Team/UserLeave';
 import Course from '../../Component/Services/Course/Course';
 import CourseDetails from '../../Component/Services/Course/CourseDetails';
 import Maps from '../../Component/Tracking/Maps';
+import AllPunchIn from '../../Component/DashBoard/AllPunchIn';
 
 const MyStack = () => {
   const {currentTheme} = useContext(ThemeContext);
@@ -103,7 +104,7 @@ const MyStack = () => {
         component={HomePage}
         options={{headerShown: false}}
       />
-       <Stack.Screen
+      <Stack.Screen
         name="FaceLogin"
         component={FaceLogin}
         options={{headerShown: false}}
@@ -184,19 +185,19 @@ const MyStack = () => {
         }}
       />
       <Stack.Screen
-      name='CourseDetails'
-      component={CourseDetails}
-      options={{
-        title:'Course Details',
-        headerBackTitleVisible: false,
-        headerStyle:{
-          backgroundColor:currentTheme.background_v2
-        },
-        headerTintColor: '#fff',
+        name="CourseDetails"
+        component={CourseDetails}
+        options={{
+          title: 'Training',
+          headerBackTitleVisible: false,
+          headerStyle: {
+            backgroundColor: currentTheme.background_v2,
+          },
+          headerTintColor: '#fff',
           headerTitleStyle: {
             fontWeight: '500',
           },
-      }}
+        }}
       />
       <Stack.Screen
         name="AddCompoff"
@@ -213,11 +214,11 @@ const MyStack = () => {
           },
         }}
       />
-       <Stack.Screen
+      <Stack.Screen
         name="Course"
         component={Course}
         options={{
-          title: 'Latest Course',
+          title: 'Training',
 
           headerBackTitleVisible: false,
           headerStyle: {
@@ -229,7 +230,7 @@ const MyStack = () => {
           },
         }}
       />
-       <Stack.Screen
+      <Stack.Screen
         name="UserAttendance"
         component={UserAttendance}
         options={{
@@ -245,7 +246,23 @@ const MyStack = () => {
           },
         }}
       />
-       <Stack.Screen
+      <Stack.Screen
+        name="AllPunchIn"
+        component={AllPunchIn}
+        options={{
+          title: 'All Punch IN',
+
+          headerBackTitleVisible: false,
+          headerStyle: {
+            backgroundColor: currentTheme.background_v2,
+          },
+          headerTintColor: '#fff',
+          headerTitleStyle: {
+            fontWeight: '500',
+          },
+        }}
+      />
+      <Stack.Screen
         name="Team"
         component={Team}
         options={{
@@ -261,7 +278,7 @@ const MyStack = () => {
           },
         }}
       />
-       <Stack.Screen
+      <Stack.Screen
         name="UserLeave"
         component={UserLeave}
         options={{
@@ -277,7 +294,7 @@ const MyStack = () => {
           },
         }}
       />
-       <Stack.Screen
+      <Stack.Screen
         name="Reward"
         component={Reward}
         options={{
@@ -526,7 +543,7 @@ const MyStack = () => {
           },
         }}
       />
-       <Stack.Screen
+      <Stack.Screen
         name="Maps"
         component={Maps}
         options={{
@@ -542,7 +559,7 @@ const MyStack = () => {
           },
         }}
       />
-      
+
       <Stack.Screen
         name="Pending"
         component={Pending}
@@ -669,7 +686,7 @@ const MyStack = () => {
           },
         }}
       />
-        <Stack.Screen
+      <Stack.Screen
         name="ListOfficeAddress"
         component={ListOfficeAddress}
         options={{
@@ -684,7 +701,7 @@ const MyStack = () => {
           },
         }}
       />
-         <Stack.Screen
+      <Stack.Screen
         name="AddAddress"
         component={AddAddress}
         options={{

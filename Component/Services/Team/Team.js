@@ -75,6 +75,14 @@ const Team = () => {
               <Text style={styles.modalButtonText}>Attendance</Text>
             </TouchableOpacity>
             <TouchableOpacity
+              style={styles.modalButton}
+              onPress={() => [
+                navigation.navigate('Maps', {id: userId?.user_id}),
+                setModalVisible(false),
+              ]}>
+              <Text style={styles.modalButtonText}>Tracking</Text>
+            </TouchableOpacity>
+            <TouchableOpacity
               style={[styles.modalButton]}
               onPress={() => [
                 navigation.navigate('UserLeave', {id: userId?.user_id}),

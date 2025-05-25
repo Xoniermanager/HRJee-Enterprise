@@ -16,7 +16,7 @@ const ConextApi = ({children}) => {
   const systemColorScheme = Appearance.getColorScheme();
   const [theme, setTheme] = useState(systemColorScheme);
   const [isManual, setIsManual] = useState(false);
-  const [menuaccesssList, setMenuaccessList] = useState();
+  const [menuaccesssList, setMenuaccessList] = useState(null);
   const [isEnabled, setIsEnabled] = useState(false);
   const [facePermission,setFacePermission]=useState('');
   const [empyId,setEmpyId]=useState();
@@ -31,6 +31,7 @@ const ConextApi = ({children}) => {
   const [locationTracking,setLocationTracking]=useState(null);
   const [liveLocationActive,setLiveLocationActive]=useState(null);
   const [getProfileApiData, setGetProfileApiData] = useState('');
+  const [allowfacenex,setAllowfacenex]=useState(null);
   const services = [
     {
       id: '1',
@@ -119,17 +120,10 @@ const ConextApi = ({children}) => {
       {
         id: 5,
         uri: require('../../assets/HomeScreen/course.webp'),
-        name: 'Course',
+        name: 'Training',
         nav: 'Course',
       },
-      {
-        id: 6,
-        uri: require('../../assets/HomeScreen/GPS5.jpg'),
-        name: 'Tracking Location',
-        nav: 'Maps',
-      },
-   
-    ]
+     ]
       response?.data?.data.menu_access?.map((item) => {
         if (item.title=="Request Attendance") {
           options.push({
@@ -204,6 +198,7 @@ const ConextApi = ({children}) => {
         let facekycAdd=response?.data?.data?.details?.face_kyc
         setFace_kyc_img(facekycAdd);
         setFacePermission(response?.data?.data?.details?.face_recognition);
+        setAllowfacenex(response?.data?.data?.details?.allow_face_nex);
         setRewardList(response?.data?.data?.user_reward);
         setTeamUser(response?.data?.data?.manager_employees);
         setLocationTracking(response.data.data.details.location_tracking);
@@ -334,7 +329,8 @@ axios.request(config)
         locationTracking,
         liveLocationActive,
         getProfileApiData,
-        activeLog
+        activeLog,
+        allowfacenex
       }}>
       {children}
     </ThemeContext.Provider>

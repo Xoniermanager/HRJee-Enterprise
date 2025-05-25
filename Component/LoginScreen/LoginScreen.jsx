@@ -8,14 +8,14 @@ import {
   ActivityIndicator,
   SafeAreaView,
   Alert,
-  Platform,
-  Modal,
+Modal,
+  Dimensions
 } from 'react-native';
-
-import React, {useState, useEffect} from 'react';
+import BottomSheet from '@gorhom/bottom-sheet';
+import React, {useState, useEffect, useRef, useCallback, useMemo} from 'react';
 import {useNavigation} from '@react-navigation/native';
 import {TextInput} from 'react-native-gesture-handler';
-import {Root, Popup, Toast} from 'popup-ui';
+import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import LoginGuestStyle from './LoginGuestStyle';
 import {
   faceLogin,
@@ -29,12 +29,12 @@ import axios from 'axios';
 import FlashMessage from 'react-native-flash-message';
 import {showMessage} from 'react-native-flash-message';
 import Themes from '../Theme/Theme';
-
 const LoginScreen = () => {
+  const { width } = Dimensions.get('window');
+
   const navigation = useNavigation();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [logindata, setLogInData] = useState('');
   const [loader, setLoader] = useState(false);
   const [emailError, setEmailError] = useState('');
   const [passwordError, setPasswordError] = useState('');
@@ -43,118 +43,107 @@ const LoginScreen = () => {
   const [faceEmail, setFaceEmail] = useState('');
   const [loaderFace, setLoaderFace] = useState(false);
   const [faceError, setFaceError] = useState();
+  const [userInfo,setUserInfo]=useState('');
+  const [faceData,setFaceData]=useState();
+  const bottomSheetRef = useRef(null);
+  const snapPoints = useMemo(() => ['1%', '60%'], []);
   const toggleShowPassword = () => {
     setShowPassword(!showPassword);
   };
 
   const loginSubmit = async () => {
     try {
-      let data = {
-        email: email,
-        password: password,
-      };
-      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
       if (email == '') {
         showMessage({
-          message: 'Please enter email',
+          message: 'Please enter Employee ID',
           type: 'danger',
           duration: 2000,
         });
-      } else if (!emailRegex.test(email)) {
-        showMessage({
-          message: 'Please enter valid email',
-          type: 'danger',
-          duration: 2000,
-        });
-      } else if (password == '') {
+      }
+      else if (password == '') {
         showMessage({
           message: 'Please enter password',
           type: 'danger',
           duration: 2000,
         });
       } else {
+        let data = {
+          emp_id: email,
+          password: password,
+        };
         setLoader(true);
         const url = `${BASE_URL}/login`;
         const response = await login(url, data);
+        
         if (response?.data?.status) {
-          if (response?.data?.data?.id == 2) {
-            if (response.data.data.reset_password == 1) {
-              setEmail('');
-              setPassword('');
-              setEmailError('');
-              setPasswordError('');
-              setLoader(false);
-              if (
-                response &&
-                response.data &&
-                response?.data?.data?.access_token
-              ) {
-                await AsyncStorage.setItem(
-                  'TOKEN',
-                  response?.data?.data?.access_token,
-                );
-                await AsyncStorage.setItem(
-                  'reset_password',
-                  JSON.stringify(response?.data?.data?.reset_password),
-                );
-              }
-              showMessage({
-                message: `${response?.data?.message}`,
-                type: 'success',
-                duration: 3000,
-              });
-              navigation.navigate('FirstTimeChangePassword');
-            } else {
-              setEmail('');
-              setPassword('');
-              setEmailError('');
-              setPasswordError('');
-              setLoader(false);
-              if (
-                response &&
-                response.data &&
-                response?.data?.data?.access_token
-              ) {
-                await AsyncStorage.setItem(
-                  'TOKEN',
-                  response?.data?.data?.access_token,
-                );
-              }
-              showMessage({
-                message: `${response?.data?.message}`,
-                type: 'success',
-                duration: 3000,
-              });
-              navigation.navigate('MyTabbar');
-            }
-          } else {
-            showMessage({
-              message: `${response?.data?.message}`,
-              type: 'success',
-            });
+          if (response.data.data.reset_password == 1) {
             setEmail('');
             setPassword('');
             setEmailError('');
             setPasswordError('');
-            navigation.navigate('Verification', {
-              email: email,
-              password: password,
-              token: response?.data?.data?.access_token,
-            });
             setLoader(false);
+            if (
+              response &&
+              response.data &&
+              response?.data?.data?.access_token
+            ) {
+              await AsyncStorage.setItem(
+                'TOKEN',
+                response?.data?.data?.access_token,
+              );
+              await AsyncStorage.setItem(
+                'reset_password',
+                JSON.stringify(response?.data?.data?.reset_password),
+              );
+            }
+            showMessage({
+              message: `${response?.data?.message}`,
+              type: 'success',
+              duration: 3000,
+            });
+            navigation.navigate('FirstTimeChangePassword');
+          } else {
+            setEmail('');
+            setPassword('');
+            setEmailError('');
+            setPasswordError('');
+            setLoader(false);
+            if (
+              response &&
+              response.data &&
+              response?.data?.data?.access_token
+            ) {
+              await AsyncStorage.setItem(
+                'TOKEN',
+                response?.data?.data?.access_token,
+              );
+            }
+            showMessage({
+              message: `${response?.data?.message}`,
+              type: 'success',
+              duration: 3000,
+            });
+            navigation.navigate('MyTabbar');
           }
         } else {
           setLoader(false);
         }
       }
     } catch (error) {
-      console.log('Error making POST request:', error);
       setLoader(false);
+      console.log( error.response?.data);
+      showMessage({
+        message: error.response?.data?.message,
+        type: 'danger',
+        duration: 2000,
+      });
+     
+     
     }
   };
   const faceLoginKyc = async () => {
     if (faceEmail.trim() === '') {
-      setFaceError('Please enter your Employee ID or email');
+      setFaceError('Please enter your Employee ID');
     } else {
       setLoaderFace(true);
       const token = await AsyncStorage.getItem('TOKEN');
@@ -168,15 +157,17 @@ const LoginScreen = () => {
       if (response.data.status) {
         if (response.data.data.details.face_recognition == 1) {
           if (response.data.data.details.face_kyc != null) {
-            const FaceData = {
+            const faceData = {
               empId: response.data.data.details.emp_id,
               token: response.data.data.access_token,
               faceImage: response.data.data.details.face_kyc,
             };
             setModalRequest(false);
-            navigation.navigate('FaceLogin', {FaceData});
+            setFaceData(faceData)
+            setUserInfo(response.data.data)
+            bottomSheetRef.current?.expand();
+      
           } else {
-            // setModalRequest(false);
             setFaceEmail('');
             setFaceError(
               'Face KYC is mandatory for first-time verification. Please log in using your email and password only.',
@@ -189,8 +180,10 @@ const LoginScreen = () => {
             });
           }
         } else {
-          // setModalRequest(false);
           setFaceEmail('');
+          // setModalRequest(false);
+          // setUserInfo(response.data.data)
+          // bottomSheetRef.current?.expand();
           setFaceError(
             `You don't have access to Face Login. Please log in with your email and password only or contact the admin`,
           );
@@ -201,7 +194,6 @@ const LoginScreen = () => {
           });
         }
       } else {
-        // setModalRequest(false);
         setFaceEmail('');
         setFaceError(response.data.message);
         showMessage({
@@ -211,10 +203,20 @@ const LoginScreen = () => {
       }
     }
   };
-
+  const Info = ({ label, value }) => (
+    <View style={styles.infoRow}>
+      <Text style={styles.label}>{label}:</Text>
+      <Text style={styles.value}>{value || '-'}</Text>
+    </View>
+  );
+  const onfaceLogin=()=>{
+    navigation.navigate('FaceLogin', {faceData});
+    bottomSheetRef.current?.close();
+    setFaceEmail('');
+  }
   return (
+    <GestureHandlerRootView style={{ flex: 1 }}>
     <SafeAreaView style={LoginGuestStyle.contanier}>
-      <Root>
         <Image
           source={require('../../assets/logo.png')}
           style={LoginGuestStyle.Img_icon}
@@ -222,10 +224,10 @@ const LoginScreen = () => {
         <Text style={LoginGuestStyle.LoginGuest_Text}>
           Login to your Account
         </Text>
-        <Text style={LoginGuestStyle.Phone_number}>E-mail</Text>
+        <Text style={LoginGuestStyle.Phone_number}>Emp ID</Text>
         <View style={LoginGuestStyle.passInput}>
           <TextInput
-            placeholder="E-mail"
+            placeholder="Emp ID"
             value={email}
             onChangeText={prev => setEmail(prev)}
             style={LoginGuestStyle.InputPassword}
@@ -234,7 +236,7 @@ const LoginScreen = () => {
           />
           <Image
             source={require('../../assets/Login/user.png')}
-            style={{width: 25, height: 25, marginRight: 10}}
+            style={{width: 25, height: 25, marginRight: 15}}
           />
         </View>
         <Text style={LoginGuestStyle.Phone_number}>Password</Text>
@@ -252,18 +254,18 @@ const LoginScreen = () => {
             {showPassword ? (
               <Image
                 source={require('../../assets/Login/hide.png')}
-                style={{width: 25, height: 25, marginRight: 10}}
+                style={{width: 25, height: 25, marginRight: 15}}
               />
             ) : (
               <Image
                 source={require('../../assets/Login/show.png')}
-                style={{width: 25, height: 25, marginRight: 10}}
+                style={{width: 25, height: 25, marginRight: 15}}
               />
             )}
           </TouchableOpacity>
         </View>
         <TouchableOpacity onPress={() => navigation.navigate('ForgetPassword')}>
-          <Text style={LoginGuestStyle.forget}>Forget password ?</Text>
+          <Text style={LoginGuestStyle.forget}>Forgot Password?</Text>
         </TouchableOpacity>
         <TouchableOpacity
           style={LoginGuestStyle.submit_button}
@@ -280,15 +282,15 @@ const LoginScreen = () => {
           onPress={() => setModalRequest(!modalRequest)}>
           <Text style={LoginGuestStyle.submit_text}>Login with Face ID</Text>
         </TouchableOpacity>
-        <Modal visible={modalRequest} transparent={true} animationType="none">
+        <Modal visible={modalRequest}>
           <View style={LoginGuestStyle.modalContainer}>
             <View style={LoginGuestStyle.modalContent}>
               <Text style={{color: '#333', fontSize: 15, marginVertical: 5}}>
-                EmpId/Email
+                Emp ID
               </Text>
               <TextInput
                 style={LoginGuestStyle.input}
-                placeholder="EmpId/Email"
+                placeholder="Emp Id"
                 value={faceEmail}
                 onChangeText={prev => setFaceEmail(prev)}
                 onChange={() => setFaceError(null)}
@@ -324,10 +326,81 @@ const LoginScreen = () => {
             </View>
           </View>
         </Modal>
-      </Root>
+        <BottomSheet ref={bottomSheetRef} index={-1} snapPoints={snapPoints}>
+        <View style={styles.sheetContent}>
+          <Image source={{ uri: userInfo?.details?.profile_image }} style={styles.avatar} />
+          <Text style={styles.name}>{userInfo?.name}</Text>
+
+          <Info label="Date of Birth" value={userInfo?.details?.date_of_birth} />
+          <Info label="Phone" value={userInfo?.details?.phone} />
+          <Info label="Email" value={userInfo?.email} />
+          <Info label="Gender" value={userInfo?.details?.gender === 'M' ? 'Male' : 'Female'} />
+          <Info label="Blood Group" value={userInfo?.details?.blood_group} />
+          <Info label="Employee ID" value={userInfo?.details?.emp_id} />
+          <Info label="Joining Date" value={userInfo?.details?.joining_date} />
+          <Info label="Official Email" value={userInfo?.details?.official_email_id} />
+          <TouchableOpacity style={styles.button} onPress={()=>onfaceLogin()}>
+            <Text style={styles.buttonText}>Go to Face Login</Text>
+          </TouchableOpacity>
+        </View>
+      </BottomSheet>
       <FlashMessage position="top" />
     </SafeAreaView>
+    </GestureHandlerRootView>
   );
 };
 
 export default LoginScreen;
+const styles = StyleSheet.create({
+  openButton: {
+    backgroundColor: '#3B82F6',
+    padding: 12,
+    borderRadius: 8,
+    margin: 16,
+  },
+  openButtonText: {
+    color: '#fff',
+    textAlign: 'center',
+    fontWeight: '600',
+  },
+  sheetContent: {
+    padding: 20,
+  },
+  avatar: {
+    width: 80,
+    height: 80,
+    borderRadius: 40,
+    alignSelf: 'center',
+    marginBottom: 12,
+  },
+  name: {
+    fontSize: 20,
+    fontWeight: '700',
+    textAlign: 'center',
+    marginBottom: 16,
+    color:'#000'
+  },
+  infoRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginVertical: 6,
+  },
+  label: {
+    fontWeight: '600',
+    color: '#4B5563',
+  },
+  value: {
+    color: '#111827',
+  },
+  button: {
+    backgroundColor: '#0E0E64',
+    padding: 12,
+    borderRadius: 8,
+    marginTop: 24,
+  },
+  buttonText: {
+    color: '#fff',
+    fontWeight: '600',
+    textAlign: 'center',
+  },
+});

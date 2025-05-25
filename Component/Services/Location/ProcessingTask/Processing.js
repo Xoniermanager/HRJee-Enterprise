@@ -29,7 +29,6 @@ import axios from 'axios';
 import {showMessage} from 'react-native-flash-message';
 import {useIsFocused} from '@react-navigation/native';
 const image = {uri: 'https://i.postimg.cc/zf8d0r7t/nodata-1.png'};
-
 const Processing = () => {
   const isFocused = useIsFocused();
   const [expanded, setExpanded] = useState(null);
@@ -53,7 +52,6 @@ const Processing = () => {
   const [loader, setLoader] = useState(false);
   const [disableCamera, setDisableCamera] = useState(false);
   const [disablePhoto, setDisablePhoto] = useState(false);
-
   const takePhotoFromCamera = () => {
     ImagePicker.openCamera({
       width: 300,
@@ -235,7 +233,6 @@ const Processing = () => {
         .then(response => {
           if (response?.data?.status) {
             setLoader(false);
-            setDisable(false);
             setModalVisible(false);
             showMessage({
               message: response?.data?.message,
@@ -244,7 +241,6 @@ const Processing = () => {
             getasignTask();
           } else {
             setLoader(false);
-            setDisable(false);
             setModalVisible(false);
             showMessage({
               message: response?.data?.message,
@@ -253,7 +249,6 @@ const Processing = () => {
           }
         })
         .catch(error => {
-          setDisable(false);
           setLoader(false);
           setModalVisible(false);
           console.log(error);

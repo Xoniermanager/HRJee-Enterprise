@@ -25,30 +25,28 @@ import {showMessage} from 'react-native-flash-message';
 
 const ForgetPassword = () => {
   const navigation = useNavigation();
-  const [email, setEmail] = useState();
+  const [email, setEmail] = useState('');
   const [loader, setLoader] = useState(false);
 
-  let data = {
-    email: email,
-  };
+
   const ForgetSubmit = async () => {
+  
     try {
+      let data = {
+        emp_id: email,
+      };
       const Token = await AsyncStorage.getItem('TOKEN');
       const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
       if (email?.trim() === '') {
         showMessage({
-          message: 'Please enter email',
+          message: 'Please enter Employee ID',
           type: 'danger',
           duration: 2000,
         });
-      } else if (!emailRegex.test(email)) {
-        showMessage({
-          message: 'Invalid email address',
-          type: 'danger',
-          duration:2000,
-        });
-      } else {
+      } 
+    
+       else {
         setLoader(true);
         const url = `${BASE_URL}/forgot/password`;
         const response = await forget_password(url, data, Token);
@@ -75,9 +73,9 @@ const ForgetPassword = () => {
       <Text style={styles.registeredText}>
         Please provide your registered email address to recover your password.
       </Text>
-      <Text style={styles.EmailText}>E-mail</Text>
+      <Text style={styles.EmailText}>Employee ID</Text>
       <TextInput
-        placeholder="E-mail"
+        placeholder="Emp ID"
         value={email}
         onChangeText={prev => setEmail(prev)}
         style={styles.Input_Text}

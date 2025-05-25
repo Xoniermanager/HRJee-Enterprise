@@ -26,7 +26,7 @@ const LoginGuestStyle = StyleSheet.create({
         color: '#fff',
         fontSize: responsiveFontSize(1.8),
         fontWeight: '400',
-        marginHorizontal: 40,
+        marginHorizontal: 50,
         marginTop: 10,
       },
       Input_Text: {
@@ -43,7 +43,7 @@ const LoginGuestStyle = StyleSheet.create({
         borderRadius: 20,
         alignSelf: 'center',
         backgroundColor: '#0433DA',
-        marginTop: responsiveHeight(5),
+        marginTop: responsiveHeight(3),
         height: responsiveHeight(5.25),
         justifyContent: 'center',
         alignItems: 'center',
@@ -81,7 +81,7 @@ const LoginGuestStyle = StyleSheet.create({
         fontWeight:'400',
         marginTop:10,
         color:'#fff',
-        marginRight:35,
+        marginRight:48,
         textDecorationLine:'underline',
         
     },
@@ -129,7 +129,9 @@ const LoginGuestStyle = StyleSheet.create({
     },
     InputPassword:{
       width: responsiveWidth(68),
-      color: Themes == 'dark' ? '#000' : '#000'
+      color: Themes == 'dark' ? '#000' : '#000',
+      marginLeft:2
+    
     },
     modalContainer: {
       justifyContent: 'center',

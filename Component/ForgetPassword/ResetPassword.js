@@ -50,12 +50,12 @@ const ResetPassword = ({route}) => {
   const reset_Password = async () => {
     setLoader(true);
     const data = {
-      email: email,
+      emp_id: email,
       password: password,
       confirm_password: confirmPassword,
       otp: otp,
     };
-
+      console.log(data,'data')
     if (
       password.trim() === '' ||
       confirmPassword.trim() === '' ||

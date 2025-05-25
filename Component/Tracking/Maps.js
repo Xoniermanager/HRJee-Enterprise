@@ -1,75 +1,96 @@
-import React, {useMemo, useRef, useState} from 'react';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import React, {useEffect, useMemo, useRef, useState} from 'react';
 import {
   StyleSheet,
   View,
   Dimensions,
   Text,
-  TouchableOpacity,
 } from 'react-native';
 import MapView, {Marker} from 'react-native-maps';
 import MapViewDirections from 'react-native-maps-directions';
 import {Card} from 'react-native-paper';
-import Ionicons from 'react-native-vector-icons/Ionicons';
+import axios from 'axios';
+import { BASE_URL } from '../../utils';
+
 const {width, height} = Dimensions.get('window');
-const Maps = () => {
+
+const Maps = ({route}) => {
   const mapRef = useRef(null);
-  const [region, setRegion] = useState(null);
+  const {id} = route.params;
   const [mapDataApi, setMapDataApi] = useState([]);
-  const [origin, setOrigin] = useState(null);
-  const [destination, setDestination] = useState(null);
   const [totalDistance, setTotalDistance] = useState(0);
   const GOOGLEMAPKEY = 'AIzaSyCAdzVvYFPUpI3mfGWUTVXLDTerw1UWbdg';
-  const addDemoCoordinates = () => {
-    const demoCoords = [
-      {latitude: 28.6247716, longitude: 77.2137852, type: 'punch_in'}, // Noida
-      {latitude: 28.6291175, longitude: 77.3777632, type: 'punch_out'},   // Work wing noida sector 63 h - 187
- 
-    ];
-    setMapDataApi(demoCoords);
-    const punchIn = demoCoords.find(point => point.type === 'punch_in');
-    const punchOut = demoCoords.find(point => point.type === 'punch_out');
+  const getLocation = async () => {
+    const token = await AsyncStorage.getItem('TOKEN');
+    const config = {
+      method: 'get',
+      url: `${BASE_URL}/location-tracking/get-locations?user_id=${id}&only_new_locations=0`,
+      headers: {
+        'Authorization': `Bearer ${token}`,
+      },
+    };
 
-    setOrigin(punchIn || null);
-    setDestination(punchOut || null);
+    try {
+      const response = await axios.request(config);
+      if (response.data.status) {
+        const parsedPoints = response.data.data.map(item => ({
+          latitude: parseFloat(item.latitude),
+          longitude: parseFloat(item.longitude),
+        }));
+        setMapDataApi(parsedPoints);
+
+        if (mapRef.current && parsedPoints.length > 0) {
+          mapRef.current.fitToCoordinates(parsedPoints, {
+            edgePadding: { top: 50, right: 50, bottom: 50, left: 50 },
+            animated: true,
+          });
+        }
+      }
+    } catch (error) {
+      console.log('Location fetch error:', error);
+    }
   };
+
+  useEffect(() => {
+    getLocation();
+    const interval = setInterval(() => {
+      getLocation();
+    }, 100000); 
+    return () => clearInterval(interval);
+  }, []);
+
   const renderMarker = (point, index) => (
     <Marker
-      key={`api-marker-${index}`}
+      key={`marker-${index}`}
       coordinate={point}
-      title={
-        point?.type === 'punch_in'
-          ? 'Punch In'
-          : point?.type === 'punch_out'
-          ? 'Punch Out'
-          : 'Current Location'
-      }
-      pinColor={
-        point?.type === 'punch_in'
-          ? 'blue'
-          : point?.type === 'punch_out'
-          ? 'red'
-          : 'green'
-      }
+      title={`Point ${index + 1}`}
+      pinColor={index === 0 ? 'blue' : index === mapDataApi.length - 1 ? 'red' : 'green'}
     />
   );
+
   const renderDirections = useMemo(() => {
-    if (origin && destination) {
+    if (mapDataApi.length >= 2) {
+      const origin = mapDataApi[0];
+      const destination = mapDataApi[mapDataApi.length - 1];
+      const waypoints = mapDataApi.slice(1, -1);
+
       return (
         <MapViewDirections
           origin={origin}
           destination={destination}
+          waypoints={waypoints}
           apikey={GOOGLEMAPKEY}
-          optimizeWaypoints
-          strokeWidth={3}
+          strokeWidth={4}
           strokeColor="blue"
+          optimizeWaypoints={false}
           onReady={result => {
-            setTotalDistance(result.distance * 1000);
+            setTotalDistance(result.distance * 1000); // convert to meters
           }}
         />
       );
     }
     return null;
-  }, [origin, destination]);
+  }, [mapDataApi]);
 
   return (
     <View style={{flex: 1}}>
@@ -82,25 +103,16 @@ const Maps = () => {
           latitudeDelta: 0.05,
           longitudeDelta: 0.05,
         }}
-        region={region}>
+      >
         {mapDataApi.map((point, index) => renderMarker(point, index))}
         {renderDirections}
       </MapView>
 
-      <View style={styles.buttonContainer}>
-        <TouchableOpacity style={styles.iconButton} onPress={addDemoCoordinates}>
-          <Ionicons name="add-circle-outline" size={20} color="#fff" />
-          <Text style={styles.buttonText}>Add Demo Markers</Text>
-        </TouchableOpacity>
-      </View>
-
       <Card style={styles.infoCard}>
         <Text style={styles.infoText}>
-          {origin && destination
+          {mapDataApi.length >= 2
             ? `Total Distance: ${(totalDistance / 1000).toFixed(2)} km`
-            : origin
-            ? 'Waiting for Punch Out...'
-            : 'No route data available'}
+            : 'Waiting for location data...'}
         </Text>
       </Card>
     </View>
@@ -112,30 +124,6 @@ const styles = StyleSheet.create({
     flex: 1,
     width: width,
     height: height,
-  },
-  buttonContainer: {
-    position: 'absolute',
-    top: 10,
-    left: 10,
-    right: 10,
-    flexDirection: 'row',
-    justifyContent: 'center',
-    alignItems: 'center',
-    zIndex: 10,
-  },
-  iconButton: {
-    flexDirection: 'row',
-    backgroundColor: '#007BFF',
-    paddingVertical: 10,
-    paddingHorizontal: 15,
-    borderRadius: 8,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  buttonText: {
-    color: '#fff',
-    fontWeight: 'bold',
-    marginLeft: 5,
   },
   infoCard: {
     position: 'absolute',

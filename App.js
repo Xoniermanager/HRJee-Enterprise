@@ -10,6 +10,7 @@ import {
   Linking,
 } from 'react-native';
 import {NavigationContainer} from '@react-navigation/native';
+import { requestTrackingPermission, getTrackingStatus } from 'react-native-tracking-transparency';
 import ConextApi from './Store/ConetxtApi.jsx/ConextApi';
 import MyStack from './Navigation/MyStack/MyStack';
 import 'react-native-gesture-handler';
@@ -19,6 +20,20 @@ import NetInfo from '@react-native-community/netinfo';
 import VersionCheck from 'react-native-version-check';
 const App = () => {
   const [isModalVisible, setIsModalVisible] = useState(false);
+  const checkTrackingPermission = async () => {
+    const status = await getTrackingStatus();
+    if (status === 'not-determined') {
+        const permissionStatus = await requestTrackingPermission();
+        if (permissionStatus === 'authorized') {
+            console.log('Tracking permission granted.');
+        } else {
+            console.log('Tracking permission denied.');
+        }
+    } else {
+        console.log(`Tracking status: ${status}`);
+    }
+};
+checkTrackingPermission();
   const update = async () => {
     Linking.openURL(
       Platform.OS === 'ios'

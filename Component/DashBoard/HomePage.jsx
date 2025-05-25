@@ -44,18 +44,18 @@ import HomeSkeleton from '../Skeleton/HomeSkeleton';
 import moment from 'moment';
 import AntDesign from 'react-native-vector-icons/AntDesign';
 import {ThemeContext} from '../../Store/ConetxtApi.jsx/ConextApi';
-import {useIsFocused} from '@react-navigation/native';
+import {useIsFocused, useNavigation} from '@react-navigation/native';
 import FaceCamera from './FaceCamera';
 import GetLocation from 'react-native-get-location';
 import axios from 'axios';
 import BackgroundService from 'react-native-background-actions';
 import NotificationController from '../../PushNotification/NotificationController';
 import PullToRefresh from '../../PullToRefresh';
-const HomePage = ({navigation}) => {
+const HomePage = () => {
+  const navigation = useNavigation();
   const [monthDay, setMonth] = useState('');
   const ISFoucs = useIsFocused();
   const date = new Date(selected);
-  const month = date.toLocaleString('default', {month: 'long'});
   const [modalRequest, setModalRequest] = useState(false);
   const [startdateRequest, setStartdateRequest] = useState(new Date());
   const [openstartdate, setOpenStartDate] = useState(false);
@@ -86,6 +86,7 @@ const HomePage = ({navigation}) => {
     empyId,
     getProfileApiData,
     activeLog,
+    allowfacenex
   } = useContext(ThemeContext);
   const [getleavetypeapidata, setGetLeaveTypeApiData] = useState([]);
   const [loader, setLoader] = useState(false);
@@ -108,20 +109,22 @@ const HomePage = ({navigation}) => {
   const [disabledBtn, setDisabledBtn] = useState(false);
   const [loading, setloading] = useState(false);
   const [availableLeavesList, setAvailableLeavesList] = useState(null);
-  const [inTimeBreak, setInTimeBreak] = useState(null); // When the timer last started
-  const [elapsedTime, setElapsedTime] = useState(0); // Total time accumulated
-  const [breaktime, setBreaktime] = useState('00:00:00');
+  const [inTimeBreak, setInTimeBreak] = useState(null); 
+  const [elapsedTime, setElapsedTime] = useState(0);
+  const [breaktime, setBreaktime] = useState("");
   const [listBreak, setListBreak] = useState(null);
   const [breakValue, setBreakValue] = useState(null);
   const [attendanceId, setAttendanceId] = useState();
-  const [fullbreakTime, setFullbreakTime] = useState();
+  const [fullbreakTime, setFullbreakTime] = useState("");
   const [breakTotatimeStatus, setBreakTotatimeStatus] = useState(false);
   const [breakId, setBreakId] = useState(null);
   const [breakLoader, setBreakLoader] = useState(false);
+  const [leaveLoader,setLeaveLoader]=useState(false);
 
   const toggleModal = () => {
     setModalVisible(!isModalVisible);
   };
+
   const timeOptions = [
     {label: '08:00 AM', value: '08:00 AM'},
     {label: '08:15 AM', value: '08:15 AM'},
@@ -211,22 +214,12 @@ const HomePage = ({navigation}) => {
     'Friday',
     'Saturday',
   ];
-
   const d = new Date();
-  var mon = d.getMonth() + 1 <= 9 ? '0' + (d.getMonth() + 1) : d.getMonth() + 1;
 
-  var day = d.getDate() <= 9 ? '0' + d.getDate() : d.getDate();
-
-  const datetime = d.getFullYear() + '-' + mon + '-' + day;
-  const hours =
-    d.getHours() < 10
-      ? `0${d.getHours()}`
-      : d.getHours() + ':' + d.getMinutes();
   const breakingList = async () => {
     let token = await AsyncStorage.getItem('TOKEN');
     const url = `${BASE_URL}/break-details/${attendanceId}`;
     const response = await breaklist(url, token);
-    console.log(response.data, 'response');
     if (response?.data?.status) {
       const today = new Date();
       const year = today.getFullYear();
@@ -247,71 +240,101 @@ const HomePage = ({navigation}) => {
       let token = await AsyncStorage.getItem('TOKEN');
       const url = `${BASE_URL}/get-today-attendance`;
       const response = await gettodayattendance(url, token);
+  
       if (response?.data?.status) {
-        const data = response?.data?.todayAttendanceDetails;
-        setAttendanceId(data?.id);
-        if (data == null) {
+        const attendanceArray = response?.data?.todayAttendanceDetails;
+        setTodayAttendanceDetails(attendanceArray);
+  
+        if (!attendanceArray || attendanceArray.length === 0) {
           setinTime(null);
           setOutTime(null);
           setactivityTime(null);
+          setFullbreakTime("");
           setloading(false);
-        } else if (
-          response?.data?.todayAttendanceDetails?.punch_in != '' &&
-          response?.data?.todayAttendanceDetails?.punch_out == null
-        ) {
-          setTodayAttendanceDetails(response?.data?.todayAttendanceDetails);
-          setinTime(response?.data?.todayAttendanceDetails?.punch_in);
-          setFullbreakTime(
-            response?.data?.todayAttendanceDetails?.total_break_time,
-          );
-          setOutTime(response?.data?.todayAttendanceDetails?.punch_out);
-          settimerOn(true);
-          setloading(false);
-        } else if (data.punch_in != '' && data.punch_out != '') {
-          settimerOn(false);
-          setinTime(data.punch_in);
-          setOutTime(data.punch_out);
-          setloading(false);
-          var timeEnd1 = moment(data.punch_out);
-          const startDate = moment(data.punch_in);
-          const timeEnd = moment(timeEnd1);
-          const diff = timeEnd.diff(startDate);
-          const diffDuration = moment.duration(diff);
-          var days = diffDuration.days();
-          var hours = diffDuration.hours();
-          var minutes = diffDuration.minutes();
-          var seconds = diffDuration.seconds();
-          var time =
-            (hours < 10 ? '0' + hours : hours) +
-            ':' +
-            (minutes < 10 ? '0' + minutes : minutes) +
-            ':' +
-            (seconds < 10 ? '0' + seconds : seconds);
-
-          setfullTime(time);
+          return;
         }
+  
+        const lastRecord = [...attendanceArray]
+          .reverse()
+          .find(item => item.punch_in && item.punch_out);
+        const lastShift = attendanceArray[attendanceArray.length - 1].shift;
+        const currentTime = moment();
+        const shiftEndTime = moment(lastShift.end_time, 'HH:mm:ss');
+  
+        if (currentTime.isAfter(shiftEndTime)) {
+          setAttendanceId(null);
+          setinTime(null);
+          setOutTime(null);
+          setactivityTime(null);
+          settimerOn(false);
+          setfullTime(null);
+          setFullbreakTime("");
+          setloading(false);   
+          return;
+        }
+  
+        const lastOngoing = [...attendanceArray]
+          .reverse()
+          .find(item => item.punch_in && !item.punch_out);
+  
+        if (lastRecord) {
+          setAttendanceId(lastRecord.id);
+          setinTime(lastRecord.punch_in);
+          setOutTime(lastRecord.punch_out);
+          settimerOn(false);
+  
+          const timeStart = moment(lastRecord.punch_in);
+          const timeEnd = moment(lastRecord.punch_out);
+          const diff = timeEnd.diff(timeStart);
+          const duration = moment.duration(diff);
+  
+          const time =
+            `${String(duration.hours()).padStart(2, '0')}:` +
+            `${String(duration.minutes()).padStart(2, '0')}:` +
+            `${String(duration.seconds()).padStart(2, '0')}`;
+          setfullTime(time);
+  
+          // Set full break time
+          setFullbreakTime(lastRecord.total_break_time || "");
+        } else if (lastOngoing) {
+          setAttendanceId(lastOngoing.id);
+          setinTime(lastOngoing.punch_in);
+          setOutTime(null);
+          settimerOn(true);
+  
+          // Set full break time
+          setFullbreakTime(lastOngoing.total_break_time || "");
+          setfullTime("");
+        } else {
+          setinTime(null);
+          setOutTime(null);
+          setFullbreakTime("");
+          setfullTime("");
+        }
+  
+        setloading(false);
       } else {
         setinTime(null);
         setOutTime(null);
         setactivityTime(null);
+        setFullbreakTime("");
         setloading(false);
       }
     } catch (error) {
-      console.error('Error making POST request:', error);
+      console.error('Error fetching attendance:', error);
       setloading(false);
     }
   }
+  
   async function getLastAttendance() {
     try {
       setLoader(true);
       let token = await AsyncStorage.getItem('TOKEN');
       const url = `${BASE_URL}/get-last-attendance`;
       const response = await gettodayattendance(url, token);
-
-      if (response?.data?.status === true) {
-        console.log(response?.data?.data, 'hello');
+      if (response?.data?.status) {
         setLoader(false);
-        setLastAttendanceDetails(response?.data?.data);
+        setLastAttendanceDetails(response?.data);
       } else {
         setLoader(false);
       }
@@ -386,19 +409,6 @@ const HomePage = ({navigation}) => {
       console.error('Error making POST request:', error);
     }
   }
-
-  const handleRefresh = async () => {
-    menuAccess();
-    breakingList();
-    user_details();
-    CheckDailyAttendances();
-    breaktypeList();
-    checkleave();
-    getLastAttendance();
-    availableLeaves();
-    check_leave_type();
-  };
-
   useEffect(() => {
     menuAccess();
     breakingList();
@@ -580,6 +590,7 @@ const HomePage = ({navigation}) => {
     ],
     [],
   );
+
   const currentDate = new Date();
   const options = {
     weekday: 'long',
@@ -688,7 +699,7 @@ const HomePage = ({navigation}) => {
       })
       .catch(error => {
         const {code, message} = error;
-        console.log(message, 'message');
+        
         setloading(false);
         showMessage({
           message: message,
@@ -722,6 +733,7 @@ const HomePage = ({navigation}) => {
           const response = await punchin(url, body, token);
           if (response?.data?.status) {
             CheckDailyAttendances();
+            getLastAttendance
             breakingList();
             setLoader(false);
             setloading(false);
@@ -761,7 +773,7 @@ const HomePage = ({navigation}) => {
       })
       .catch(error => {
         const {code, message} = error;
-        console.log(message, 'message');
+   
         setloading(false);
         showMessage({
           message: message,
@@ -780,17 +792,6 @@ const HomePage = ({navigation}) => {
         }}
         source={item.uri}
       />
-      {/* <Text
-        style={{
-          position: 'absolute',
-          bottom: 5,
-          alignSelf: 'center',
-          fontSize: responsiveFontSize(1.9),
-          color: '#fff',
-          fontWeight: '500',
-        }}>
-        {item.name}
-      </Text> */}
     </TouchableOpacity>
   );
   const [expandedapplyleave, setExpandedApplyLeave] = useState(false);
@@ -897,7 +898,7 @@ const HomePage = ({navigation}) => {
           ],
         };
         const response = await locationSend(url, data, token, form);
-        console.log(response.data);
+       
       } catch (error) {
         console.error('Error sending stored location:', error.response.data);
       }
@@ -1003,11 +1004,6 @@ const HomePage = ({navigation}) => {
       console.error('Error starting background service:', e);
     }
   };
-
-  // if (getProfileApiData) {
-  //   return <HomeSkeleton />;
-  // }
-
   function convertTo24Hour(time) {
     let [hours, minutes] = time.match(/\d+/g);
     let period = time.match(/AM|PM/i);
@@ -1082,8 +1078,9 @@ const HomePage = ({navigation}) => {
   function capitalizeFirstLetter(string) {
     return string.charAt(0).toUpperCase() + string.slice(1);
   }
+ 
   const getLastAttendanceDaily = () => {
-    if (lastAttendanceDetails == 'No Last Attendance Available') {
+    if (lastAttendanceDetails.data=='No Last Attendance Available') {
       return (
         <View>
           <Text
@@ -1097,7 +1094,7 @@ const HomePage = ({navigation}) => {
         </View>
       );
     } else {
-      return lastAttendanceDetails?.map((elements, index) => {
+      return lastAttendanceDetails?.data.map((elements, index) => {
         return (
           <View
             key={index}
@@ -1126,10 +1123,10 @@ const HomePage = ({navigation}) => {
               </Text>
               <Text
                 style={{color: currentTheme.text, fontSize: 15, marginTop: 4}}>
-                Punch In: {elements?.punch_in_time ?? '--'}
+                Punch In: {elements?.punch_in?.split(" ")[1].slice(0, 5) ?? '--'}
               </Text>
               <Text style={{color: currentTheme.text, fontSize: 15}}>
-                Punch Out: {elements?.punch_out_time ?? '--'}
+                Punch Out: {elements?.punch_out?.split(" ")[1].slice(0, 5) ?? '--'}
               </Text>
             </View>
 
@@ -1158,70 +1155,7 @@ const HomePage = ({navigation}) => {
       });
     }
   };
-  // const getLastAttendanceDaily = () => {
-  //   if (lastAttendanceDetails == 'No Last Attendance Available') {
-  //     return (
-  //       <View>
-  //         <Text
-  //           style={{
-  //             color: currentTheme.text,
-  //             fontSize: 16,
-  //             textAlign: 'center',
-  //           }}>
-  //           No Last Attendance Available
-  //         </Text>
-  //       </View>
-  //     );
-  //   } else {
-  //     return lastAttendanceDetails?.map((elements, index) => {
-  //       return (
-  //         <View
-  //           key={index}
-  //           style={{
-  //             flexDirection: 'row',
-  //             justifyContent: 'space-between',
-  //             marginHorizontal: 10,
-  //             marginVertical: 8,
-  //           }}>
-  //           <View style={{}}>
-  //             <Text
-  //               style={{
-  //                 color: currentTheme.text,
-  //                 fontSize: 20,
-  //                 fontWeight: '500',
-  //               }}>
-  //               {elements?.day}
-  //             </Text>
-  //             <Text style={{color: currentTheme.text, fontSize: 18}}>
-  //               {elements?.date}
-  //             </Text>
-  //           </View>
-  //           <View style={{}}>
-  //             <Image
-  //               style={{
-  //                 tintColor: currentTheme.text,
-  //                 fontSize: 20,
-  //                 fontWeight: '500',
-  //                 height: 30,
-  //                 width: 30,
-  //                 alignSelf: 'center',
-  //               }}
-  //               source={require('../../assets/HomeScreen/clock.png')}
-  //             />
-  //             <Text
-  //               style={{
-  //                 color: currentTheme.text,
-  //                 fontSize: 18,
-  //                 textAlign: 'center',
-  //               }}>
-  //               {elements?.total_hours}
-  //             </Text>
-  //           </View>
-  //         </View>
-  //       );
-  //     });
-  //   }
-  // };
+
   const handleSubmit = async () => {
     try {
       if (startDate == '' || startDate == [] || startDate == undefined) {
@@ -1245,6 +1179,7 @@ const HomePage = ({navigation}) => {
           type: 'danger',
         });
       } else {
+        setLeaveLoader(true);
         const token = await AsyncStorage.getItem('TOKEN');
         const url = `${BASE_URL}/apply/leave`;
         let data = {
@@ -1273,10 +1208,12 @@ const HomePage = ({navigation}) => {
 
         const response = await LeaveApply(url, data, token);
         if (response?.data?.status == true) {
+          setLeaveLoader(false);
           showMessage({
             message: `${response?.data?.message}`,
             type: 'success',
           });
+
           setExpandedApplyLeave(false);
           setSelectedId1('');
           setSelectedId2('');
@@ -1284,393 +1221,441 @@ const HomePage = ({navigation}) => {
           setEndDate('');
           navigation.navigate('Leaves');
         } else {
+          setLeaveLoader(false);
         }
       }
     } catch (error) {
+      setLeaveLoader(false);
       // console.error('Error making POST request:', error);
       showMessage({
         message: `${error.response.data.message}`,
         type: 'danger',
+        duration:6000
       });
-      console.log(error.response.data.message);
+  
       setLoader(false);
     }
   };
+
+  if(allowfacenex==null){
+    return <HomeSkeleton/>
+  }
   if (isCameraOpen) {
     return <FaceCamera punchIn={punch_IN} />;
   } else {
     return (
-        <View style={{flex: 1, backgroundColor: currentTheme.background}}>
-          <NotificationController />
-          <View style={styles.parent}>
+      <View style={{flex: 1, backgroundColor: currentTheme.background}}>
+        <NotificationController />
+        <View style={styles.parent}>
+          <View
+            style={[
+              styles.child,
+              {backgroundColor: currentTheme.background_v2},
+            ]}>
             <View
-              style={[
-                styles.child,
-                {backgroundColor: currentTheme.background_v2},
-              ]}>
-              <View
-                style={{
-                  flexDirection: 'row',
-                  alignItems: 'center',
-                  marginLeft: 15,
-                }}>
-                {getProfileApiData?.details?.profile_image ==
-                  'https://hrjee-dev.xonierconnect.com/storage' ||
-                getProfileApiData?.details?.profile_image == [] ||
-                getProfileApiData?.details?.profile_image == null ? (
-                  <Image
-                    style={{
-                      height: 120,
-                      width: 120,
-                      resizeMode: 'contain',
-                      alignSelf: 'center',
-                    }}
-                    source={require('../../assets/HomeScreen/profile.png')}
-                  />
-                ) : (
-                  <Image
-                    style={{
-                      height: 90,
-                      width: 90,
-                      // resizeMode: 'contain',
-                      alignSelf: 'center',
-                      borderRadius: 50,
-                    }}
-                    source={{uri: getProfileApiData?.details?.profile_image}}
-                  />
-                )}
-                <View style={{marginHorizontal: 15}}>
-                  <Text
-                    style={{color: '#fff', fontSize: 15, fontWeight: 'bold'}}>
-                    {empyName}
-                  </Text>
-                  <Text style={{color: '#fff', fontSize: 18}}>
-                    {formattedDate}
-                  </Text>
-                </View>
+              style={{
+                flexDirection: 'row',
+                alignItems: 'center',
+                marginLeft: 15,
+              }}>
+              {getProfileApiData?.details?.profile_image ==
+                'https://hrjee-dev.xonierconnect.com/storage' ||
+              getProfileApiData?.details?.profile_image == [] ||
+              getProfileApiData?.details?.profile_image == null ? (
+                <Image
+                  style={{
+                    height: 120,
+                    width: 120,
+                    resizeMode: 'contain',
+                    alignSelf: 'center',
+                  }}
+                  source={require('../../assets/HomeScreen/profile.png')}
+                />
+              ) : (
+                <Image
+                  style={{
+                    height: 90,
+                    width: 90,
+                    // resizeMode: 'contain',
+                    alignSelf: 'center',
+                    borderRadius: 50,
+                  }}
+                  source={{uri: getProfileApiData?.details?.profile_image}}
+                />
+              )}
+              <View style={{marginHorizontal: 15}}>
+                <Text style={{color: '#fff', fontSize: 15, fontWeight: 'bold'}}>
+                  {empyName}
+                </Text>
+                <Text style={{color: '#fff', fontSize: 18}}>
+                  {formattedDate}
+                </Text>
               </View>
             </View>
           </View>
-          <ScrollView showsVerticalScrollIndicator={false}>
+        </View>
+        <ScrollView showsVerticalScrollIndicator={false}>
+          <View
+            style={{
+              marginBottom: 100,
+              marginHorizontal: 10,
+              alignSelf: 'center',
+              marginTop: responsiveHeight(2),
+            }}>
+            <FlatList
+              horizontal
+              showsHorizontalScrollIndicator={false}
+              data={menuaccesssList}
+              renderItem={renderServicesList}
+              keyExtractor={item => item.id}
+            />
             <View
               style={{
-                marginBottom: 100,
-                marginHorizontal: 10,
-                alignSelf: 'center',
-                marginTop: responsiveHeight(2),
+                marginBottom: responsiveHeight(1),
+                padding:15,
+                backgroundColor: currentTheme.background_v2,
+                borderColor: currentTheme.background_v2,
+                borderRadius: 20,
+                borderWidth: 5,
+                flexDirection: 'row',
+                justifyContent: 'space-between',
+                marginTop: 15,
               }}>
-              <FlatList
-                horizontal
-                showsHorizontalScrollIndicator={false}
-                data={menuaccesssList}
-                renderItem={renderServicesList}
-                keyExtractor={item => item.id}
-              />
+              <View>
+                <Text
+                  style={{
+                    color: currentTheme.text_v2,
+                    fontSize: 18,
+                    marginBottom: 5,
+                    marginTop: 5,
+                  }}>
+                  {days[d.getDay()]}
+                </Text>
+                <Text
+                  style={{
+                    color: currentTheme.text_v2,
+                    fontSize: 18,
+                    marginTop: 5,
+                  }}>
+                  {d.getDate() +
+                    ' ' +
+                    monthNames[d.getMonth()] +
+                    ' ' +
+                    d.getFullYear()}
+                </Text>
+                {inTime && !outTime && (
+                  <Text
+                    style={{
+                      color: currentTheme.text_v2,
+                      fontSize: 18,
+                      marginTop: 5,
+                    }}>
+                    Break Time
+                  </Text>
+                )}
+              </View>
               <View
                 style={{
-                  marginBottom: responsiveHeight(1),
-                  padding: 20,
-                  backgroundColor: currentTheme.background_v2,
-                  borderColor: currentTheme.background_v2,
-                  borderRadius: 20,
-                  borderWidth: 5,
-                  flexDirection: 'row',
-                  justifyContent: 'space-between',
-                  marginTop: 15,
-                }}>
-                <View>
-                  <Text
+                  borderColor: currentTheme.text_v2,
+                  borderWidth: 1,
+                }}></View>
+              <View>
+                {inTime && !outTime  &&(
+                  <>
+                    <View
+                      style={{
+                        flexDirection: 'row',
+                        marginBottom: 8,
+                        marginTop:allowfacenex==1?35:0
+                      }}>
+                      <AntDesign
+                        name="rightcircle"
+                        style={{
+                          fontSize: 23,
+                          color: '#fff',
+                        }}
+                      />
+                      <Text
+                        style={{
+                          color: currentTheme.text_v2,
+                          fontSize: 18,
+                          textAlign: 'center',
+                          marginHorizontal: 10,
+                     
+                        }}>
+                        {activityTime}
+                      </Text>
+                    </View>
+                  {
+                    allowfacenex==0?<TouchableOpacity
+                    onPress={() => handleLogout()}
                     style={{
-                      color: currentTheme.text_v2,
-                      fontSize: 18,
-                      marginBottom: 5,
+                      backgroundColor: currentTheme.buttonText,
+                      borderRadius: 20,
+                      height: 40,
+                      justifyContent: 'center',
+                      width: 120,
+                      height: 40,
+                    }}>
+                    {loading ? (
+                      <ActivityIndicator color="#0E0E64" />
+                    ) : (
+                      <Text
+                        style={{
+                          textAlign: 'center',
+                          color: currentTheme.text,
+                          fontSize: 16,
+                          textAlign: 'center',
+                        }}>
+                        Punch Out
+                      </Text>
+                    )}
+                  </TouchableOpacity>:null
+                  }
+                  </>
+                )}
+
+                {!inTime && !outTime && allowfacenex==0 && (
+                  <TouchableOpacity
+                    onPress={() => handlePunchIn()}
+                    disabled={disabledBtn == true ? true : false}
+                    style={{
+                      backgroundColor: currentTheme.buttonText,
+                      borderRadius: 20,
+                      height: 40,
+                      justifyContent: 'center',
+                      width: 120,
+                      marginTop: 10,
+                    }}>
+                    {loading ? (
+                      <ActivityIndicator color="#0E0E64" />
+                    ) : (
+                      <Text
+                        style={{
+                          textAlign: 'center',
+                          color: currentTheme.text,
+                          fontSize: 18,
+                          textAlign: 'center',
+                        }}>
+                        Punch In
+                      </Text>
+                    )}
+                  </TouchableOpacity>
+                )}
+
+                {inTime && outTime && (
+                  <>
+                    <View
+                      style={{
+                        flexDirection: 'row',
+                        justifyContent: 'center',
+                      }}>
+                      <Text
+                        style={{
+                          color: '#00f0ff',
+                          fontSize: 18,
+                          textAlign: 'center',
+                          marginHorizontal: 10,
+                          marginBottom: 5,
+                          marginTop: 5,
+                          marginTop: 5,
+                        }}>
+                        {fullTime}
+                      </Text>
+                    </View>
+                    <Text style={{color: 'red', marginTop: 5, fontSize: 18}}>
+                      Total Time Elapsed
+                    </Text>
+                  </>
+                )}
+                {breakTotatimeStatus ? (
+                  <View
+                    style={{
+                      flexDirection: 'row',
                       marginTop: 5,
                     }}>
-                    {days[d.getDay()]}
-                  </Text>
-                  <Text
-                    style={{
-                      color: currentTheme.text_v2,
-                      fontSize: 18,
-                      marginTop: 5,
-                    }}>
-                    {d.getDate() +
-                      ' ' +
-                      monthNames[d.getMonth()] +
-                      ' ' +
-                      d.getFullYear()}
-                  </Text>
-                  {inTime && !outTime && (
                     <Text
                       style={{
                         color: currentTheme.text_v2,
                         fontSize: 18,
-                        marginTop: 5,
+                        textAlign: 'center',
+                        marginLeft:32
                       }}>
-                      Break Time
+                      {fullbreakTime}
                     </Text>
-                  )}
-                </View>
-                <View
-                  style={{
-                    borderColor: currentTheme.text_v2,
-                    borderWidth: 1,
-                  }}></View>
-                <View>
-                  {inTime && !outTime && (
-                    <>
-                      <View
-                        style={{
-                          flexDirection: 'row',
-                          marginBottom: 8,
-                        }}>
-                        <AntDesign
-                          name="rightcircle"
-                          style={{
-                            fontSize: 23,
-                            color: '#fff',
-                          }}
-                        />
-                        <Text
-                          style={{
-                            color: currentTheme.text_v2,
-                            fontSize: 18,
-                            textAlign: 'center',
-                            marginHorizontal: 10,
-                          }}>
-                          {activityTime}
-                        </Text>
-                      </View>
-                      <TouchableOpacity
-                        onPress={() => handleLogout()}
-                        style={{
-                          backgroundColor: currentTheme.buttonText,
-                          borderRadius: 20,
-                          height: 40,
-                          justifyContent: 'center',
-                          width: 120,
-                          height: 40,
-                        }}>
-                        {loading ? (
-                          <ActivityIndicator color="#0E0E64" />
-                        ) : (
-                          <Text
-                            style={{
-                              textAlign: 'center',
-                              color: currentTheme.text,
-                              fontSize: 16,
-                              textAlign: 'center',
-                            }}>
-                            Punch Out
-                          </Text>
-                        )}
-                      </TouchableOpacity>
-                    </>
-                  )}
-
-                  {!inTime && !outTime && (
-                    <TouchableOpacity
-                      onPress={() => handlePunchIn()}
-                      disabled={disabledBtn == true ? true : false}
-                      style={{
-                        backgroundColor: currentTheme.buttonText,
-                        borderRadius: 20,
-                        height: 40,
-                        justifyContent: 'center',
-                        width: 120,
-                        marginTop: 10,
-                      }}>
-                      {loading ? (
-                        <ActivityIndicator color="#0E0E64" />
-                      ) : (
-                        <Text
-                          style={{
-                            textAlign: 'center',
-                            color: currentTheme.text,
-                            fontSize: 18,
-                            textAlign: 'center',
-                          }}>
-                          Punch In
-                        </Text>
-                      )}
-                    </TouchableOpacity>
-                  )}
-
-                  {inTime && outTime && (
-                    <>
-                      <View
-                        style={{
-                          flexDirection: 'row',
-                          justifyContent: 'center',
-                        }}>
-                        <Text
-                          style={{
-                            color: '#00f0ff',
-                            fontSize: 18,
-                            textAlign: 'center',
-                            marginHorizontal: 10,
-                            marginBottom: 5,
-                            marginTop: 5,
-                            marginTop: 5,
-                          }}>
-                          {fullTime}
-                        </Text>
-                      </View>
-                      <Text style={{color: 'red', marginTop: 5, fontSize: 18}}>
-                        Total Time Elapsed
-                      </Text>
-                    </>
-                  )}
-                  {breakTotatimeStatus ? (
-                    <View
-                      style={{
-                        flexDirection: 'row',
-                        marginTop: 5,
-                      }}>
-                      <Text
-                        style={{
-                          color: currentTheme.text_v2,
-                          fontSize: 18,
-                          textAlign: 'center',
-                          marginHorizontal: 10,
-                        }}>
-                        {fullbreakTime}
-                      </Text>
-                    </View>
-                  ) : null}
-                  {inTimeBreak != null ? (
-                    <View
-                      style={{
-                        flexDirection: 'row',
-                        marginTop: 5,
-                      }}>
-                      <Text
-                        style={{
-                          color: currentTheme.text_v2,
-                          fontSize: 18,
-                          textAlign: 'center',
-                          marginHorizontal: 10,
-                        }}>
-                        {breaktime}
-                      </Text>
-                    </View>
-                  ) : null}
-                </View>
-              </View>
-
-              <View
-                style={{flexDirection: 'row', justifyContent: 'space-between'}}>
-                {requestAttendance?.length > 0 ? (
-                  <TouchableOpacity
-                    onPress={() => setModalRequest(true)}
-                    style={{marginLeft: 2}}>
-                    <Text
-                      style={[
-                        {
-                          fontSize: 15,
-                          fontWeight: '500',
-                          backgroundColor: currentTheme.background_v2,
-                          padding: 10,
-                          borderRadius: 10,
-                          color: '#fff',
-                        },
-                      ]}>
-                      Attendance Request
-                    </Text>
-                  </TouchableOpacity>
+                  </View>
                 ) : null}
-
-                {inTime && inTimeBreak == null && !outTime && (
-                  <TouchableOpacity
-                    onPress={() => setBreakModal(true)}
-                    style={{marginRight: 2}}>
-                    <Text
-                      style={[
-                        {
-                          fontSize: 15,
-                          fontWeight: '500',
-                          backgroundColor: currentTheme.background_v2,
-                          padding: 10,
-                          borderRadius: 10,
-                          color: '#fff',
-                        },
-                      ]}>
-                      Take Break
-                    </Text>
-                  </TouchableOpacity>
-                )}
                 {inTimeBreak != null ? (
-                  <TouchableOpacity
-                    onPress={() => handleBreakOut()}
+                  <View
                     style={{
-                      marginRight: 2,
-                      backgroundColor: currentTheme.background_v2,
+                      flexDirection: 'row',
+                      marginTop: 5,
                     }}>
-                    {breakLoader ? (
-                      <ActivityIndicator size="small" color="#fff" />
-                    ) : (
-                      <Text
-                        style={{
-                          fontSize: 15,
-                          fontWeight: '500',
-                          padding: 10,
-                          borderRadius: 10,
-                          color: '#fff',
-                        }}>
-                        Break out
-                      </Text>
-                    )}
-                  </TouchableOpacity>
+                    <Text
+                      style={{
+                        color: currentTheme.text_v2,
+                        fontSize: 18,
+                        textAlign: 'center',
+                        marginLeft:32
+                      }}>
+                      {breaktime}
+                    </Text>
+                  </View>
                 ) : null}
               </View>
+              {todayAttendanceDetails.length > 1 ? (
+                <TouchableOpacity
+                  onPress={() => navigation.navigate('AllPunchIn')}
+                  style={{
+                    position: 'absolute',
+                    bottom: 0,
+                    right: 20,
+                    backgroundColor: currentTheme.buttonText,
+                    borderRadius: 25,
+                    paddingVertical: 10,
+                    paddingHorizontal: 15,
+                    elevation: 5, // for Android shadow
+                    shadowColor: '#000',
+                    shadowOffset: {width: 0, height: 2},
+                    shadowOpacity: 0.3,
+                    shadowRadius: 3,
+                  }}>
+                  <Text
+                    style={{
+                      color: currentTheme.text,
+                      fontSize: 16,
+                      fontWeight: '400',
+                    }}>
+                    All Punch IN
+                  </Text>
+                </TouchableOpacity>
+              ) : null}
+            </View>
 
-              <View>
+            <View
+              style={{flexDirection: 'row', justifyContent: 'space-between'}}>
+              {requestAttendance?.length > 0 ? (
+                <TouchableOpacity
+                  onPress={() => setModalRequest(true)}
+                  style={{marginLeft: 2}}>
+                  <Text
+                    style={[
+                      {
+                        fontSize: 15,
+                        fontWeight: '500',
+                        backgroundColor: currentTheme.background_v2,
+                        padding: 10,
+                        borderRadius: 10,
+                        color: '#fff',
+                      },
+                    ]}>
+                    Attendance Request
+                  </Text>
+                </TouchableOpacity>
+              ) : null}
+
+              {inTime && inTimeBreak == null && !outTime && (
+                <TouchableOpacity
+                  onPress={() => setBreakModal(true)}
+                  style={{marginRight: 2}}>
+                  <Text
+                    style={[
+                      {
+                        fontSize: 15,
+                        fontWeight: '500',
+                        backgroundColor: currentTheme.background_v2,
+                        padding: 10,
+                        borderRadius: 10,
+                        color: '#fff',
+                      },
+                    ]}>
+                    Take Break
+                  </Text>
+                </TouchableOpacity>
+              )}
+              {inTimeBreak != null ? (
+                <TouchableOpacity
+                  onPress={() => handleBreakOut()}
+                  style={{
+                    marginRight: 2,
+                    backgroundColor: currentTheme.background_v2,
+                    borderRadius: 10,
+                  }}>
+                  {breakLoader ? (
+                    <ActivityIndicator size="small" color="#fff" style={{padding:20}} />
+                  ) : (
+                    <Text
+                      style={{
+                        fontSize: 15,
+                        fontWeight: '500',
+                        padding: 10,
+                        borderRadius: 10,
+                        color: '#fff',
+                      }}>
+                      Break out
+                    </Text>
+                  )}
+                </TouchableOpacity>
+              ) : null}
+            </View>
+
+            <View>
+              <View
+                style={{
+                  backgroundColor: '#AA9AFD',
+                  marginTop: responsiveHeight(1),
+                  borderTopLeftRadius: 10,
+                  borderBottomLeftRadius: expandedapplyleave == true ? 0 : 10,
+                  borderTopRightRadius: 10,
+                  borderBottomRightRadius: 10,
+                }}>
                 <View
                   style={{
-                    backgroundColor: '#AA9AFD',
-                    marginTop: responsiveHeight(1),
+                    width: '98%',
+                    marginLeft: '2%',
+                    backgroundColor: currentTheme.background,
+                    opacity: 1,
+                    elevation: 10,
                     borderTopLeftRadius: 10,
                     borderBottomLeftRadius: expandedapplyleave == true ? 0 : 10,
                     borderTopRightRadius: 10,
-                    borderBottomRightRadius: 10,
+                    borderBottomRightRadius:
+                      expandedapplyleave == true ? 0 : 10,
+                    padding: 20,
+                    flexDirection: 'row',
+                    justifyContent: 'space-between',
+                    alignItems: 'center',
+                    borderWidth: 0.5,
+                    borderColor: '#333',
                   }}>
-                  <View
+                  <LinearGradient
+                    style={{padding: 10, borderRadius: 10}}
+                    colors={['#AA9AFD', '#8370ED']}>
+                    <Image
+                      style={{height: 30, width: 30, resizeMode: 'contain'}}
+                      source={require('../../assets/HomeScreen/h5.png')}
+                    />
+                  </LinearGradient>
+                  <Text
                     style={{
-                      width: '98%',
-                      marginLeft: '2%',
-                      backgroundColor: currentTheme.background,
-                      opacity: 1,
-                      elevation: 10,
-                      borderTopLeftRadius: 10,
-                      borderBottomLeftRadius:
-                        expandedapplyleave == true ? 0 : 10,
-                      borderTopRightRadius: 10,
-                      borderBottomRightRadius:
-                        expandedapplyleave == true ? 0 : 10,
-                      padding: 20,
-                      flexDirection: 'row',
-                      justifyContent: 'space-between',
-                      alignItems: 'center',
-                      borderWidth: 0.5,
-                      borderColor: '#333',
+                      color: currentTheme.text,
+                      fontSize: responsiveFontSize(2.3),
                     }}>
-                    <LinearGradient
-                      style={{padding: 10, borderRadius: 10}}
-                      colors={['#AA9AFD', '#8370ED']}>
+                    Apply Leave
+                  </Text>
+                  <TouchableOpacity onPress={toggleExpandedApplyLeave}>
+                    {expandedapplyleave ? (
                       <Image
-                        style={{height: 30, width: 30, resizeMode: 'contain'}}
-                        source={require('../../assets/HomeScreen/h5.png')}
+                        style={{
+                          height: 30,
+                          width: 30,
+                          resizeMode: 'contain',
+                          tintColor: currentTheme.text,
+                        }}
+                        source={require('../../assets/HomeScreen/up.png')}
                       />
-                    </LinearGradient>
-                    <Text
-                      style={{
-                        color: currentTheme.text,
-                        fontSize: responsiveFontSize(2.3),
-                      }}>
-                      Apply Leave
-                    </Text>
-                    <TouchableOpacity onPress={toggleExpandedApplyLeave}>
-                      {expandedapplyleave ? (
+                    ) : (
+                      <>
                         <Image
                           style={{
                             height: 30,
@@ -1678,337 +1663,18 @@ const HomePage = ({navigation}) => {
                             resizeMode: 'contain',
                             tintColor: currentTheme.text,
                           }}
-                          source={require('../../assets/HomeScreen/up.png')}
+                          source={require('../../assets/HomeScreen/down.png')}
                         />
-                      ) : (
-                        <>
-                          <Image
-                            style={{
-                              height: 30,
-                              width: 30,
-                              resizeMode: 'contain',
-                              tintColor: currentTheme.text,
-                            }}
-                            source={require('../../assets/HomeScreen/down.png')}
-                          />
-                        </>
-                      )}
-                    </TouchableOpacity>
-                  </View>
+                      </>
+                    )}
+                  </TouchableOpacity>
                 </View>
-                {expandedapplyleave ? (
-                  <View
-                    style={{
-                      backgroundColor: '#AA9AFD',
-                      borderBottomLeftRadius: 10,
-                      borderBottomRightRadius: 10,
-                    }}>
-                    <View
-                      style={{
-                        width: '98%',
-                        marginLeft: '2%',
-                        backgroundColor: currentTheme.background,
-                        borderTopLeftRadius: 0,
-                        borderBottomLeftRadius: 10,
-                        borderBottomRightRadius: 10,
-                      }}>
-                      <ScrollView
-                        style={{
-                          width: '100%',
-                        }}>
-                        <View
-                          style={{
-                            flexDirection: 'row',
-                            alignSelf: 'center',
-                            alignItems: 'center',
-                            justifyContent: 'space-between',
-                          }}>
-                          <View
-                            style={{
-                              alignItems: 'center',
-                              marginHorizontal: responsiveWidth(2),
-                            }}>
-                            <TouchableOpacity
-                              onPress={() => handlePress(1)}
-                              style={{
-                                backgroundColor: currentTheme.background_v2,
-                                borderRadius: 100,
-                                height: 90,
-                                width: 90,
-                                justifyContent: 'center',
-                              }}>
-                              <Text
-                                style={{color: '#fff', textAlign: 'center'}}>
-                                {startDate
-                                  ? new Date(startDate).getDate()
-                                  : 'Start'}
-                              </Text>
-                              <Text
-                                style={{color: '#fff', textAlign: 'center'}}>
-                                {startDate
-                                  ? new Date(startDate).toLocaleString(
-                                      'default',
-                                      {month: 'long'},
-                                    )
-                                  : 'Date'}
-                              </Text>
-                            </TouchableOpacity>
-                            <Image
-                              style={{
-                                height: 50,
-                                width: 50,
-                                tintColor: currentTheme.text,
-                              }}
-                              source={require('../../assets/ApplyLeave/arrow-down.png')}
-                            />
-                            <TouchableOpacity
-                              onPress={() => handlePress(2)}
-                              style={{
-                                backgroundColor: currentTheme.background_v2,
-                                borderRadius: 100,
-                                height: 90,
-                                width: 90,
-                                justifyContent: 'center',
-                              }}>
-                              <Text
-                                style={{color: '#fff', textAlign: 'center'}}>
-                                {endDate ? new Date(endDate).getDate() : 'End'}
-                              </Text>
-                              <Text
-                                style={{color: '#fff', textAlign: 'center'}}>
-                                {endDate
-                                  ? new Date(endDate).toLocaleString(
-                                      'default',
-                                      {
-                                        month: 'long',
-                                      },
-                                    )
-                                  : 'Date'}
-                              </Text>
-                            </TouchableOpacity>
-                            <Text
-                              style={{
-                                color: currentTheme.text,
-                                fontSize: 18,
-                                marginTop: responsiveHeight(1),
-                              }}>
-                              {daysBetween} Days
-                            </Text>
-                          </View>
-                          <View style={{marginHorizontal: responsiveWidth(2)}}>
-                            <Calendar
-                              style={{
-                                borderTopLeftRadius: 50,
-                                borderTopRightRadius: 50,
-                                backgroundColor: currentTheme.background,
-                                elevation: 7,
-                                width: responsiveWidth(60),
-                              }}
-                              onDayPress={day => {
-                                setSelected(day.dateString);
-                                setMonth(day);
-
-                                if (!startDate) {
-                                  setStartDate(day.dateString);
-                                } else if (!endDate) {
-                                  setEndDate(day.dateString);
-                                }
-                              }}
-                              markedDates={{
-                                [selected]: {
-                                  selected: true,
-                                  disableTouchEvent: true,
-                                  selectedDotColor: 'orange',
-                                },
-                                [startDate]: {
-                                  startingDay: true,
-                                  color: 'orange',
-                                  textColor: 'white',
-                                },
-                                [endDate]: {
-                                  endingDay: true,
-                                  color: 'orange',
-                                  textColor: 'white',
-                                },
-                              }}
-                            />
-                          </View>
-                        </View>
-                        {startDate > endDate
-                          ? showMessage({
-                              message: `End date greater then start date, Please select valid details`,
-                              type: 'danger',
-                            })
-                          : null}
-                        <View
-                          style={{
-                            flexDirection: 'row',
-                            marginHorizontal: responsiveWidth(2),
-                          }}>
-                          <CheckBox
-                            disabled={false}
-                            value={toggleCheckBox}
-                            onValueChange={newValue =>
-                              setToggleCheckBox(newValue)
-                            }
-                            tintColors={{
-                              true: (color = currentTheme.text),
-                              false: (color = currentTheme.text),
-                            }}
-                          />
-                          <Text
-                            style={{
-                              alignSelf: 'center',
-                              fontSize: 16,
-                              color: currentTheme.text,
-                              marginHorizontal: Platform.OS == 'ios' ? 8 : null,
-                            }}>
-                            Is half day
-                          </Text>
-                        </View>
-                        {toggleCheckBox == true ? (
-                          startDate == endDate ? (
-                            <View
-                              style={{
-                                borderRadius: 10,
-                                backgroundColor: currentTheme.inputText_color,
-                                padding: 5,
-                                marginHorizontal: responsiveWidth(2),
-                              }}>
-                              <RadioGroup
-                                containerStyle={{flexDirection: 'row'}}
-                                radioButtons={radioButtons}
-                                onPress={setSelectedId}
-                                selectedId={selectedId}
-                              />
-                            </View>
-                          ) : (
-                            <View
-                              style={{
-                                borderRadius: 10,
-                                backgroundColor: '#EDFBFE',
-                                padding: 5,
-                                marginHorizontal: responsiveWidth(2),
-                              }}>
-                              <Text style={{color: '#000'}}>
-                                First day of leave
-                              </Text>
-                              <RadioGroup
-                                containerStyle={{flexDirection: 'row'}}
-                                radioButtons={radioButtons1}
-                                onPress={setSelectedId1}
-                                selectedId={selectedId1}
-                              />
-                              <Text style={{color: '#000'}}>
-                                Last day of leave
-                              </Text>
-                              <RadioGroup
-                                containerStyle={{flexDirection: 'row'}}
-                                radioButtons={radioButtons2}
-                                onPress={setSelectedId2}
-                                selectedId={selectedId2}
-                              />
-                            </View>
-                          )
-                        ) : null}
-
-                        {/* This is profile details */}
-                        <View
-                          style={{
-                            marginHorizontal: responsiveWidth(2),
-                            marginTop: responsiveHeight(1),
-                            borderTopRightRadius: 10,
-                            borderBottomRightRadius: 10,
-                          }}>
-                          <View
-                            style={{
-                              backgroundColor: currentTheme.background_v2,
-                              padding: 10,
-                              marginBottom: 5,
-                              borderRadius: 10,
-                            }}>
-                            <Dropdown
-                              selectedTextProps={{
-                                style: {
-                                  color: '#fff',
-                                },
-                              }}
-                              data={getleavetypeapidata && getleavetypeapidata}
-                              maxHeight={300}
-                              labelField="name"
-                              valueField="id"
-                              placeholder={
-                                !isFocus ? 'Select leave type' : '...'
-                              }
-                              value={value1}
-                              onChange={item => {
-                                setValue1(item.id);
-                              }}
-                              placeholderStyle={{
-                                color: '#fff',
-                              }}
-                              itemTextStyle={{
-                                color: '#000',
-                              }}
-                            />
-                          </View>
-
-                          <View
-                            style={{
-                              borderRadius: 20,
-                              marginBottom: 8,
-                              padding: 5,
-                              backgroundColor: currentTheme.background_v2,
-                              opacity: 1,
-                              elevation: 10,
-                            }}>
-                            <TextInput
-                              placeholder="Reason"
-                              numberOfLines={6}
-                              textAlignVertical={'top'}
-                              onChangeText={text => setReason(text)}
-                              style={{height: 120}} // Adjust height as needed
-                              placeholderTextColor={'#fff'}
-                              color={'#fff'}
-                            />
-                          </View>
-                        </View>
-
-                        <TouchableOpacity
-                          onPress={() => handleSubmit()}
-                          style={{
-                            marginBottom: 5,
-                            backgroundColor: currentTheme.background_v2,
-                            padding: 15,
-                            width: '60%',
-                            alignSelf: 'center',
-                            borderRadius: 50,
-                          }}>
-                          <Text
-                            style={{
-                              textAlign: 'center',
-                              color: '#fff',
-                              fontSize: 18,
-                              fontWeight: 'bold',
-                            }}>
-                            Submit
-                          </Text>
-                        </TouchableOpacity>
-                      </ScrollView>
-                    </View>
-                  </View>
-                ) : null}
               </View>
-
-              {/* This is recent attendence */}
-              <View>
+              {expandedapplyleave ? (
                 <View
                   style={{
-                    backgroundColor: '#FABED7',
-                    marginTop: responsiveHeight(1),
-                    borderTopLeftRadius: 10,
-                    borderBottomLeftRadius: expanded == true ? 0 : 10,
-                    borderTopRightRadius: 10,
+                    backgroundColor: '#AA9AFD',
+                    borderBottomLeftRadius: 10,
                     borderBottomRightRadius: 10,
                   }}>
                   <View
@@ -2016,130 +1682,434 @@ const HomePage = ({navigation}) => {
                       width: '98%',
                       marginLeft: '2%',
                       backgroundColor: currentTheme.background,
-                      opacity: 1,
-                      elevation: 10,
-                      borderTopLeftRadius: 10,
-                      borderBottomLeftRadius: expanded == true ? 0 : 10,
-                      borderTopRightRadius: 10,
-                      borderBottomRightRadius: expanded == true ? 0 : 10,
-                      padding: 20,
-                      flexDirection: 'row',
-                      justifyContent: 'space-between',
-                      alignItems: 'center',
-                      borderWidth: 0.5,
-                      borderColor: '#333',
-                    }}>
-                    <LinearGradient
-                      style={{padding: 10, borderRadius: 10}}
-                      colors={['#FABED7', '#FF94C3']}>
-                      <Image
-                        style={{height: 30, width: 30, resizeMode: 'contain'}}
-                        source={require('../../assets/HomeScreen/recentattendance.png')}
-                      />
-                    </LinearGradient>
-                    <Text
-                      style={{
-                        color: currentTheme.text,
-                        fontSize: responsiveFontSize(2.3),
-                      }}>
-                      Recent Attendance
-                    </Text>
-                    <TouchableOpacity onPress={toggleExpanded}>
-                      {expanded ? (
-                        <Image
-                          style={{
-                            height: 30,
-                            width: 30,
-                            resizeMode: 'contain',
-                            tintColor: currentTheme.text,
-                          }}
-                          source={require('../../assets/HomeScreen/up.png')}
-                        />
-                      ) : (
-                        <>
-                          <Image
-                            style={{
-                              height: 30,
-                              width: 30,
-                              resizeMode: 'contain',
-                              tintColor: currentTheme.text,
-                            }}
-                            source={require('../../assets/HomeScreen/down.png')}
-                          />
-                        </>
-                      )}
-                    </TouchableOpacity>
-                  </View>
-                </View>
-                {expanded ? (
-                  <View
-                    style={{
-                      backgroundColor: '#FABED7',
+                      borderTopLeftRadius: 0,
                       borderBottomLeftRadius: 10,
                       borderBottomRightRadius: 10,
                     }}>
-                    <View
+                    <ScrollView
                       style={{
-                        width: '98%',
-                        marginLeft: '2%',
-                        backgroundColor: currentTheme.background,
-                        borderTopLeftRadius: 0,
-                        borderBottomLeftRadius: 10,
-                        borderBottomRightRadius: 10,
+                        width: '100%',
                       }}>
                       <View
                         style={{
-                          flex: 1,
-                          borderColor: '#4148fe',
-                          borderTopWidth: 0.8,
-                        }}></View>
-                      {getLastAttendanceDaily()}
-                    </View>
+                          flexDirection: 'row',
+                          alignSelf: 'center',
+                          alignItems: 'center',
+                          justifyContent: 'space-between',
+                        }}>
+                        <View
+                          style={{
+                            alignItems: 'center',
+                            marginHorizontal: responsiveWidth(2),
+                          }}>
+                          <TouchableOpacity
+                            onPress={() => handlePress(1)}
+                            style={{
+                              backgroundColor: currentTheme.background_v2,
+                              borderRadius: 100,
+                              height: 90,
+                              width: 90,
+                              justifyContent: 'center',
+                            }}>
+                            <Text style={{color: '#fff', textAlign: 'center'}}>
+                              {startDate
+                                ? new Date(startDate).getDate()
+                                : 'Start'}
+                            </Text>
+                            <Text style={{color: '#fff', textAlign: 'center'}}>
+                              {startDate
+                                ? new Date(startDate).toLocaleString(
+                                    'default',
+                                    {month: 'long'},
+                                  )
+                                : 'Date'}
+                            </Text>
+                          </TouchableOpacity>
+                          <Image
+                            style={{
+                              height: 50,
+                              width: 50,
+                              tintColor: currentTheme.text,
+                            }}
+                            source={require('../../assets/ApplyLeave/arrow-down.png')}
+                          />
+                          <TouchableOpacity
+                            onPress={() => handlePress(2)}
+                            style={{
+                              backgroundColor: currentTheme.background_v2,
+                              borderRadius: 100,
+                              height: 90,
+                              width: 90,
+                              justifyContent: 'center',
+                            }}>
+                            <Text style={{color: '#fff', textAlign: 'center'}}>
+                              {endDate ? new Date(endDate).getDate() : 'End'}
+                            </Text>
+                            <Text style={{color: '#fff', textAlign: 'center'}}>
+                              {endDate
+                                ? new Date(endDate).toLocaleString('default', {
+                                    month: 'long',
+                                  })
+                                : 'Date'}
+                            </Text>
+                          </TouchableOpacity>
+                          <Text
+                            style={{
+                              color: currentTheme.text,
+                              fontSize: 18,
+                              marginTop: responsiveHeight(1),
+                            }}>
+                            {daysBetween} Days
+                          </Text>
+                        </View>
+                        <View style={{marginHorizontal: responsiveWidth(2)}}>
+                          <Calendar
+                            style={{
+                              borderTopLeftRadius: 50,
+                              borderTopRightRadius: 50,
+                              backgroundColor: currentTheme.background,
+                              elevation: 7,
+                              width: responsiveWidth(60),
+                            }}
+                            onDayPress={day => {
+                              setSelected(day.dateString);
+                              setMonth(day);
+
+                              if (!startDate) {
+                                setStartDate(day.dateString);
+                              } else if (!endDate) {
+                                setEndDate(day.dateString);
+                              }
+                            }}
+                            markedDates={{
+                              [selected]: {
+                                selected: true,
+                                disableTouchEvent: true,
+                                selectedDotColor: 'orange',
+                              },
+                              [startDate]: {
+                                startingDay: true,
+                                color: 'orange',
+                                textColor: 'white',
+                              },
+                              [endDate]: {
+                                endingDay: true,
+                                color: 'orange',
+                                textColor: 'white',
+                              },
+                            }}
+                          />
+                        </View>
+                      </View>
+                      {startDate > endDate
+                        ? showMessage({
+                            message: `End date greater then start date, Please select valid details`,
+                            type: 'danger',
+                          })
+                        : null}
+                      <View
+                        style={{
+                          flexDirection: 'row',
+                          marginHorizontal: responsiveWidth(2),
+                        }}>
+                        <CheckBox
+                          disabled={false}
+                          value={toggleCheckBox}
+                          onValueChange={newValue =>
+                            setToggleCheckBox(newValue)
+                          }
+                          tintColors={{
+                            true: (color = currentTheme.text),
+                            false: (color = currentTheme.text),
+                          }}
+                        />
+                        <Text
+                          style={{
+                            alignSelf: 'center',
+                            fontSize: 16,
+                            color: currentTheme.text,
+                            marginHorizontal: Platform.OS == 'ios' ? 8 : null,
+                          }}>
+                          Is half day
+                        </Text>
+                      </View>
+                      {toggleCheckBox == true ? (
+                        startDate == endDate ? (
+                          <View
+                            style={{
+                              borderRadius: 10,
+                              backgroundColor: currentTheme.inputText_color,
+                              padding: 5,
+                              marginHorizontal: responsiveWidth(2),
+                            }}>
+                            <RadioGroup
+                              containerStyle={{flexDirection: 'row'}}
+                              radioButtons={radioButtons}
+                              onPress={setSelectedId}
+                              selectedId={selectedId}
+                            />
+                          </View>
+                        ) : (
+                          <View
+                            style={{
+                              borderRadius: 10,
+                              backgroundColor: '#EDFBFE',
+                              padding: 5,
+                              marginHorizontal: responsiveWidth(2),
+                            }}>
+                            <Text style={{color: '#000'}}>
+                              First day of leave
+                            </Text>
+                            <RadioGroup
+                              containerStyle={{flexDirection: 'row'}}
+                              radioButtons={radioButtons1}
+                              onPress={setSelectedId1}
+                              selectedId={selectedId1}
+                            />
+                            <Text style={{color: '#000'}}>
+                              Last day of leave
+                            </Text>
+                            <RadioGroup
+                              containerStyle={{flexDirection: 'row'}}
+                              radioButtons={radioButtons2}
+                              onPress={setSelectedId2}
+                              selectedId={selectedId2}
+                            />
+                          </View>
+                        )
+                      ) : null}
+
+                      {/* This is profile details */}
+                      <View
+                        style={{
+                          marginHorizontal: responsiveWidth(2),
+                          marginTop: responsiveHeight(1),
+                          borderTopRightRadius: 10,
+                          borderBottomRightRadius: 10,
+                        }}>
+                        <View
+                          style={{
+                            backgroundColor: currentTheme.background_v2,
+                            padding: 10,
+                            marginBottom: 5,
+                            borderRadius: 10,
+                          }}>
+                          <Dropdown
+                            selectedTextProps={{
+                              style: {
+                                color: '#fff',
+                              },
+                            }}
+                            data={getleavetypeapidata && getleavetypeapidata}
+                            maxHeight={300}
+                            labelField="name"
+                            valueField="id"
+                            placeholder={!isFocus ? 'Select leave type' : '...'}
+                            value={value1}
+                            onChange={item => {
+                              setValue1(item.id);
+                            }}
+                            placeholderStyle={{
+                              color: '#fff',
+                            }}
+                            itemTextStyle={{
+                              color: '#000',
+                            }}
+                          />
+                        </View>
+
+                        <View
+                          style={{
+                            borderRadius: 20,
+                            marginBottom: 8,
+                            padding: 5,
+                            backgroundColor: currentTheme.background_v2,
+                            opacity: 1,
+                            elevation: 10,
+                          }}>
+                          <TextInput
+                            placeholder="Reason"
+                            numberOfLines={6}
+                            textAlignVertical={'top'}
+                            onChangeText={text => setReason(text)}
+                            style={{height: 120}} // Adjust height as needed
+                            placeholderTextColor={'#fff'}
+                            color={'#fff'}
+                          />
+                        </View>
+                      </View>
+
+                      <TouchableOpacity
+                        onPress={() => handleSubmit()}
+                        style={{
+                          marginBottom: 5,
+                          backgroundColor: currentTheme.background_v2,
+                          padding: 15,
+                          width: '60%',
+                          alignSelf: 'center',
+                          borderRadius: 50,
+                        }}>
+                          {leaveLoader ? (
+            <ActivityIndicator size="small" color="#fff" />
+          ) : (
+            <Text
+                          style={{
+                            textAlign: 'center',
+                            color: '#fff',
+                            fontSize: 18,
+                            fontWeight: 'bold',
+                          }}>
+                          Submit
+                        </Text>
+          )}
+                       
+                      </TouchableOpacity>
+                    </ScrollView>
                   </View>
-                ) : null}
-              </View>
+                </View>
+              ) : null}
             </View>
-          </ScrollView>
-          <Modal
-            // isVisible={isModalVisible}
-            onBackdropPress={toggleModal}
-            style={styles.modal}
-            animationIn="slideInUp" // Animation when showing the modal
-            animationOut="slideOutDown" // Animation when hiding the modal
-            animationInTiming={500} // Duration for animation in (milliseconds)
-            animationOutTiming={500} // Duration for animation out (milliseconds)
-          >
-            <View style={styles.bottomSheet}>
-              <Text style={styles.title}>Introducing</Text>
-              <Text style={styles.subTitle}>Dark Mode</Text>
-              <Text style={styles.description}>
-                Choose your preferred app theme. You can also change this later
-                from your profile.
-              </Text>
 
-              {['light', 'dark'].map(val => (
-                <TouchableOpacity
-                  key={val}
-                  style={styles.option}
-                  onPress={() => [setTheme(val), toggleTheme()]}>
-                  <Text style={styles.optionText}>
-                    {capitalizeFirstLetter(val)}
+            {/* This is recent attendence */}
+            <View>
+              <View
+                style={{
+                  backgroundColor: '#FABED7',
+                  marginTop: responsiveHeight(1),
+                  borderTopLeftRadius: 10,
+                  borderBottomLeftRadius: expanded == true ? 0 : 10,
+                  borderTopRightRadius: 10,
+                  borderBottomRightRadius: 10,
+                }}>
+                <View
+                  style={{
+                    width: '98%',
+                    marginLeft: '2%',
+                    backgroundColor: currentTheme.background,
+                    opacity: 1,
+                    elevation: 10,
+                    borderTopLeftRadius: 10,
+                    borderBottomLeftRadius: expanded == true ? 0 : 10,
+                    borderTopRightRadius: 10,
+                    borderBottomRightRadius: expanded == true ? 0 : 10,
+                    padding: 20,
+                    flexDirection: 'row',
+                    justifyContent: 'space-between',
+                    alignItems: 'center',
+                    borderWidth: 0.5,
+                    borderColor: '#333',
+                  }}>
+                  <LinearGradient
+                    style={{padding: 10, borderRadius: 10}}
+                    colors={['#FABED7', '#FF94C3']}>
+                    <Image
+                      style={{height: 30, width: 30, resizeMode: 'contain'}}
+                      source={require('../../assets/HomeScreen/recentattendance.png')}
+                    />
+                  </LinearGradient>
+                  <Text
+                    style={{
+                      color: currentTheme.text,
+                      fontSize: responsiveFontSize(2.3),
+                    }}>
+                    Recent Attendance
                   </Text>
+                  <TouchableOpacity onPress={toggleExpanded}>
+                    {expanded ? (
+                      <Image
+                        style={{
+                          height: 30,
+                          width: 30,
+                          resizeMode: 'contain',
+                          tintColor: currentTheme.text,
+                        }}
+                        source={require('../../assets/HomeScreen/up.png')}
+                      />
+                    ) : (
+                      <>
+                        <Image
+                          style={{
+                            height: 30,
+                            width: 30,
+                            resizeMode: 'contain',
+                            tintColor: currentTheme.text,
+                          }}
+                          source={require('../../assets/HomeScreen/down.png')}
+                        />
+                      </>
+                    )}
+                  </TouchableOpacity>
+                </View>
+              </View>
+              {expanded ? (
+                <View
+                  style={{
+                    backgroundColor: '#FABED7',
+                    borderBottomLeftRadius: 10,
+                    borderBottomRightRadius: 10,
+                  }}>
                   <View
-                    style={[
-                      styles.radioCircle,
-                      theme === val && styles.selectedRadio,
-                    ]}
-                  />
-                </TouchableOpacity>
-              ))}
-
-              <TouchableOpacity onPress={toggleModal} style={styles.saveButton}>
-                <Text style={styles.saveButtonText}>Save Preference</Text>
-              </TouchableOpacity>
+                    style={{
+                      width: '98%',
+                      marginLeft: '2%',
+                      backgroundColor: currentTheme.background,
+                      borderTopLeftRadius: 0,
+                      borderBottomLeftRadius: 10,
+                      borderBottomRightRadius: 10,
+                    }}>
+                    <View
+                      style={{
+                        flex: 1,
+                        borderColor: '#4148fe',
+                        borderTopWidth: 0.8,
+                      }}></View>
+                    {getLastAttendanceDaily()}
+                  </View>
+                </View>
+              ) : null}
             </View>
-          </Modal>
-          <Modal isVisible={kycModal} animationIn="zoomIn" animationOut="zoomOut">
+          </View>
+        </ScrollView>
+        <Modal
+          // isVisible={isModalVisible}
+          onBackdropPress={toggleModal}
+          style={styles.modal}
+          animationIn="slideInUp" // Animation when showing the modal
+          animationOut="slideOutDown" // Animation when hiding the modal
+          animationInTiming={500} // Duration for animation in (milliseconds)
+          animationOutTiming={500} // Duration for animation out (milliseconds)
+        >
+          <View style={styles.bottomSheet}>
+            <Text style={styles.title}>Introducing</Text>
+            <Text style={styles.subTitle}>Dark Mode</Text>
+            <Text style={styles.description}>
+              Choose your preferred app theme. You can also change this later
+              from your profile.
+            </Text>
+
+            {['light', 'dark'].map(val => (
+              <TouchableOpacity
+                key={val}
+                style={styles.option}
+                onPress={() => [setTheme(val), toggleTheme()]}>
+                <Text style={styles.optionText}>
+                  {capitalizeFirstLetter(val)}
+                </Text>
+                <View
+                  style={[
+                    styles.radioCircle,
+                    theme === val && styles.selectedRadio,
+                  ]}
+                />
+              </TouchableOpacity>
+            ))}
+
+            <TouchableOpacity onPress={toggleModal} style={styles.saveButton}>
+              <Text style={styles.saveButtonText}>Save Preference</Text>
+            </TouchableOpacity>
+          </View>
+        </Modal>
+        <Modal isVisible={kycModal} animationIn="zoomIn" animationOut="zoomOut">
           <View
             style={{
               backgroundColor: 'white',
@@ -2199,154 +2169,154 @@ const HomePage = ({navigation}) => {
               </Text>
             </TouchableOpacity>
           </View>
-          </Modal>
-          <Modal visible={modalRequest} transparent={true} animationType="none">
-            <View style={styles.modalContainer}>
-              <View style={styles.modalContent}>
-                <Text style={styles.modalTitle}>Enter Attendance Details</Text>
-                <View style={styles.Date_box}>
-                  <Text style={{color: theme == 'dark' ? '#000' : '#000'}}>
-                    {startdateRequest?.toISOString().split('T')[0]}
-                  </Text>
-                  <TouchableOpacity onPress={() => setOpenStartDate(true)}>
-                    <EvilIcons
-                      name="calendar"
-                      style={{
-                        fontSize: 25,
-                        color: theme == 'dark' ? '#000' : '#000',
-                        alignSelf: 'center',
-                      }}
-                    />
-                  </TouchableOpacity>
-                </View>
-
-                <Text style={{color: '#333', fontSize: 15, marginVertical: 5}}>
-                  Punch In Time
+        </Modal>
+        <Modal visible={modalRequest} transparent={true} animationType="none">
+          <View style={styles.modalContainer}>
+            <View style={styles.modalContent}>
+              <Text style={styles.modalTitle}>Enter Attendance Details</Text>
+              <View style={styles.Date_box}>
+                <Text style={{color: theme == 'dark' ? '#000' : '#000'}}>
+                  {startdateRequest?.toISOString().split('T')[0]}
                 </Text>
-                <Dropdown
-                  style={styles.dropdown}
-                  placeholderStyle={[{color: '#000'}]}
-                  selectedTextStyle={[{color: '#000'}]}
-                  itemTextStyle={{
-                    color: '#000',
-                  }}
-                  data={timeOptions}
-                  labelField="label"
-                  valueField="value"
-                  placeholder="Select Time"
-                  value={punchInRequest}
-                  onChange={item => setPunchInRequest(item.value)}
-                />
-                {/* Punch Out Time Picker */}
-                <Text style={{color: '#333', fontSize: 15, marginVertical: 5}}>
-                  Punch Out Time
-                </Text>
-                <Dropdown
-                  style={styles.dropdown}
-                  placeholderStyle={[{color: '#000'}]}
-                  selectedTextStyle={[{color: '#000'}]}
-                  itemTextStyle={{
-                    color: '#000',
-                  }}
-                  data={timeOptions}
-                  labelField="label"
-                  valueField="value"
-                  placeholder="Select Time"
-                  value={punchOut}
-                  onChange={item => setPunchOut(item.value)}
-                />
+                <TouchableOpacity onPress={() => setOpenStartDate(true)}>
+                  <EvilIcons
+                    name="calendar"
+                    style={{
+                      fontSize: 25,
+                      color: theme == 'dark' ? '#000' : '#000',
+                      alignSelf: 'center',
+                    }}
+                  />
+                </TouchableOpacity>
+              </View>
 
-                <Text style={{color: '#333', fontSize: 15, marginVertical: 5}}>
-                  Reason
-                </Text>
-                <TextInput
-                  style={styles.input}
-                  placeholder="Reason"
-                  value={reasonText}
-                  onChangeText={prev => setReasonText(prev)}
-                  placeholderTextColor="#999"
-                />
+              <Text style={{color: '#333', fontSize: 15, marginVertical: 5}}>
+                Punch In Time
+              </Text>
+              <Dropdown
+                style={styles.dropdown}
+                placeholderStyle={[{color: '#000'}]}
+                selectedTextStyle={[{color: '#000'}]}
+                itemTextStyle={{
+                  color: '#000',
+                }}
+                data={timeOptions}
+                labelField="label"
+                valueField="value"
+                placeholder="Select Time"
+                value={punchInRequest}
+                onChange={item => setPunchInRequest(item.value)}
+              />
+              {/* Punch Out Time Picker */}
+              <Text style={{color: '#333', fontSize: 15, marginVertical: 5}}>
+                Punch Out Time
+              </Text>
+              <Dropdown
+                style={styles.dropdown}
+                placeholderStyle={[{color: '#000'}]}
+                selectedTextStyle={[{color: '#000'}]}
+                itemTextStyle={{
+                  color: '#000',
+                }}
+                data={timeOptions}
+                labelField="label"
+                valueField="value"
+                placeholder="Select Time"
+                value={punchOut}
+                onChange={item => setPunchOut(item.value)}
+              />
 
-                {/* Buttons */}
-                <View style={styles.buttonRow}>
-                  <TouchableOpacity
-                    style={styles.saveButton}
-                    onPress={() => attendance_Request()}>
-                    <Text style={styles.buttonText}>Save</Text>
-                  </TouchableOpacity>
-                  <TouchableOpacity
-                    style={styles.closeButton}
-                    onPress={() => setModalRequest(false)}>
-                    <Text style={styles.buttonText}>Close</Text>
-                  </TouchableOpacity>
-                </View>
+              <Text style={{color: '#333', fontSize: 15, marginVertical: 5}}>
+                Reason
+              </Text>
+              <TextInput
+                style={styles.input}
+                placeholder="Reason"
+                value={reasonText}
+                onChangeText={prev => setReasonText(prev)}
+                placeholderTextColor="#999"
+              />
+
+              {/* Buttons */}
+              <View style={styles.buttonRow}>
+                <TouchableOpacity
+                  style={styles.saveButton}
+                  onPress={() => attendance_Request()}>
+                  <Text style={styles.buttonText}>Save</Text>
+                </TouchableOpacity>
+                <TouchableOpacity
+                  style={styles.closeButton}
+                  onPress={() => setModalRequest(false)}>
+                  <Text style={styles.buttonText}>Close</Text>
+                </TouchableOpacity>
               </View>
             </View>
-          </Modal>
-          <Modal visible={breakModal} animationType="slide" transparent={true}>
-            <View style={styles.modalContainer}>
-              <View style={styles.modalContent}>
-                <Text style={{color: '#333', fontSize: 15, marginVertical: 5}}>
-                  Select Break Type
-                </Text>
-                <Dropdown
-                  style={styles.dropdown}
-                  placeholderStyle={[{color: '#000'}]}
-                  selectedTextStyle={[{color: '#000'}]}
-                  itemTextStyle={{
-                    color: '#000',
-                  }}
-                  data={listBreak}
-                  labelField="name"
-                  valueField="id"
-                  placeholder="Select Break Type"
-                  value={breakValue}
-                  onChange={item => setBreakValue(item.id)}
-                />
+          </View>
+        </Modal>
+        <Modal visible={breakModal} animationType="slide" transparent={true}>
+          <View style={styles.modalContainer}>
+            <View style={styles.modalContent}>
+              <Text style={{color: '#333', fontSize: 15, marginVertical: 5}}>
+                Select Break Type
+              </Text>
+              <Dropdown
+                style={styles.dropdown}
+                placeholderStyle={[{color: '#000'}]}
+                selectedTextStyle={[{color: '#000'}]}
+                itemTextStyle={{
+                  color: '#000',
+                }}
+                data={listBreak}
+                labelField="name"
+                valueField="id"
+                placeholder="Select Break Type"
+                value={breakValue}
+                onChange={item => setBreakValue(item.id)}
+              />
 
-                <Text style={{color: '#333', fontSize: 15, marginVertical: 5}}>
-                  Reason
-                </Text>
-                <TextInput
-                  style={styles.input}
-                  placeholder="Reason"
-                  value={reasonText}
-                  onChangeText={prev => setReasonText(prev)}
-                  placeholderTextColor="#999"
-                  multiline
-                />
+              <Text style={{color: '#333', fontSize: 15, marginVertical: 5}}>
+                Reason
+              </Text>
+              <TextInput
+                style={styles.input}
+                placeholder="Reason"
+                value={reasonText}
+                onChangeText={prev => setReasonText(prev)}
+                placeholderTextColor="#999"
+                multiline
+              />
 
-                {/* Buttons */}
-                <View style={styles.buttonRow}>
-                  <TouchableOpacity
-                    style={styles.saveButton}
-                    onPress={() => handleBreakIn()}>
-                    <Text style={styles.buttonText}>Submit</Text>
-                  </TouchableOpacity>
-                  <TouchableOpacity
-                    style={styles.closeButton}
-                    onPress={() => setBreakModal(false)}>
-                    <Text style={styles.buttonText}>Close</Text>
-                  </TouchableOpacity>
-                </View>
+              {/* Buttons */}
+              <View style={styles.buttonRow}>
+                <TouchableOpacity
+                  style={styles.saveButton}
+                  onPress={() => handleBreakIn()}>
+                  <Text style={styles.buttonText}>Submit</Text>
+                </TouchableOpacity>
+                <TouchableOpacity
+                  style={styles.closeButton}
+                  onPress={() => setBreakModal(false)}>
+                  <Text style={styles.buttonText}>Close</Text>
+                </TouchableOpacity>
               </View>
             </View>
-          </Modal>
-          <DatePicker
-            modal
-            open={openstartdate}
-            date={startdateRequest}
-            theme="light"
-            mode="date"
-            onConfirm={startdate => {
-              setOpenStartDate(false);
-              setStartdateRequest(startdate);
-            }}
-            onCancel={() => {
-              setOpenStartDate(false);
-            }}
-          />
-        </View>
+          </View>
+        </Modal>
+        <DatePicker
+          modal
+          open={openstartdate}
+          date={startdateRequest}
+          theme="light"
+          mode="date"
+          onConfirm={startdate => {
+            setOpenStartDate(false);
+            setStartdateRequest(startdate);
+          }}
+          onCancel={() => {
+            setOpenStartDate(false);
+          }}
+        />
+      </View>
     );
   }
 };

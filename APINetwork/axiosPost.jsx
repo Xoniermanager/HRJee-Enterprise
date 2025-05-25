@@ -18,11 +18,11 @@ const axiosPost = async (url, data, token,form) => {
     const response = await axios(config);
     return response;
   } catch (error) {
-    console.log("error", error?.response?.data?.errors)
+    console.log("error", error?.response?.data?.message)
     // Display error message using react-native-flash-message
     showMessage({
       message: error.response?.data?.message,
-      description: error.response?.data?.errors || error.message || "Unknown error",
+      // description: error.response?.data?.errors || error.message || "Unknown error",
       type: "danger",
     });
     

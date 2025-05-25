@@ -1,23 +1,18 @@
 import React, {useState, useEffect, useRef, useContext} from 'react';
 import {View, Text, StyleSheet, Dimensions} from 'react-native';
 import {AWS_ACCESS_KEY, AWS_SECRET_KEY, AWS_REGION, AWS_S3_BUCKET} from '@env';
-import {
-  Camera,
-  useCameraPermission,
-  useCameraDevice,
-} from 'react-native-vision-camera';
-import {BlurView} from '@react-native-community/blur';
-import {ProgressBar} from 'react-native-paper';
+import {AnimatedCircularProgress} from 'react-native-circular-progress';
+import {RNCamera} from 'react-native-camera';
 import AWS, {Rekognition, S3} from 'aws-sdk';
 import RNFS from 'react-native-fs';
 import {Buffer} from 'buffer';
 import {showMessage} from 'react-native-flash-message';
-import { useNavigation } from '@react-navigation/native';
+import {useNavigation} from '@react-navigation/native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 const {width, height} = Dimensions.get('window');
 const FaceLogin = ({route}) => {
-    const {FaceData}=route?.params
-    const navigation=useNavigation()
+  const {faceData} = route?.params;
+  const navigation = useNavigation();
   const s3 = new S3({
     accessKeyId: AWS_ACCESS_KEY,
     secretAccessKey: AWS_SECRET_KEY,
@@ -29,33 +24,24 @@ const FaceLogin = ({route}) => {
     region: AWS_REGION,
   });
   const cameraRef = useRef(null);
-  const {requestPermission} = useCameraPermission();
   const [matchProgress, setMatchProgress] = useState(0);
   const [pictureTaken, setPictureTaken] = useState(false);
-  const device = useCameraDevice('front');
-  useEffect(() => {
-    (async () => {
-      const status = await Camera.getCameraPermissionStatus();
-      if (status !== 'authorized') {
-        await requestPermission();
-      }
-    })();
-  }, []);
+ 
 
   useEffect(() => {
-      setPictureTaken(false);
-      let progressInterval = setInterval(() => {
-        setMatchProgress(prev => {
-          if (prev >= 1) {
-            clearInterval(progressInterval);
+    setPictureTaken(false);
+    let progressInterval = setInterval(() => {
+      setMatchProgress(prev => {
+        if (prev >= 1) {
+          clearInterval(progressInterval);
 
-            return 1;
-          }
-          return prev + 0.1;
-        });
-      }, 1000);
+          return 1;
+        }
+        return prev + 0.1;
+      });
+    }, 1000);
 
-      return () => clearInterval(progressInterval);
+    return () => clearInterval(progressInterval);
   }, []);
 
   useEffect(() => {
@@ -68,14 +54,10 @@ const FaceLogin = ({route}) => {
     if (cameraRef.current && !pictureTaken) {
       setPictureTaken(true);
       try {
-        const options = {quality: 0.5, base64: true};
-        const data = await cameraRef.current.takePhoto(options);
-        console.log(data,'data')
-        let uploaddata = await uploadTmpImage(data.path);
-        console.log(uploaddata,'uploaddata')
-          const s3ObjectKey = uploaddata?.key;
-          console.log(s3ObjectKey,'s3ObjectKey')
-          const ss = await compareFaces(s3ObjectKey);
+        const data = await cameraRef.current.takePictureAsync({quality: 0.5});
+        let uploaddata = await uploadTmpImage(data.uri);
+        const s3ObjectKey = uploaddata?.key;
+        const ss = await compareFaces(s3ObjectKey);
       } catch (error) {
         console.error('Error capturing image:', error);
       }
@@ -83,7 +65,7 @@ const FaceLogin = ({route}) => {
   };
   const uploadTmpImage = async uri => {
     try {
-      let employeeNumber = FaceData.emp_id;
+      let employeeNumber = faceData.emp_id;
       const fileData = await RNFS.readFile(uri, 'base64');
       const buffer = Buffer.from(fileData, 'base64');
       const rekognitionParams = {
@@ -116,7 +98,7 @@ const FaceLogin = ({route}) => {
           type: 'danger',
           duration: 3000,
         });
-       
+
         return;
       }
       if (facesWithEyeContact.length === 0) {
@@ -152,7 +134,7 @@ const FaceLogin = ({route}) => {
       TargetImage: {
         S3Object: {
           Bucket: AWS_S3_BUCKET,
-          Name: FaceData.faceImage,
+          Name: faceData.faceImage,
         },
       },
       SimilarityThreshold: 90,
@@ -164,28 +146,26 @@ const FaceLogin = ({route}) => {
           err.message ===
           'Requested image should either contain bytes or s3 object.'
         ) {
-            navigation.goBack();
+          navigation.goBack();
           showMessage({
             message: 'Keep Your Face front to the camera',
             type: 'danger',
             duration: 3000,
           });
-         
         } else if (err.message === 'Request has invalid parameters') {
-            navigation.goBack();
+          navigation.goBack();
           showMessage({
             message: 'Keep Your Face front to the camera',
             type: 'danger',
             duration: 3000,
           });
         } else {
-            navigation.goBack();
+          navigation.goBack();
           showMessage({
             message: err.message,
             type: 'danger',
             duration: 3000,
           });
-         
         }
       } else if (data?.UnmatchedFaces.length > 0) {
         navigation.goBack();
@@ -194,19 +174,14 @@ const FaceLogin = ({route}) => {
           type: 'danger',
           duration: 3000,
         });
-       
       } else {
-          AsyncStorage.setItem(
-            'TOKEN',
-            FaceData.token,
-          );
+        AsyncStorage.setItem('TOKEN', faceData.token);
         showMessage({
-            message: 'Face match success' ,
-            type: 'success',
-            duration: 3000,
-          });
-          navigation.navigate('MyTabbar');
-       
+          message: 'User face matched successfully.',
+          type: 'success',
+          duration: 5000,
+        });
+        navigation.navigate('MyTabbar');
       }
     });
   };
@@ -217,32 +192,35 @@ const FaceLogin = ({route}) => {
   };
   return (
     <View style={styles.container}>
-      <BlurView style={styles.blurOverlay} blurType="dark" blurAmount={20} />
-      {device ? (
-        <View style={styles.cameraContainer}>
-          <View style={styles.outerCircle}>
-            <View style={styles.innerCircle}>
-              <Camera
-                ref={cameraRef}
-                style={styles.camera}
-                device={device}
-                isActive={true}
-                photo={true}
-              />
-            </View>
-          </View>
+      <RNCamera
+        ref={cameraRef}
+        style={{
+          flex: 1,
+          justifyContent: 'flex-end',
+          alignItems: 'center',
+          width: '100%',
+          height: '80%',
+        }}
+        type={RNCamera.Constants.Type.front}
+        captureAudio={false}
+        onCameraReady={takePicture}>
+        <View style={styles.progressContainer}>
+          <AnimatedCircularProgress
+            size={150}
+            width={15}
+            fill={matchProgress * 100}
+            tintColor={getProgressBarColor(matchProgress)}
+            backgroundColor="#e0e0e0"
+            duration={300}
+            rotation={0}>
+            {fill => (
+              <Text style={styles.progressText}>
+                {Math.round(fill)}% Recognised
+              </Text>
+            )}
+          </AnimatedCircularProgress>
         </View>
-      ) : null}
-     <View style={styles.progressContainer}>
-          <Text style={styles.progressText}>
-            Face Match: {Math.round(matchProgress * 100)}%
-          </Text>
-          <ProgressBar
-            progress={matchProgress}
-            color={getProgressBarColor()}
-            style={styles.progressBar}
-          />
-        </View>
+      </RNCamera>
     </View>
   );
 };
@@ -272,17 +250,16 @@ const styles = StyleSheet.create({
   innerCircle: {width: 280, height: 280, borderRadius: 250, overflow: 'hidden'},
   camera: {width: '100%', height: '100%'},
   progressContainer: {
-    position: 'absolute',
-    bottom: 130,
-    width: '80%',
-    alignSelf: 'center',
-    zIndex: 3,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginTop: 20,
+    marginBottom: 20,
   },
   progressText: {
-    color: '#FFF',
+    fontSize: 20,
+    fontWeight: 'bold',
+    color: '#fff',
     textAlign: 'center',
-    fontSize: 18,
-    marginBottom: 10,
   },
   progressBar: {height: 12, borderRadius: 6, backgroundColor: '#444'},
 });

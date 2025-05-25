@@ -59,11 +59,7 @@ const FirstTimeChangePassword = () => {
     return () => backHandler.remove();
   }, []);
 
-  let data = {
-    old_password: oldPassword,
-    password: newPassword,
-    confirm_password: confirmPassword,
-  };
+
 
   const handleChangePassword = async () => {
     const token = await AsyncStorage.getItem('TOKEN');
@@ -91,6 +87,11 @@ const FirstTimeChangePassword = () => {
 
         return;
       } else {
+        let data = {
+          old_password: oldPassword,
+          password:newPassword,
+          confirm_password: confirmPassword,
+        };
         setLoader(true);
         let form = 0;
         const url = `${BASE_URL}/change/password`;

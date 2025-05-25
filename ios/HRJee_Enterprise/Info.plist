@@ -51,6 +51,9 @@
 	<string>We access your contacts to help you invite friends to join the app. For example, you can send them a personalized invitation.</string>
 	<key>NSPhotoLibraryUsageDescription</key>
 		<string>This will allow you to choose the picture to set your profile image</string>
+		<key>NSUserTrackingUsageDescription</key>
+<string>This identifier will be used to deliver personalized ads to you.</string>
+
 	<key>UIAppFonts</key>
 	<array>
 		<string>AntDesign.ttf</string>

@@ -181,9 +181,6 @@ const LoginScreen = () => {
           }
         } else {
           setFaceEmail('');
-          // setModalRequest(false);
-          // setUserInfo(response.data.data)
-          // bottomSheetRef.current?.expand();
           setFaceError(
             `You don't have access to Face Login. Please log in with your email and password only or contact the admin`,
           );

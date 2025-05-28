@@ -62,7 +62,7 @@ const MyDrawer = () => {
           },
     drawerIcon: ({}) => (
       <View style={styles.drawerBox}>
-        <Text style={styles.drawerText}>Person Details</Text>
+        <Text style={styles.drawerText}>Profile Details</Text>
       </View>
     ),
   }}

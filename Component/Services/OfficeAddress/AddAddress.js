@@ -18,7 +18,7 @@ import {useNavigation} from '@react-navigation/native';
 import { ThemeContext } from '../../../Store/ConetxtApi.jsx/ConextApi';
 const AddAddress = ({route}) => {
   const id = route?.params?.id;
-  const {currentTheme} = useContext(ThemeContext);
+  const {currentTheme,} = useContext(ThemeContext);
   const navigation = useNavigation();
   const [loader, setLoader] = useState(false);
   const [reasonText, setReasonText] = useState('');
@@ -45,6 +45,7 @@ const AddAddress = ({route}) => {
       })
       .catch(error => {
         console.log(error);
+       
       });
   };
   useEffect(() => {
@@ -57,7 +58,7 @@ const AddAddress = ({route}) => {
         {
           params: {
             address,
-            key: 'AIzaSyCAdzVvYFPUpI3mfGWUTVXLDTerw1UWbdg',
+            key:'AIzaSyCAdzVvYFPUpI3mfGWUTVXLDTerw1UWbdg',
           },
         },
       );
@@ -67,6 +68,7 @@ const AddAddress = ({route}) => {
         setLong(location.lng.toString());
       }
     } catch (error) {
+      console.log(error,'error')
       showMessage({
         message: `${error.response.data.error_message}`,
         type: 'danger',
@@ -144,11 +146,11 @@ const AddAddress = ({route}) => {
             multiline
           />
           <Text style={{color: '#333', fontSize: 15, marginVertical: 5}}>
-            Latitude
+            Longitude
           </Text>
           <TextInput
             style={styles.input}
-            placeholder="Latitude"
+            placeholder="Longitude"
             value={long}
             placeholderTextColor="#999"
             multiline

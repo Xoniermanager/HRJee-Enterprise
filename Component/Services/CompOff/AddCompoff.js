@@ -19,7 +19,7 @@ import {showMessage} from 'react-native-flash-message';
 import Themes from '../../Theme/Theme';
 const AddCompoff = () => {
   const navigation = useNavigation();
-  const {currentTheme,empyName,empyId} = useContext(ThemeContext);
+  const {currentTheme,empyName,empyId,} = useContext(ThemeContext);
   const [startDate, setStartDate] = useState(null);
   const [endDate, setEndDate] = useState(null);
   const [showStartPicker, setShowStartPicker] = useState(false);
@@ -44,6 +44,7 @@ const AddCompoff = () => {
       })
       .catch(error => {
         console.log(error);
+    
       });
   };
   useEffect(() => {
@@ -104,6 +105,7 @@ const AddCompoff = () => {
         .catch(err => {
           setLoader(false);
           console.log(err);
+     
         });
     }
   };

@@ -16,12 +16,11 @@ import {
   responsiveHeight,
   responsiveWidth,
 } from 'react-native-responsive-dimensions';
-import {Calendar, LocaleConfig} from 'react-native-calendars';
+import {Calendar} from 'react-native-calendars';
 import CheckBox from '@react-native-community/checkbox';
 import {
   LeaveApply,
   getLeaveType,
-  token,
 } from '../../../APINetwork/ComponentApi';
 import {BASE_URL} from '../../../utils';
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -31,7 +30,6 @@ import RadioGroup, {RadioButtonProps} from 'react-native-radio-buttons-group';
 import ApplyLeaveSkeleton from '../../Skeleton/ApplyLeaveSkeleton';
 import Themes from '../../Theme/Theme';
 import {ThemeContext} from '../../../Store/ConetxtApi.jsx/ConextApi';
-
 const ApplyLeave = ({navigation}) => {
   const {currentTheme} = useContext(ThemeContext);
   const [selected, setSelected] = useState('');
@@ -130,6 +128,65 @@ const ApplyLeave = ({navigation}) => {
     }
     setSelected(currentDate);
   };
+  const getDateRange = (start, end) => {
+    let range = {};
+    let currentDate = new Date(start);
+    const lastDate = new Date(end);
+    while (currentDate <= lastDate) {
+      const dateString = currentDate.toISOString().split('T')[0];
+      range[dateString] = {
+        color: '#0E0E64',
+        textColor: 'white',
+      };
+      currentDate.setDate(currentDate.getDate() + 1);
+    }
+    range[start] = {
+      startingDay: true,
+      color: '#0E0E64',
+      textColor: 'white',
+    };
+    range[end] = {
+      endingDay: true,
+      color: '#0E0E64',
+      textColor: 'white',
+    };
+  
+    return range;
+  };
+  const onDayPress = (day) => {
+    setSelected(day.dateString);
+    setMonth(day);
+    if (!startDate || (startDate && endDate)) {
+      setStartDate(day.dateString);
+      setEndDate(null);
+    } else {
+      if (new Date(day.dateString) < new Date(startDate)) {
+        setEndDate(startDate);
+        setStartDate(day.dateString);
+      } else {
+        setEndDate(day.dateString);
+      }
+    }
+  };
+  const markedDates =
+    startDate && endDate
+      ? getDateRange(startDate, endDate)
+      : startDate
+      ? {
+          [startDate]: {
+            startingDay: true,
+            color: '#0E0E64',
+            textColor: 'white',
+          },
+        }
+      : {};
+  if (selected && !markedDates[selected]) {
+    markedDates[selected] = {
+      selected: true,
+      selectedDotColor: '#0E0E64',
+      disableTouchEvent: true,
+    };
+  }
   async function check() {
     try {
       setLoader(true);
@@ -171,7 +228,6 @@ const ApplyLeave = ({navigation}) => {
   if (availableLeaves == null) {
     return <ApplyLeaveSkeleton />;
   }
-
   const handleSubmit = async () => {
     try {
       if (startDate == '' || startDate == [] || startDate == undefined) {
@@ -191,7 +247,7 @@ const ApplyLeave = ({navigation}) => {
         });
       } else if (reason == '') {
         showMessage({
-          message: 'Please enter reason',
+          message: 'Please enter Message',
           type: 'danger',
         });
       } else {
@@ -242,8 +298,6 @@ const ApplyLeave = ({navigation}) => {
       setLoader(false);
     }
   };
-
- 
   return (
     <SafeAreaView
       style={[styles.container, {backgroundColor: currentTheme.background_v2}]}>
@@ -277,18 +331,20 @@ const ApplyLeave = ({navigation}) => {
                 <TouchableOpacity
                   onPress={() => handlePress(1)}
                   style={{
-                    backgroundColor: currentTheme.background_v2,
+                    backgroundColor: startDate
+                    ? 'orange'
+                    : currentTheme.background_v2,
                     borderRadius: 100,
                     height: 90,
                     width: 90,
                     justifyContent: 'center',
                   }}>
                   <Text
-                    style={{color: '#fff', fontSize: 15, textAlign: 'center'}}>
+                    style={{color: startDate?'#000': '#fff', fontSize: 15, textAlign: 'center'}}>
                     {startDate ? new Date(startDate).getDate() : 'Start'}
                   </Text>
                   <Text
-                    style={{color: '#fff', fontSize: 15, textAlign: 'center'}}>
+                    style={{color: startDate?'#000': '#fff', fontSize: 15, textAlign: 'center'}}>
                     {startDate
                       ? new Date(startDate).toLocaleString('default', {
                           month: 'long',
@@ -303,18 +359,20 @@ const ApplyLeave = ({navigation}) => {
                 <TouchableOpacity
                   onPress={() => handlePress(2)}
                   style={{
-                    backgroundColor: currentTheme.background_v2,
+                    backgroundColor: endDate
+                    ? 'orange'
+                    : currentTheme.background_v2,
                     borderRadius: 100,
                     height: 90,
                     width: 90,
                     justifyContent: 'center',
                   }}>
                   <Text
-                    style={{color: '#fff', fontSize: 15, textAlign: 'center'}}>
+                    style={{color: endDate?'#000': '#fff', fontSize: 15, textAlign: 'center'}}>
                     {endDate ? new Date(endDate).getDate() : 'End'}
                   </Text>
                   <Text
-                    style={{color: '#fff', fontSize: 15, textAlign: 'center'}}>
+                    style={{color: endDate?'#000': '#fff', fontSize: 15, textAlign: 'center'}}>
                     {endDate
                       ? new Date(endDate).toLocaleString('default', {
                           month: 'long',
@@ -332,7 +390,7 @@ const ApplyLeave = ({navigation}) => {
                 </Text>
               </View>
               <View style={{marginHorizontal: responsiveWidth(2)}}>
-                <Calendar
+                {/* <Calendar
                   style={{
                     borderTopLeftRadius: 50,
                     borderTopRightRadius: 50,
@@ -354,20 +412,32 @@ const ApplyLeave = ({navigation}) => {
                     [selected]: {
                       selected: true,
                       disableTouchEvent: true,
-                      selectedDotColor: 'orange',
+                      selectedDotColor: '#0E0E64',
                     },
                     [startDate]: {
                       startingDay: true,
-                      color: 'orange',
+                      color: '#0E0E64',
                       textColor: 'white',
                     },
                     [endDate]: {
                       endingDay: true,
-                      color: 'orange',
+                      color: '#0E0E64',
                       textColor: 'white',
                     },
                   }}
-                />
+                /> */}
+                 <Calendar
+                  style={{
+                    borderTopLeftRadius: 50,
+                    borderTopRightRadius: 50,
+                    backgroundColor: currentTheme.background,
+                    elevation: 7,
+                    width: responsiveWidth(60),
+                  }}
+                  onDayPress={onDayPress}
+                  markedDates={markedDates}
+                  markingType={'period'} // important for range marking
+      />
 
                 {/* <Text>End date greater then start date</Text> */}
               </View>
@@ -499,12 +569,13 @@ const ApplyLeave = ({navigation}) => {
                   marginHorizontal: 20,
                 }}>
                 <TextInput
-                  placeholder="Reason"
+                  placeholder="Message"
                   numberOfLines={6}
                   textAlignVertical={'top'}
                   onChangeText={text => setReason(text)}
                   placeholderTextColor={Themes == 'dark' ? '#000' : '#000'}
                   color={Themes == 'dark' ? '#000' : '#000'}
+                  style={{marginLeft:15}}
                 />
               </View>
             </View>

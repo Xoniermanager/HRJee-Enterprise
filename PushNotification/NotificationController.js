@@ -1,8 +1,18 @@
-import { StyleSheet, Platform } from 'react-native';
-import React, { useEffect } from 'react';
+import {StyleSheet, Platform} from 'react-native';
+import React, {useEffect} from 'react';
 import messaging from '@react-native-firebase/messaging';
-import notifee, { AndroidImportance } from '@notifee/react-native';
+import notifee, {AndroidImportance, EventType} from '@notifee/react-native';
 import BackgroundService from 'react-native-background-actions';
+notifee.onBackgroundEvent(async ({type, detail}) => {
+  console.log('Notifee background event:', type, detail);
+
+  if (type === EventType.ACTION_PRESS) {
+    console.log('User pressed an action:', detail.pressAction?.id);
+  }
+  if (type === EventType.PRESS) {
+    console.log('Notification was pressed:', detail.notification?.id);
+  }
+});
 
 const NotificationController = () => {
   const options = {
@@ -21,21 +31,19 @@ const NotificationController = () => {
   };
 
   const sleep = time => new Promise(resolve => setTimeout(resolve, time));
-
-  const onDisplayNotification = async (data) => {
-    await notifee.requestPermission({ sound: true });
-
+  const onDisplayNotification = async data => {
+    await notifee.requestPermission({sound: true});
     const channelId = await notifee.createChannel({
       id: 'default1',
       name: 'Default Channel-1',
       sound: 'default',
       importance: AndroidImportance.HIGH,
     });
-
     await notifee.displayNotification({
-      title: Platform.OS === 'android'
-        ? `<p style="color: #2A3A91;"><b>${data?.notification?.title}</b></p>`
-        : `${data?.notification?.title}`,
+      title:
+        Platform.OS === 'android'
+          ? `<p style="color: #2A3A91;"><b>${data?.notification?.title}</b></p>`
+          : `${data?.notification?.title}`,
       body: data?.notification?.body,
       android: {
         channelId,
@@ -48,21 +56,22 @@ const NotificationController = () => {
       },
     });
   };
-
-  const onBackgroundNotification = async (data) => {
+  const onBackgroundNotification = async data => {
     if (data?.notification?.title) {
-      await notifee.requestPermission({ sound: true });
+      await notifee.requestPermission({sound: true});
 
       const channelId = await notifee.createChannel({
         id: 'default2',
         name: 'Default Channel-2',
         importance: AndroidImportance.HIGH,
+        sound: 'default',
       });
 
       await notifee.displayNotification({
-        title: Platform.OS === 'android'
-          ? `<p style="color: #2A3A91;"><b>${data?.notification?.title}</b></p> &#128576`
-          : `${data?.notification?.title}`,
+        title:
+          Platform.OS === 'android'
+            ? `<p style="color: #2A3A91;"><b>${data?.notification?.title}</b></p> &#128576`
+            : `${data?.notification?.title}`,
         subtitle: Platform.OS === 'android' ? '&#129395;' : undefined,
         body: data?.notification?.body,
         android: {
@@ -76,12 +85,10 @@ const NotificationController = () => {
       });
     }
   };
-
-  const veryIntensiveTask = async (taskDataArguments) => {
-    const { delay } = taskDataArguments;
-
-    messaging().setBackgroundMessageHandler(async (remoteMessage) => {
-      console.log('Background message received:', remoteMessage);
+  const veryIntensiveTask = async taskDataArguments => {
+    const {delay} = taskDataArguments;
+    messaging().setBackgroundMessageHandler(async remoteMessage => {
+      console.log('Firebase background message received:', remoteMessage);
       await onBackgroundNotification(remoteMessage);
     });
 
@@ -89,25 +96,31 @@ const NotificationController = () => {
       await sleep(delay);
     }
   };
-
   useEffect(() => {
     const start = async () => {
       await BackgroundService.start(veryIntensiveTask, options);
 
-      const unsubscribeOnMessage = messaging().onMessage(async (remoteMessage) => {
-        console.log('Foreground notification received:', remoteMessage);
-        await onDisplayNotification(remoteMessage);
-      });
+      const unsubscribeOnMessage = messaging().onMessage(
+        async remoteMessage => {
+          console.log('Firebase foreground message:', remoteMessage);
+          await onDisplayNotification(remoteMessage);
+        },
+      );
 
       messaging().onNotificationOpenedApp(remoteMessage => {
         console.log('Notification opened from background:', remoteMessage);
       });
 
-      messaging().getInitialNotification().then(remoteMessage => {
-        if (remoteMessage) {
-          console.log('Notification caused app to open from quit state:', remoteMessage);
-        }
-      });
+      messaging()
+        .getInitialNotification()
+        .then(remoteMessage => {
+          if (remoteMessage) {
+            console.log(
+              'Notification caused app to open from quit state:',
+              remoteMessage,
+            );
+          }
+        });
 
       return () => {
         if (typeof unsubscribeOnMessage === 'function') {
@@ -118,7 +131,6 @@ const NotificationController = () => {
 
     start();
   }, []);
-
   return null;
 };
 

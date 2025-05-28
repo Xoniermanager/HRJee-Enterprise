@@ -50,7 +50,6 @@ const RequestList = () => {
   }
   
   const deleteItem = async id => {
-    console.log(id, 'id');
     const token = await AsyncStorage.getItem('TOKEN');
     const config = {
       method: 'get',
@@ -70,7 +69,7 @@ const RequestList = () => {
       })
       .catch(error => {
         if (error.response.status == '401') {
-          console.log(error.response);
+        
           showMessage({
             message: error.response.data.msg,
             type: 'danger',

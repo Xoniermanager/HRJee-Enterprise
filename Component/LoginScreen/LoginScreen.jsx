@@ -28,6 +28,7 @@ import {BASE_URL} from '../../utils';
 import axios from 'axios';
 import FlashMessage from 'react-native-flash-message';
 import {showMessage} from 'react-native-flash-message';
+import messaging from "@react-native-firebase/messaging";
 import Themes from '../Theme/Theme';
 const LoginScreen = () => {
   const { width } = Dimensions.get('window');
@@ -46,6 +47,24 @@ const LoginScreen = () => {
   const [userInfo,setUserInfo]=useState('');
   const [faceData,setFaceData]=useState();
   const bottomSheetRef = useRef(null);
+  const [fcmtoken, setfcmtoken] = useState();
+  async function requestUserPermission() {
+    const authStatus = await messaging().requestPermission();
+    const enabled =
+      authStatus === messaging.AuthorizationStatus.AUTHORIZED ||
+      authStatus === messaging.AuthorizationStatus.PROVISIONAL;
+    if (enabled) {
+      getFCMToken();
+    }
+  }
+  async function getFCMToken() {
+    const token = await messaging().getToken();
+    console.log(token);
+    setfcmtoken(token);
+  }
+  useEffect(() => {
+    requestUserPermission();
+  }, []);
   const snapPoints = useMemo(() => ['1%', '60%'], []);
   const toggleShowPassword = () => {
     setShowPassword(!showPassword);
@@ -73,9 +92,8 @@ const LoginScreen = () => {
         };
         setLoader(true);
         const url = `${BASE_URL}/login`;
-        const response = await login(url, data);
-        
-        if (response?.data?.status) {
+        const response = await login(url, data);    
+        if (response?.data) {
           if (response.data.data.reset_password == 1) {
             setEmail('');
             setPassword('');
@@ -85,11 +103,15 @@ const LoginScreen = () => {
             if (
               response &&
               response.data &&
-              response?.data?.data?.access_token
+              response?.data?.access_token
             ) {
               await AsyncStorage.setItem(
                 'TOKEN',
-                response?.data?.data?.access_token,
+                response?.data?.access_token,
+              );
+              await AsyncStorage.setItem(
+                'refresh_token',
+                response?.data?.refresh_token,
               );
               await AsyncStorage.setItem(
                 'reset_password',
@@ -111,11 +133,15 @@ const LoginScreen = () => {
             if (
               response &&
               response.data &&
-              response?.data?.data?.access_token
+              response?.data?.access_token
             ) {
               await AsyncStorage.setItem(
                 'TOKEN',
-                response?.data?.data?.access_token,
+                response?.data?.access_token,
+              );
+              await AsyncStorage.setItem(
+                'refresh_token',
+                response?.data?.refresh_token,
               );
             }
             showMessage({

@@ -33,7 +33,7 @@ import axios from 'axios';
 import {useNavigation} from '@react-navigation/native';
 const AddPRM = () => {
   const navigation = useNavigation();
-  const {currentTheme, theme} = useContext(ThemeContext);
+  const {currentTheme,} = useContext(ThemeContext);
   const [list, setList] = useState(null);
   const [loader, setLoader] = useState(false);
   const [openStartDate, setOpenStartDate] = useState(false);
@@ -126,8 +126,8 @@ const AddPRM = () => {
           navigation.goBack();
         })
         .catch(error => {
+
           setLoader(false);
-          console.log(error);
         });
     }
   };

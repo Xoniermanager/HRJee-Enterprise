@@ -5,11 +5,9 @@ import {
   Text,
   View,
   ImageBackground,
-  TouchableOpacity,
   ScrollView,
 } from 'react-native';
 import React, {useState, useEffect, useContext} from 'react';
-import LinearGradient from 'react-native-linear-gradient';
 import {
   responsiveFontSize,
   responsiveHeight,
@@ -30,7 +28,6 @@ const AnnouncementDetails = ({navigation}) => {
   const [loader, setLoader] = useState(false);
   const route = useRoute();
   const id = route?.params?.newsId;
-
   useEffect(() => {
     async function check() {
       try {
@@ -57,9 +54,7 @@ const AnnouncementDetails = ({navigation}) => {
     }
     check();
   }, []);
-
   const image = {uri: 'https://i.postimg.cc/zf8d0r7t/nodata-1.png'};
-
   return (
     <SafeAreaView
       style={[styles.container, {backgroundColor: currentTheme.background_v2}]}>
@@ -67,8 +62,7 @@ const AnnouncementDetails = ({navigation}) => {
         style={{
           marginTop: 15,
         }}>
-        {/* <Text style={styles.name}>Announcement Details</Text> */}
-        <View
+        <ScrollView
           style={{
             backgroundColor: currentTheme.background,
             borderTopLeftRadius: 40,
@@ -168,7 +162,7 @@ const AnnouncementDetails = ({navigation}) => {
               )}
             </>
           )}
-        </View>
+        </ScrollView>
       </View>
     </SafeAreaView>
   );

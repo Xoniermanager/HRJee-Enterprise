@@ -95,7 +95,7 @@ const Leaves = ({navigation}) => {
         justifyContent: 'center',
         backgroundColor:'#BAAEFC',
         width: responsiveWidth(28),
-        height: responsiveHeight(20),
+        // height: responsiveHeight(20),
         marginHorizontal: 5,
         borderRadius: 20,
         shadowColor: '#000',
@@ -103,6 +103,8 @@ const Leaves = ({navigation}) => {
         shadowOpacity: 0.2,
         shadowRadius: 4,
         elevation: 3,
+        
+      
       }}>
       <View style={{padding: 10, alignItems: 'center'}}>
         <Image
@@ -112,6 +114,7 @@ const Leaves = ({navigation}) => {
             marginBottom: 10,
             resizeMode: 'contain',
             borderRadius: 20,
+           
           }}
           source={require('../../../assets/HomeScreen/leave.png')}
         />

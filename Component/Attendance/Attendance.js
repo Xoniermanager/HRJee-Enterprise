@@ -49,6 +49,7 @@ const Attendance = () => {
   const [currentMonth, setCurrentMonth] = useState(moment().format('MM'));
   const [monthList, setMonthList] = useState();
 
+
   useEffect(() => {
     const initialMonth = moment().format('MM');
     setCurrentMonth(initialMonth);
@@ -305,29 +306,29 @@ const Attendance = () => {
       });
     }
   };
-  const presentDates = ['2025-04-01', '2025-04-03', '2025-04-10', '2025-04-28','2025-04-29','2025-05-01', '2025-05-03', '2025-05-10', '2025-05-28','2025-05-29'];
+  const presentDates = monthList?.attendanceDetails?.map(item => item.punch_in.split(' ')[0]);
   const absentDates = ['2025-04-05', '2025-04-09', '2025-04-30'];
-  const holidayDates = ['2025-04-07', '2025-04-14', '2025-04-16'];
+  const holidayDates = monthList?.holidayDetails?.map(item => item.date.split(' ')[0]);
   const leaveDates = ['2025-04-04', '2025-04-25', '2025-04-26'];
   const outdutyates = ['2025-04-23',];
 
   const markedDates = {};
 
-  // presentDates.forEach(date => {
-  //   markedDates[date] = { status: 'present' };
-  // });
-  // absentDates.forEach(date => {
-  //   markedDates[date] = { status: 'absent' };
-  // });
-  // holidayDates.forEach(date => {
-  //   markedDates[date] = { status: 'holiday' };
-  // });
-  // leaveDates.forEach(date => {
-  //   markedDates[date] = { status: 'leave' };
-  // });
-  // outdutyates.forEach(date => {
-  //   markedDates[date] = { status: 'outduty' };
-  // });
+  presentDates?.forEach(date => {
+    markedDates[date] = { status: 'present' };
+  });
+  absentDates?.forEach(date => {
+    markedDates[date] = { status: 'absent' };
+  });
+  holidayDates?.forEach(date => {
+    markedDates[date] = { status: 'holiday' };
+  });
+  leaveDates?.forEach(date => {
+    markedDates[date] = { status: 'leave' };
+  });
+  outdutyates?.forEach(date => {
+    markedDates[date] = { status: 'outduty' };
+  });
   
   return (
     <SafeAreaView
@@ -366,8 +367,6 @@ const Attendance = () => {
               borderTopRightRadius: 40,
             }}>
             <View style={{marginHorizontal: 15}}>
-              
-              {/* Calendar */}
               <Calendar
               theme={{
                 selectedDayBackgroundColor: currentTheme.text,

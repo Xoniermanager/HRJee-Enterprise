@@ -399,7 +399,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     marginTop: 20,
-    marginBottom: 20,
+    marginBottom: 70,
   },
   progressText: {
     fontSize: 20,

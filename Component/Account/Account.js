@@ -162,9 +162,9 @@ const Account = () => {
             </TouchableOpacity>
           </View>
           <View style={{marginTop: 10, alignSelf: 'center'}}>
-            {getProfileApiData?.profile_image == '' ||
-            getProfileApiData?.profile_image == [] ||
-            getProfileApiData?.profile_image == null ? (
+            {getProfileApiData?.details?.profile_image == '' ||
+            getProfileApiData?.details?.profile_image == [] ||
+            getProfileApiData?.details?.profile_image == null ? (
               <Image
                 style={{
                   height: 100,
@@ -180,16 +180,15 @@ const Account = () => {
                 style={{
                   height: 90,
                   width: 90,
-                  // resizeMode: 'contain',
                   marginVertical: 5,
                   borderRadius: 50,
                   alignSelf: 'center',
                 }}
-                source={{uri: getProfileApiData?.profile_image}}
+                source={{uri: getProfileApiData?.details?.profile_image}}
               />
             )}
-            <Text style={styles.name}>{getProfileApiData.name}</Text>
-            <Text style={styles.name}>{getProfileApiData?.phone}</Text>
+            <Text style={styles.name}>{getProfileApiData?.name}</Text>
+            <Text style={styles.name}>{getProfileApiData?.details?.phone}</Text>
             <Text style={styles.name}>{getProfileApiData?.email}</Text>
           </View>
         </View>

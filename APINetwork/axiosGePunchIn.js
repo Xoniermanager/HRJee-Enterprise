@@ -2,6 +2,7 @@ import axios from "axios";
 import { showMessage } from "react-native-flash-message";
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { navigate } from './NavigationService';
+import { BASE_URL } from "../utils";
 
 const axiosPut = async (url, data, token,) => {
 
@@ -20,14 +21,37 @@ const axiosPut = async (url, data, token,) => {
 
       return (response)
     })
-    .catch(function (error) {
+    .catch(async function (error) {
       if (error.response) {
-        const { status } = error.response;
-        if (status === 401) {
-          AsyncStorage.removeItem('TOKEN')
-          navigation.navigate('LoginScreen'); // Navigate to the login screen
-          navigate('LoginScreen'); // Navigate using the navigation service
+        const {status} = error.response;
+        if (status === 401 && token!=null) {
+          let refresh_token = await AsyncStorage.getItem('refresh_token');
+          console.log(refresh_token);
+          let data = JSON.stringify({
+            refresh_token: refresh_token,
+          });
 
+          let config = {
+            method: 'post',
+            maxBodyLength: Infinity,
+            url: `${BASE_URL}/refresh-token`,
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            data: data,
+          };
+
+          axios
+            .request(config)
+            .then(async response => {
+              console.log(response.data, 'response');
+              await AsyncStorage.setItem('TOKEN', response?.data?.access_token);
+              await AsyncStorage.setItem(
+                'refresh_token',
+                response?.data?.refresh_token,
+              );
+            })
+            .catch(error => {});
         }
         else {
           // Server-side error

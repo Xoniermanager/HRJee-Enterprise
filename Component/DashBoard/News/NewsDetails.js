@@ -65,8 +65,7 @@ const NewsDetails = ({navigation}) => {
         style={{
           marginTop: 15,
         }}>
-        {/* <Text style={styles.name}>News Details</Text> */}
-        <View
+        <ScrollView
           style={{
             backgroundColor: currentTheme.background,
             borderTopLeftRadius: 40,
@@ -154,7 +153,12 @@ const NewsDetails = ({navigation}) => {
                       }}>
                       {getNewsApiData?.title}
                     </Text>
-                    <Text style={{fontSize: 16, color: currentTheme.text}}>
+                    <Text
+                      style={{
+                        fontSize: 16,
+                        color: currentTheme.text,
+                        marginBottom: 65,
+                      }}>
                       {getNewsApiData?.description?.replace(/<[^>]+>/g, '') ==
                       null
                         ? 'There are no available description'
@@ -165,7 +169,7 @@ const NewsDetails = ({navigation}) => {
               )}
             </>
           )}
-        </View>
+        </ScrollView>
       </View>
     </SafeAreaView>
   );

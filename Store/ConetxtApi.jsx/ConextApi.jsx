@@ -93,6 +93,7 @@ const ConextApi = ({children}) => {
       console.error('Error fetching menu access:', error);
     }
   }
+
   async function user_details() {
     try {
       let token = await AsyncStorage.getItem('TOKEN');
@@ -330,7 +331,8 @@ axios.request(config)
         liveLocationActive,
         getProfileApiData,
         activeLog,
-        allowfacenex
+        allowfacenex,
+        
       }}>
       {children}
     </ThemeContext.Provider>

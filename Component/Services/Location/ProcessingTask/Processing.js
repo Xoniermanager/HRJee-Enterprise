@@ -32,7 +32,7 @@ const image = {uri: 'https://i.postimg.cc/zf8d0r7t/nodata-1.png'};
 const Processing = () => {
   const isFocused = useIsFocused();
   const [expanded, setExpanded] = useState(null);
-  const {currentTheme} = useContext(ThemeContext);
+  const {currentTheme,} = useContext(ThemeContext);
   const [modalVisible, setModalVisible] = useState(false);
   const [list, setList] = useState(null);
   const [remark, setRemark] = useState('');
@@ -251,7 +251,7 @@ const Processing = () => {
         .catch(error => {
           setLoader(false);
           setModalVisible(false);
-          console.log(error);
+         
           showMessage({
             message: error?.response?.data?.message,
             type: 'danger',

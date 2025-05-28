@@ -86,7 +86,7 @@ const HomePage = () => {
     empyId,
     getProfileApiData,
     activeLog,
-    allowfacenex
+    allowfacenex,
   } = useContext(ThemeContext);
   const [getleavetypeapidata, setGetLeaveTypeApiData] = useState([]);
   const [loader, setLoader] = useState(false);
@@ -99,7 +99,7 @@ const HomePage = () => {
   const [startDate, setStartDate] = useState(null);
   const [endDate, setEndDate] = useState(null);
   const [punch, setPunch] = useState('');
-  const [todayAttendanceDetails, setTodayAttendanceDetails] = useState('');
+  const [todayAttendanceDetails, setTodayAttendanceDetails] = useState(null);
   const [lastAttendanceDetails, setLastAttendanceDetails] = useState('');
   const [timerOn, settimerOn] = useState(false);
   const [inTime, setinTime] = useState(null);
@@ -109,17 +109,17 @@ const HomePage = () => {
   const [disabledBtn, setDisabledBtn] = useState(false);
   const [loading, setloading] = useState(false);
   const [availableLeavesList, setAvailableLeavesList] = useState(null);
-  const [inTimeBreak, setInTimeBreak] = useState(null); 
+  const [inTimeBreak, setInTimeBreak] = useState(null);
   const [elapsedTime, setElapsedTime] = useState(0);
-  const [breaktime, setBreaktime] = useState("");
+  const [breaktime, setBreaktime] = useState('');
   const [listBreak, setListBreak] = useState(null);
   const [breakValue, setBreakValue] = useState(null);
   const [attendanceId, setAttendanceId] = useState();
-  const [fullbreakTime, setFullbreakTime] = useState("");
+  const [fullbreakTime, setFullbreakTime] = useState('');
   const [breakTotatimeStatus, setBreakTotatimeStatus] = useState(false);
   const [breakId, setBreakId] = useState(null);
   const [breakLoader, setBreakLoader] = useState(false);
-  const [leaveLoader,setLeaveLoader]=useState(false);
+  const [leaveLoader, setLeaveLoader] = useState(false);
 
   const toggleModal = () => {
     setModalVisible(!isModalVisible);
@@ -240,27 +240,27 @@ const HomePage = () => {
       let token = await AsyncStorage.getItem('TOKEN');
       const url = `${BASE_URL}/get-today-attendance`;
       const response = await gettodayattendance(url, token);
-  
+
       if (response?.data?.status) {
         const attendanceArray = response?.data?.todayAttendanceDetails;
         setTodayAttendanceDetails(attendanceArray);
-  
+
         if (!attendanceArray || attendanceArray.length === 0) {
           setinTime(null);
           setOutTime(null);
           setactivityTime(null);
-          setFullbreakTime("");
+          setFullbreakTime('');
           setloading(false);
           return;
         }
-  
+
         const lastRecord = [...attendanceArray]
           .reverse()
           .find(item => item.punch_in && item.punch_out);
         const lastShift = attendanceArray[attendanceArray.length - 1].shift;
         const currentTime = moment();
         const shiftEndTime = moment(lastShift.end_time, 'HH:mm:ss');
-  
+
         if (currentTime.isAfter(shiftEndTime)) {
           setAttendanceId(null);
           setinTime(null);
@@ -268,56 +268,56 @@ const HomePage = () => {
           setactivityTime(null);
           settimerOn(false);
           setfullTime(null);
-          setFullbreakTime("");
-          setloading(false);   
+          setFullbreakTime('');
+          setloading(false);
           return;
         }
-  
+
         const lastOngoing = [...attendanceArray]
           .reverse()
           .find(item => item.punch_in && !item.punch_out);
-  
+
         if (lastRecord) {
           setAttendanceId(lastRecord.id);
           setinTime(lastRecord.punch_in);
           setOutTime(lastRecord.punch_out);
           settimerOn(false);
-  
+
           const timeStart = moment(lastRecord.punch_in);
           const timeEnd = moment(lastRecord.punch_out);
           const diff = timeEnd.diff(timeStart);
           const duration = moment.duration(diff);
-  
+
           const time =
             `${String(duration.hours()).padStart(2, '0')}:` +
             `${String(duration.minutes()).padStart(2, '0')}:` +
             `${String(duration.seconds()).padStart(2, '0')}`;
           setfullTime(time);
-  
+
           // Set full break time
-          setFullbreakTime(lastRecord.total_break_time || "");
+          setFullbreakTime(lastRecord.total_break_time || '');
         } else if (lastOngoing) {
           setAttendanceId(lastOngoing.id);
           setinTime(lastOngoing.punch_in);
           setOutTime(null);
           settimerOn(true);
-  
+
           // Set full break time
-          setFullbreakTime(lastOngoing.total_break_time || "");
-          setfullTime("");
+          setFullbreakTime(lastOngoing.total_break_time || '');
+          setfullTime('');
         } else {
           setinTime(null);
           setOutTime(null);
-          setFullbreakTime("");
-          setfullTime("");
+          setFullbreakTime('');
+          setfullTime('');
         }
-  
+
         setloading(false);
       } else {
         setinTime(null);
         setOutTime(null);
         setactivityTime(null);
-        setFullbreakTime("");
+        setFullbreakTime('');
         setloading(false);
       }
     } catch (error) {
@@ -325,7 +325,7 @@ const HomePage = () => {
       setloading(false);
     }
   }
-  
+
   async function getLastAttendance() {
     try {
       setLoader(true);
@@ -699,7 +699,7 @@ const HomePage = () => {
       })
       .catch(error => {
         const {code, message} = error;
-        
+
         setloading(false);
         showMessage({
           message: message,
@@ -733,7 +733,7 @@ const HomePage = () => {
           const response = await punchin(url, body, token);
           if (response?.data?.status) {
             CheckDailyAttendances();
-            getLastAttendance
+            getLastAttendance;
             breakingList();
             setLoader(false);
             setloading(false);
@@ -773,7 +773,7 @@ const HomePage = () => {
       })
       .catch(error => {
         const {code, message} = error;
-   
+
         setloading(false);
         showMessage({
           message: message,
@@ -898,7 +898,6 @@ const HomePage = () => {
           ],
         };
         const response = await locationSend(url, data, token, form);
-       
       } catch (error) {
         console.error('Error sending stored location:', error.response.data);
       }
@@ -1078,9 +1077,9 @@ const HomePage = () => {
   function capitalizeFirstLetter(string) {
     return string.charAt(0).toUpperCase() + string.slice(1);
   }
- 
+
   const getLastAttendanceDaily = () => {
-    if (lastAttendanceDetails.data=='No Last Attendance Available') {
+    if (lastAttendanceDetails.data == 'No Last Attendance Available') {
       return (
         <View>
           <Text
@@ -1123,10 +1122,12 @@ const HomePage = () => {
               </Text>
               <Text
                 style={{color: currentTheme.text, fontSize: 15, marginTop: 4}}>
-                Punch In: {elements?.punch_in?.split(" ")[1].slice(0, 5) ?? '--'}
+                Punch In:{' '}
+                {elements?.punch_in?.split(' ')[1].slice(0, 5) ?? '--'}
               </Text>
               <Text style={{color: currentTheme.text, fontSize: 15}}>
-                Punch Out: {elements?.punch_out?.split(" ")[1].slice(0, 5) ?? '--'}
+                Punch Out:{' '}
+                {elements?.punch_out?.split(' ')[1].slice(0, 5) ?? '--'}
               </Text>
             </View>
 
@@ -1175,7 +1176,7 @@ const HomePage = () => {
         });
       } else if (reason == '') {
         showMessage({
-          message: 'Please enter reason',
+          message: 'Please enter Message',
           type: 'danger',
         });
       } else {
@@ -1230,18 +1231,80 @@ const HomePage = () => {
       showMessage({
         message: `${error.response.data.message}`,
         type: 'danger',
-        duration:6000
+        duration: 6000,
       });
-  
+
       setLoader(false);
     }
   };
+  const getDateRange = (start, end) => {
+    let range = {};
+    let currentDate = new Date(start);
+    const lastDate = new Date(end);
 
-  if(allowfacenex==null){
-    return <HomeSkeleton/>
+    while (currentDate <= lastDate) {
+      const dateString = currentDate.toISOString().split('T')[0];
+      range[dateString] = {
+        color: '#0E0E64',
+        textColor: 'white',
+      };
+      currentDate.setDate(currentDate.getDate() + 1);
+    }
+
+    range[start] = {
+      startingDay: true,
+      color: '#0E0E64',
+      textColor: 'white',
+    };
+    range[end] = {
+      endingDay: true,
+      color: '#0E0E64',
+      textColor: 'white',
+    };
+
+    return range;
+  };
+  const onDayPress = day => {
+    setSelected(day.dateString);
+    setMonth(day);
+    if (!startDate || (startDate && endDate)) {
+      setStartDate(day.dateString);
+      setEndDate(null);
+    } else {
+      if (new Date(day.dateString) < new Date(startDate)) {
+        setEndDate(startDate);
+        setStartDate(day.dateString);
+      } else {
+        setEndDate(day.dateString);
+      }
+    }
+  };
+  const markedDates =
+    startDate && endDate
+      ? getDateRange(startDate, endDate)
+      : startDate
+      ? {
+          [startDate]: {
+            startingDay: true,
+            color: '#0E0E64',
+            textColor: 'white',
+          },
+        }
+      : {};
+  if (selected && !markedDates[selected]) {
+    markedDates[selected] = {
+      selected: true,
+      selectedDotColor: '#0E0E64',
+      disableTouchEvent: true,
+    };
+  }
+
+  if (todayAttendanceDetails == null) {
+    return <HomeSkeleton />;
   }
   if (isCameraOpen) {
     return <FaceCamera punchIn={punch_IN} />;
+   
   } else {
     return (
       <View style={{flex: 1, backgroundColor: currentTheme.background}}>
@@ -1258,31 +1321,33 @@ const HomePage = () => {
                 alignItems: 'center',
                 marginLeft: 15,
               }}>
-              {getProfileApiData?.details?.profile_image ==
-                'https://hrjee-dev.xonierconnect.com/storage' ||
-              getProfileApiData?.details?.profile_image == [] ||
-              getProfileApiData?.details?.profile_image == null ? (
-                <Image
-                  style={{
-                    height: 120,
-                    width: 120,
-                    resizeMode: 'contain',
-                    alignSelf: 'center',
-                  }}
-                  source={require('../../assets/HomeScreen/profile.png')}
-                />
-              ) : (
-                <Image
-                  style={{
-                    height: 90,
-                    width: 90,
-                    // resizeMode: 'contain',
-                    alignSelf: 'center',
-                    borderRadius: 50,
-                  }}
-                  source={{uri: getProfileApiData?.details?.profile_image}}
-                />
-              )}
+              <TouchableOpacity onPress={() => navigation.navigate('MyDrawer')}>
+                {getProfileApiData?.details?.profile_image ==
+                  'https://hrjee-dev.xonierconnect.com/storage' ||
+                getProfileApiData?.details?.profile_image == [] ||
+                getProfileApiData?.details?.profile_image == null ? (
+                  <Image
+                    style={{
+                      height: 120,
+                      width: 120,
+                      resizeMode: 'contain',
+                      alignSelf: 'center',
+                    }}
+                    source={require('../../assets/HomeScreen/profile.png')}
+                  />
+                ) : (
+                  <Image
+                    style={{
+                      height: 90,
+                      width: 90,
+                      // resizeMode: 'contain',
+                      alignSelf: 'center',
+                      borderRadius: 50,
+                    }}
+                    source={{uri: getProfileApiData?.details?.profile_image}}
+                  />
+                )}
+              </TouchableOpacity>
               <View style={{marginHorizontal: 15}}>
                 <Text style={{color: '#fff', fontSize: 15, fontWeight: 'bold'}}>
                   {empyName}
@@ -1312,7 +1377,7 @@ const HomePage = () => {
             <View
               style={{
                 marginBottom: responsiveHeight(1),
-                padding:15,
+                padding: 15,
                 backgroundColor: currentTheme.background_v2,
                 borderColor: currentTheme.background_v2,
                 borderRadius: 20,
@@ -1360,13 +1425,13 @@ const HomePage = () => {
                   borderWidth: 1,
                 }}></View>
               <View>
-                {inTime && !outTime  &&(
+                {inTime && !outTime && (
                   <>
                     <View
                       style={{
                         flexDirection: 'row',
                         marginBottom: 8,
-                        marginTop:allowfacenex==1?35:0
+                        marginTop: allowfacenex == 1 ? 35 : 0,
                       }}>
                       <AntDesign
                         name="rightcircle"
@@ -1381,41 +1446,59 @@ const HomePage = () => {
                           fontSize: 18,
                           textAlign: 'center',
                           marginHorizontal: 10,
-                     
                         }}>
                         {activityTime}
                       </Text>
                     </View>
-                  {
-                    allowfacenex==0?<TouchableOpacity
-                    onPress={() => handleLogout()}
-                    style={{
-                      backgroundColor: currentTheme.buttonText,
-                      borderRadius: 20,
-                      height: 40,
-                      justifyContent: 'center',
-                      width: 120,
-                      height: 40,
-                    }}>
-                    {loading ? (
-                      <ActivityIndicator color="#0E0E64" />
-                    ) : (
-                      <Text
+                    {allowfacenex == 0 ? (
+                      <TouchableOpacity
+                        onPress={() => handleLogout()}
                         style={{
-                          textAlign: 'center',
-                          color: currentTheme.text,
-                          fontSize: 16,
-                          textAlign: 'center',
+                          backgroundColor: currentTheme.buttonText,
+                          borderRadius: 20,
+                          height: 40,
+                          justifyContent: 'center',
+                          width: 120,
+                          height: 40,
                         }}>
-                        Punch Out
-                      </Text>
-                    )}
-                  </TouchableOpacity>:null
-                  }
+                        {loading ? (
+                          <ActivityIndicator color="#0E0E64" />
+                        ) : (
+                          <Text
+                            style={{
+                              textAlign: 'center',
+                              color: currentTheme.text,
+                              fontSize: 16,
+                              textAlign: 'center',
+                            }}>
+                            Punch Out
+                          </Text>
+                        )}
+                      </TouchableOpacity>
+                    ) : null}
                   </>
                 )}
+                {!inTime && !outTime && allowfacenex==1 && (
+                  <View
+                    style={{
+                      marginTop: 10,
+                      maxWidth: 200,
+                      alignSelf: 'center',
+                      paddingHorizontal: 10,
+                    }}>
+                    <Text
+                      style={{
+                        color: '#fff',
+                        fontSize: 14,
+                        lineHeight: 20,
+                      }}>
+                      Please use FaceNex to punch in. Direct access is not
+                      allowed.
+                    </Text>
+                  </View>
+                )}
 
-                {!inTime && !outTime && allowfacenex==0 && (
+                {!inTime && !outTime && allowfacenex == 0 && (
                   <TouchableOpacity
                     onPress={() => handlePunchIn()}
                     disabled={disabledBtn == true ? true : false}
@@ -1479,7 +1562,7 @@ const HomePage = () => {
                         color: currentTheme.text_v2,
                         fontSize: 18,
                         textAlign: 'center',
-                        marginLeft:32
+                        marginLeft: 32,
                       }}>
                       {fullbreakTime}
                     </Text>
@@ -1496,7 +1579,7 @@ const HomePage = () => {
                         color: currentTheme.text_v2,
                         fontSize: 18,
                         textAlign: 'center',
-                        marginLeft:32
+                        marginLeft: 32,
                       }}>
                       {breaktime}
                     </Text>
@@ -1582,7 +1665,11 @@ const HomePage = () => {
                     borderRadius: 10,
                   }}>
                   {breakLoader ? (
-                    <ActivityIndicator size="small" color="#fff" style={{padding:20}} />
+                    <ActivityIndicator
+                      size="small"
+                      color="#fff"
+                      style={{padding: 20}}
+                    />
                   ) : (
                     <Text
                       style={{
@@ -1705,18 +1792,28 @@ const HomePage = () => {
                           <TouchableOpacity
                             onPress={() => handlePress(1)}
                             style={{
-                              backgroundColor: currentTheme.background_v2,
+                              backgroundColor: startDate
+                                ? 'orange'
+                                : currentTheme.background_v2,
                               borderRadius: 100,
                               height: 90,
                               width: 90,
                               justifyContent: 'center',
                             }}>
-                            <Text style={{color: '#fff', textAlign: 'center'}}>
+                            <Text
+                              style={{
+                                color: startDate ? '#000' : '#fff',
+                                textAlign: 'center',
+                              }}>
                               {startDate
                                 ? new Date(startDate).getDate()
                                 : 'Start'}
                             </Text>
-                            <Text style={{color: '#fff', textAlign: 'center'}}>
+                            <Text
+                              style={{
+                                color: startDate ? '#000' : '#fff',
+                                textAlign: 'center',
+                              }}>
                               {startDate
                                 ? new Date(startDate).toLocaleString(
                                     'default',
@@ -1736,16 +1833,26 @@ const HomePage = () => {
                           <TouchableOpacity
                             onPress={() => handlePress(2)}
                             style={{
-                              backgroundColor: currentTheme.background_v2,
+                              backgroundColor: endDate
+                                ? 'orange'
+                                : currentTheme.background_v2,
                               borderRadius: 100,
                               height: 90,
                               width: 90,
                               justifyContent: 'center',
                             }}>
-                            <Text style={{color: '#fff', textAlign: 'center'}}>
+                            <Text
+                              style={{
+                                color: endDate ? '#000' : '#fff',
+                                textAlign: 'center',
+                              }}>
                               {endDate ? new Date(endDate).getDate() : 'End'}
                             </Text>
-                            <Text style={{color: '#fff', textAlign: 'center'}}>
+                            <Text
+                              style={{
+                                color: endDate ? '#000' : '#fff',
+                                textAlign: 'center',
+                              }}>
                               {endDate
                                 ? new Date(endDate).toLocaleString('default', {
                                     month: 'long',
@@ -1771,33 +1878,9 @@ const HomePage = () => {
                               elevation: 7,
                               width: responsiveWidth(60),
                             }}
-                            onDayPress={day => {
-                              setSelected(day.dateString);
-                              setMonth(day);
-
-                              if (!startDate) {
-                                setStartDate(day.dateString);
-                              } else if (!endDate) {
-                                setEndDate(day.dateString);
-                              }
-                            }}
-                            markedDates={{
-                              [selected]: {
-                                selected: true,
-                                disableTouchEvent: true,
-                                selectedDotColor: 'orange',
-                              },
-                              [startDate]: {
-                                startingDay: true,
-                                color: 'orange',
-                                textColor: 'white',
-                              },
-                              [endDate]: {
-                                endingDay: true,
-                                color: 'orange',
-                                textColor: 'white',
-                              },
-                            }}
+                            onDayPress={onDayPress}
+                            markedDates={markedDates}
+                            markingType={'period'} // important for range marking
                           />
                         </View>
                       </View>
@@ -1915,6 +1998,22 @@ const HomePage = () => {
                             itemTextStyle={{
                               color: '#000',
                             }}
+                            renderItem={item => (
+                              <View
+                                style={{
+                                  flexDirection: 'row',
+                                  padding: 10,
+                                  borderBottomWidth: 1,
+                                  borderColor: '#ccc',
+                                }}>
+                                <Text style={{flex: 1, color: '#000'}}>
+                                  {item.code}
+                                </Text>
+                                <Text style={{flex: 2, color: '#000'}}>
+                                  {item.name}
+                                </Text>
+                              </View>
+                            )}
                           />
                         </View>
 
@@ -1928,11 +2027,11 @@ const HomePage = () => {
                             elevation: 10,
                           }}>
                           <TextInput
-                            placeholder="Reason"
+                            placeholder="Message"
                             numberOfLines={6}
                             textAlignVertical={'top'}
                             onChangeText={text => setReason(text)}
-                            style={{height: 120}} // Adjust height as needed
+                            style={{height: 120, marginLeft: 15}} // Adjust height as needed
                             placeholderTextColor={'#fff'}
                             color={'#fff'}
                           />
@@ -1949,20 +2048,19 @@ const HomePage = () => {
                           alignSelf: 'center',
                           borderRadius: 50,
                         }}>
-                          {leaveLoader ? (
-            <ActivityIndicator size="small" color="#fff" />
-          ) : (
-            <Text
-                          style={{
-                            textAlign: 'center',
-                            color: '#fff',
-                            fontSize: 18,
-                            fontWeight: 'bold',
-                          }}>
-                          Submit
-                        </Text>
-          )}
-                       
+                        {leaveLoader ? (
+                          <ActivityIndicator size="small" color="#fff" />
+                        ) : (
+                          <Text
+                            style={{
+                              textAlign: 'center',
+                              color: '#fff',
+                              fontSize: 18,
+                              fontWeight: 'bold',
+                            }}>
+                            Submit
+                          </Text>
+                        )}
                       </TouchableOpacity>
                     </ScrollView>
                   </View>

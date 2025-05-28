@@ -23,7 +23,7 @@ const ListOfficeAddress = () => {
   const navigation = useNavigation();
   const isFocuesd = useIsFocused();
   const [list, setList] = useState(null);
-  const {currentTheme} = useContext(ThemeContext);
+  const {currentTheme,} = useContext(ThemeContext);
   const getRequestlist = async () => {
     const token = await AsyncStorage.getItem('TOKEN');
     const url = `${BASE_URL}/address/request/list`;
@@ -70,7 +70,6 @@ const ListOfficeAddress = () => {
       })
       .catch(error => {
         if (error.response.status == '401') {
-          console.log(error.response);
           showMessage({
             message: error.response.data.msg,
             type: 'danger',

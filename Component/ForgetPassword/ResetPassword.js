@@ -133,7 +133,7 @@ const ResetPassword = ({route}) => {
     let config = {
       method: 'post',
       maxBodyLength: Infinity,
-      url: `${BASE_URL}/sendOtp?email=${email}`,
+      url: `${BASE_URL}/sendOtp?emp_id=${email}`,
     };
 
     axios
@@ -206,7 +206,7 @@ const ResetPassword = ({route}) => {
               }}
               onPress={() => resendOTP()}>
               {resendloader ? (
-                <ActivityIndicator size="small" color="#000" />
+                <ActivityIndicator size="small" color="#fff" />
               ) : (
                 <Text
                   style={{

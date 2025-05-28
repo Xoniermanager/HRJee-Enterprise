@@ -119,8 +119,7 @@ const FirstTimeChangePassword = () => {
           setLoader(false);
         }
       }
-    } catch (error) {
-      console.error('Error making POST request:', error);
+    } catch (error) {  
       setLoader(false);
     }
   };

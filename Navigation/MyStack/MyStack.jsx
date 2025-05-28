@@ -57,6 +57,7 @@ import Course from '../../Component/Services/Course/Course';
 import CourseDetails from '../../Component/Services/Course/CourseDetails';
 import Maps from '../../Component/Tracking/Maps';
 import AllPunchIn from '../../Component/DashBoard/AllPunchIn';
+import FaceCamera from '../../Component/DashBoard/FaceCamera';
 
 const MyStack = () => {
   const {currentTheme} = useContext(ThemeContext);
@@ -79,6 +80,11 @@ const MyStack = () => {
         component={SignUpScreen}
         options={{headerShown: false}}
       />
+       <Stack.Screen
+        name="FaceCamera"
+        component={FaceCamera}
+        options={{headerShown: false}}
+      />
       <Stack.Screen
         name="OnboardingScreen"
         component={OnboardingScreen}
@@ -87,7 +93,18 @@ const MyStack = () => {
       <Stack.Screen
         name="Attendance"
         component={Attendance}
-        options={{headerShown: false}}
+        options={{
+          title: 'Attendance',
+
+          headerBackTitleVisible: false,
+          headerStyle: {
+            backgroundColor: currentTheme.background_v2,
+          },
+          headerTintColor: '#fff',
+          headerTitleStyle: {
+            fontWeight: '500',
+          },
+        }}
       />
       <Stack.Screen
         name="Splash"

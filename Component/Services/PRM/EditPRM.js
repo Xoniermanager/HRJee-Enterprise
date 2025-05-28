@@ -33,7 +33,7 @@ import axios from 'axios';
 import {useNavigation} from '@react-navigation/native';
 const EditPRM = () => {
   const navigation = useNavigation();
-  const {currentTheme, theme} = useContext(ThemeContext);
+  const {currentTheme,} = useContext(ThemeContext);
   const [list, setList] = useState(null);
   const [detailsList,setDetailsList]=useState()
   const [loader, setLoader] = useState(false);
@@ -132,11 +132,7 @@ const EditPRM = () => {
       })
       .catch(error => {
         setLoader(false);
-        console.log(error);
-        // showMessage({
-        //   message: Object.values(error.response.errors)[0][0],
-        //   type: 'danger',
-        // });
+
       });
   };
   return (

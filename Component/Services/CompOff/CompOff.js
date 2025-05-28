@@ -21,7 +21,7 @@ import {BASE_URL} from '../../../utils';
 import {ThemeContext} from '../../../Store/ConetxtApi.jsx/ConextApi';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 const CompOff = ({navigation}) => {
-  const {currentTheme} = useContext(ThemeContext);
+  const {currentTheme,} = useContext(ThemeContext);
   const isfouced = useIsFocused();
   const [leaveList, setleaveList] = useState(null);
   const get_leaves = async () => {
@@ -42,7 +42,7 @@ const CompOff = ({navigation}) => {
       })
       .catch(error => {
         if (error.response.status == '401') {
-          console.log(error.response);
+         
           showMessage({
             message: error.response.data.msg,
             type: 'danger',
@@ -90,7 +90,7 @@ const CompOff = ({navigation}) => {
       })
       .catch(error => {
         if (error.response.status == '401') {
-          console.log(error.response);
+         
           showMessage({
             message: error.response.data.msg,
             type: 'danger',

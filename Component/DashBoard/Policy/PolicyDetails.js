@@ -67,7 +67,7 @@ const PolicyDetails = ({navigation}) => {
           marginTop: 15,
         }}>
         <Text style={styles.name}>Policy Details</Text>
-        <View
+        <ScrollView
           style={{
             backgroundColor: currentTheme.background,
             borderTopLeftRadius: 40,
@@ -95,7 +95,7 @@ const PolicyDetails = ({navigation}) => {
                         No Data Available
                       </Text>
                     </View>
-                    {/* <Text style={styles.text}>No Data Available</Text> */}
+  
                   </ImageBackground>
                 </View>
               ) : (
@@ -155,7 +155,7 @@ const PolicyDetails = ({navigation}) => {
                       }}>
                       {getNewsApiData?.title}
                     </Text>
-                    <Text style={{fontSize: 16, color: currentTheme.text}}>
+                    <Text style={{fontSize: 16, color: currentTheme.text,marginBottom:70}}>
                       {getNewsApiData?.description?.replace(/<[^>]+>/g, '') ==
                       null
                         ? 'There are no available description'
@@ -166,7 +166,7 @@ const PolicyDetails = ({navigation}) => {
               )}
             </>
           )}
-        </View>
+        </ScrollView>
       </View>
     </SafeAreaView>
   );

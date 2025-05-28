@@ -77,7 +77,7 @@ const Resign = () => {
   return (
     <View
       style={[styles.container, {backgroundColor: currentTheme.background}]}>
-      {/* Add Button */}
+      {/* Add Button */} 
       <TouchableOpacity
         style={[
           styles.addButton,
@@ -104,7 +104,7 @@ const Resign = () => {
               {backgroundColor: currentTheme.background_v2},
             ]}>
             <View>
-              <Text style={styles.date}>28-01-2025</Text>
+              <Text style={styles.date}>{item?.created_at.substring(0, 10)}</Text>
               <Text style={styles.reason}>Reason: {item.remark}</Text>
               <Text
                 style={[styles.status, {color: getStatusColor(item.status)}]}>

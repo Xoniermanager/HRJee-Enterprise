@@ -8,6 +8,8 @@ import {
   TouchableOpacity,
   Image,
   ActivityIndicator,
+  FlatList,
+  Pressable,
 } from 'react-native';
 import React, {useContext, useEffect, useState} from 'react';
 import {
@@ -37,6 +39,7 @@ const Person_Detils = () => {
   const [other, setOther] = useState(false);
   const [married, setMarried] = useState(false);
   const [single, setSingle] = useState(false);
+  const [selectedGroup, setSelectedGroup] = useState(null);
   const [details, setDetails] = useState({
     name: '',
     email: '',
@@ -80,6 +83,11 @@ const Person_Detils = () => {
       setSingle(true);
     }
   };
+  const bloodGroups = ['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-'];
+
+  const handleSelect = group => {
+    setSelectedGroup(group);
+  };
 
   const showFromDatePicker = () => setFromDatePickerVisibility(true);
   const hideFromDatePicker = () => setFromDatePickerVisibility(false);
@@ -108,7 +116,9 @@ const Person_Detils = () => {
           blood_group: response.data.data.details.blood_group,
           phone: response.data.data.details.phone,
           profile_image: response.data.data.details.profile_image,
+          date_of_birth: response.data.data.details.date_of_birth,
         });
+        setSelectedGroup(response.data.data.details.blood_group);
         handleGenderChange(response.data.data.details.gender);
         handleMerridChange(response.data.data.details.marital_status);
       } else {
@@ -127,27 +137,26 @@ const Person_Detils = () => {
     let data = new FormData();
     data.append('father_name', details.father_name);
     data.append('mother_name', details?.mother_name);
-    data.append('blood_group', details.blood_group);
+    data.append('blood_group', selectedGroup);
     data.append('gender', details.gender);
     data.append('marital_status', details.marital_status);
     data.append('phone', details.phone);
-    console.log(data);
     if (image && image.path && image.mime && image.modificationDate) {
       var imagepath = {
         uri: image.path,
         type: image.mime,
         name: `${image.modificationDate}.jpg`,
       };
-      data.append('image', imagepath);
+      data.append('profile_image', imagepath);
     }
-    data.append('profile_image', imagepath ? imagepath : details.profile_image);
+    // data.append('profile_image', imagepath ? imagepath : details.profile_image);
     data.append(
       'date_of_birth',
       Start_date != 'undefined-NaN-undefined'
         ? Start_date
         : details.date_of_birth,
     );
-    data.append('name', details.name);
+    data.append('name', details.name);   
     let config = {
       method: 'post',
       maxBodyLength: Infinity,
@@ -183,6 +192,21 @@ const Person_Detils = () => {
         }
       });
   };
+  const handleImagePick = () => {
+    ImagePicker.openPicker({
+      width: 300,
+      height: 400,
+      cropping: true,
+    }).then(image => {
+      setImage(image);
+    });
+  };
+  const profileImageUri =
+    image?.path ||
+    (details?.profile_image === 'https://hrjee-dev.xonierconnect.com/storage'
+      ? 'https://cdn-icons-png.flaticon.com/512/149/149071.png'
+      : details?.profile_image);
+
   return (
     <SafeAreaView
       style={[styles.container, {backgroundColor: currentTheme.background_v2}]}>
@@ -211,45 +235,20 @@ const Person_Detils = () => {
           <View
             style={[
               styles.profileSection,
-              {borderWidth: 1, borderColor: currentTheme.text},
+              {
+                borderColor: currentTheme.text,
+                shadowColor: currentTheme.text,
+              },
             ]}>
-            {image?.path ? (
-              <Image
-                source={{
-                  uri: image.path,
-                }}
-                style={[styles.profileImage]}
-              />
-            ) : (
-              <Image
-                source={{
-                  uri:
-                    details?.profile_image ==
-                    'https://hrjee-dev.xonierconnect.com/storage'
-                      ? 'https://cdn-icons-png.flaticon.com/512/149/149071.png'
-                      : details?.profile_image,
-                }}
-                style={[styles.profileImage]}
-              />
-            )}
+            <Image
+              source={{uri: profileImageUri}}
+              style={styles.profileImage}
+            />
 
             <TouchableOpacity
-              onPress={() =>
-                ImagePicker.openPicker({
-                  width: 300,
-                  height: 400,
-                  cropping: true,
-                }).then(image => {
-                  setImage(image);
-                })
-              }
-              style={{position: 'absolute'}}>
-              <MaterialIcons
-                style={{marginLeft: 60}}
-                name="add-a-photo"
-                size={30}
-                color={currentTheme.text}
-              />
+              style={styles.addButton}
+              onPress={handleImagePick}>
+              <MaterialIcons name="add-a-photo" size={24} color="#fff" />
             </TouchableOpacity>
           </View>
           <View
@@ -306,19 +305,39 @@ const Person_Detils = () => {
               onChangeText={value => handleInputChange('phone', value)}
             />
           </View>
-          <View
-            style={[
-              styles.inputContainer,
-              {backgroundColor: currentTheme.inputText_color},
-            ]}>
-            <TextInput
-              style={[styles.textInput, {color: currentTheme.text}]}
-              placeholder="Blood Group"
-              placeholderTextColor={currentTheme.text}
-              value={details.blood_group}
-              onChangeText={value => handleInputChange('blood_group', value)}
-            />
-          </View>
+          <Text style={[styles.label, {color: currentTheme.text}]}>
+            Select Blood Group
+          </Text>
+          <FlatList
+            data={bloodGroups}
+            keyExtractor={item => item}
+            numColumns={4}
+            contentContainerStyle={styles.listContainer}
+            renderItem={({item}) => {
+              const isSelected = item === selectedGroup;
+              return (
+                <Pressable
+                  onPress={() => handleSelect(item)}
+                  style={[
+                    styles.chip,
+                    {
+                      backgroundColor: isSelected
+                        ? currentTheme.primary
+                        : currentTheme.card,
+                      borderColor: isSelected ? 'green' : currentTheme.border,
+                    },
+                  ]}>
+                  <Text
+                    style={[
+                      styles.chipText,
+                      {color: isSelected ? 'green' : currentTheme.text},
+                    ]}>
+                    {item}
+                  </Text>
+                </Pressable>
+              );
+            }}
+          />
           <View
             style={[
               styles.checkboxContainer,
@@ -442,21 +461,21 @@ const styles = StyleSheet.create({
     color: '#001B76',
     marginBottom: 20,
   },
-  profileSection: {
-    alignItems: 'center',
-    marginBottom: 20,
-    width: 100,
-    height: 100,
-    borderRadius: 50,
-    alignSelf: 'center',
-  },
-  profileImage: {
-    width: 100,
-    height: 100,
-    borderRadius: 50,
-    resizeMode: 'contain',
-    borderWidth: 0.5,
-  },
+  // profileSection: {
+  //   alignItems: 'center',
+  //   marginBottom: 20,
+  //   width: 100,
+  //   height: 100,
+  //   borderRadius: 50,
+  //   alignSelf: 'center',
+  // },
+  // profileImage: {
+  //   width: 100,
+  //   height: 100,
+  //   borderRadius: 50,
+  //   resizeMode: 'contain',
+  //   borderWidth: 0.5,
+  // },
   editIcon: {
     position: 'absolute',
     bottom: 0,
@@ -535,5 +554,57 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontWeight: 'bold',
     color: '#fff',
+  },
+  profileSection: {
+    width: 130,
+    height: 130,
+    borderWidth: 2,
+    borderRadius: 65,
+    overflow: 'hidden',
+    shadowOffset: {width: 0, height: 2},
+    shadowOpacity: 0.2,
+    shadowRadius: 4,
+    elevation: 5,
+    backgroundColor: '#fff',
+    justifyContent: 'center',
+    alignItems: 'center',
+    alignSelf: 'center',
+    marginBottom: 10,
+  },
+  profileImage: {
+    width: '100%',
+    height: '100%',
+  },
+  addButton: {
+    position: 'absolute',
+
+    backgroundColor: '#007bff',
+    borderRadius: 20,
+    padding: 6,
+    elevation: 4,
+    top: 4,
+    right: 15,
+  },
+  label: {
+    fontSize: 18,
+    fontWeight: '600',
+    marginBottom: 12,
+  },
+  listContainer: {
+    gap: 10,
+    flexWrap: 'wrap',
+    justifyContent: 'center',
+  },
+  chip: {
+    paddingVertical: 10,
+    paddingHorizontal: 16,
+    margin: 6,
+    borderRadius: 30,
+    borderWidth: 1,
+    alignItems: 'center',
+  },
+  chipText: {
+    fontSize: 16,
+    fontWeight: '500',
   },
 });

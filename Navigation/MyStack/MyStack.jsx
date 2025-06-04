@@ -65,6 +65,7 @@ const MyStack = () => {
 
   return (
     <Stack.Navigator initialRouteName="Splash">
+      
       <Stack.Screen
         name="MyTabbar"
         component={MyTabbar}
@@ -435,7 +436,7 @@ const MyStack = () => {
         options={{
           title: 'Change Password',
 
-          headerBackTitleVisible: false,
+          // headerBackTitleVisible: false,
           headerStyle: {
             backgroundColor: currentTheme.background_v2,
           },

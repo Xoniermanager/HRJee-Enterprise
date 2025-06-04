@@ -11,7 +11,8 @@ import {
   ScrollView,
   Platform,
   Linking,
-  Button
+  Button,
+  ActivityIndicator
 } from 'react-native';
 import React, {useState, useEffect, useContext} from 'react';
 import {
@@ -36,18 +37,20 @@ const Attendance = () => {
   const {currentTheme, activeLog} = useContext(ThemeContext);
   const [dataExport, setDataExport] = useState();
   const [modalVisible, setModalVisible] = useState(false);
+  const [loaderModal, setLoaderModal] = useState(true);
   const [isEnabled, setIsEnabled] = useState(false);
   const toggleSwitch = () => setIsEnabled(previousState => !previousState);
   const [selectedDate, setSelectedDate] = useState(null);
   const [todayAttendanceDetails, setTodayAttendanceDetails] = useState('');
   const [loader, setLoader] = useState(false);
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
   const [data, setData] = useState('');
   const [fromDate, setFromDate] = useState(null);
   const [toDate, setToDate] = useState(null);
   const [dailyDate, setDailyDate] = useState();
   const [currentMonth, setCurrentMonth] = useState(moment().format('MM'));
   const [monthList, setMonthList] = useState();
+
 
 
   useEffect(() => {
@@ -86,9 +89,12 @@ const Attendance = () => {
       const response = await gettodayattendance(url, token);
       if (response?.data?.status) {
         setDailyDate(response?.data?.data);
+        setLoading(false);
       } else {
+        setLoading(false);
       }
     } catch (error) {
+      setLoading(false);
       console.error('Error making POST request:', error);
     }
   };
@@ -100,9 +106,12 @@ const Attendance = () => {
       if (response?.data?.status) {
         console.log(response?.data?.data, 'response?.data?.data');
         setMonthList(response?.data?.data);
+        setLoading(false);
       } else {
+        setLoading(false);
       }
     } catch (error) {
+      setLoading(false);
       console.error('Error making POST request:', error);
     }
   };
@@ -124,6 +133,13 @@ const Attendance = () => {
     }
   }
   useEffect(() => {
+    if (loading) {
+      setLoaderModal(true);
+    } else {
+      setLoaderModal(false);
+    }
+  }, [loading]);
+  useEffect(() => {
     getTodayAttendance();
     attendance_by_month();
   }, []);
@@ -133,6 +149,7 @@ const Attendance = () => {
       getExport();
     }
   }, [fromDate, toDate]);
+
   const showData = [
     {
       id: 1,
@@ -307,28 +324,29 @@ const Attendance = () => {
     }
   };
   const presentDates = monthList?.attendanceDetails?.map(item => item.punch_in.split(' ')[0]);
-  const absentDates = ['2025-04-05', '2025-04-09', '2025-04-30'];
+  // const absentDates = ['2025-04-05', '2025-04-09', '2025-04-30'];
   const holidayDates = monthList?.holidayDetails?.map(item => item.date.split(' ')[0]);
-  const leaveDates = ['2025-04-04', '2025-04-25', '2025-04-26'];
-  const outdutyates = ['2025-04-23',];
+  // const leaveDates = ['2025-04-04', '2025-04-25', '2025-04-26'];
+  // const outdutyates = ['2025-04-23',];
 
   const markedDates = {};
 
   presentDates?.forEach(date => {
     markedDates[date] = { status: 'present' };
   });
-  absentDates?.forEach(date => {
-    markedDates[date] = { status: 'absent' };
-  });
+  // absentDates?.forEach(date => {
+  //   markedDates[date] = { status: 'absent' };
+  // });
   holidayDates?.forEach(date => {
     markedDates[date] = { status: 'holiday' };
   });
-  leaveDates?.forEach(date => {
-    markedDates[date] = { status: 'leave' };
-  });
-  outdutyates?.forEach(date => {
-    markedDates[date] = { status: 'outduty' };
-  });
+  // leaveDates?.forEach(date => {
+  //   markedDates[date] = { status: 'leave' };
+  // });
+  // outdutyates?.forEach(date => {
+  //   markedDates[date] = { status: 'outduty' };
+  // });
+ 
   
   return (
     <SafeAreaView
@@ -644,6 +662,16 @@ const Attendance = () => {
               </View>
             </View>
           </View>
+          <Modal
+        transparent
+        animationType="fade"
+        visible={loaderModal}
+        statusBarTranslucent
+      >
+        <View style={styles.overlay}>
+          <ActivityIndicator size="large" color="blue" />
+        </View>
+      </Modal>
         </>
       ) : (
         <>
@@ -657,126 +685,6 @@ const Attendance = () => {
               flex: 1,
             }}>
             <ScrollView>
-              {/* <View
-                style={{
-                  width: responsiveWidth(90),
-                  height: responsiveHeight(20),
-                  backgroundColor: currentTheme.background,
-                  alignSelf: 'center',
-                  marginTop:
-                    Platform.OS == 'ios'
-                      ? responsiveHeight(3)
-                      : responsiveHeight(1.5),
-                  borderRadius: 20,
-                  shadowColor: '#30C1DD',
-                  shadowRadius: 10,
-                  shadowOpacity: 0.6,
-                  elevation: 8,
-                  shadowOffset: {
-                    width: 0,
-                    height: 4,
-                  },
-                  borderWidth: 0.5,
-                  borderColor: currentTheme.text,
-                }}>
-                <View
-                  style={{
-                    flexDirection: 'row',
-                    justifyContent: 'space-around',
-                    alignItems: 'center',
-                    marginTop: 10,
-                  }}>
-                  <Text
-                    style={{
-                      color: currentTheme.text,
-                      fontSize: responsiveFontSize(2),
-                    }}>
-                    Today
-                  </Text>
-                  <Text
-                    style={{
-                      color: currentTheme.text,
-                      fontSize: responsiveFontSize(2),
-                    }}>
-                    In Time
-                  </Text>
-                  <Text
-                    style={{
-                      color: currentTheme.text,
-                      fontSize: responsiveFontSize(2),
-                    }}>
-                    Out Time
-                  </Text>
-                </View>
-                <View
-                  style={{
-                    width: '100%',
-                    borderWidth: 0.5,
-                    borderColor: currentTheme.text,
-                    marginTop: 5,
-                  }}></View>
-                <View
-                  style={{
-                    flexDirection: 'row',
-                    justifyContent: 'space-around',
-                    alignItems: 'center',
-                    marginTop: 15,
-                  }}>
-                  <Text
-                    style={{
-                      color: currentTheme.text,
-                      fontSize: responsiveFontSize(1.6),
-                    }}>
-                    {todayAttendanceDetails == null
-                      ? 'N/A'
-                      : moment(
-                          todayAttendanceDetails?.punch_in,
-                          'YYYY-MM-DD HH:mm:ss',
-                        ).format('dddd')}
-                  </Text>
-                  <Text
-                    style={{
-                      color: currentTheme.text,
-                      fontSize: responsiveFontSize(1.6),
-                    }}>
-                    {todayAttendanceDetails == null
-                      ? 'N/A'
-                      : moment(
-                          todayAttendanceDetails?.punch_in,
-                          'YYYY-MM-DD HH:mm:ss',
-                        ).format('hh:mm:ss A')}
-                  </Text>
-                  <Text
-                    style={{color: '#000', fontSize: responsiveFontSize(1.6)}}>
-                    {todayAttendanceDetails == null ||
-                    todayAttendanceDetails?.punch_out == null
-                      ? 'N/A'
-                      : moment(
-                          todayAttendanceDetails?.punch_out,
-                          'YYYY-MM-DD HH:mm:ss',
-                        ).format('hh:mm:ss A')}
-                  </Text>
-                </View>
-                <View
-                  style={{
-                    width: 80,
-                    height: 80,
-                    borderRadius: 50,
-                    borderWidth: 1,
-                    marginTop: 10,
-                    alignSelf: 'center',
-                    justifyContent: 'center',
-                    alignItems: 'center',
-                    borderColor: currentTheme.text,
-                  }}>
-                  <Text style={{color: currentTheme.text, fontSize: 16}}>
-                    {todayAttendanceDetails == null ||
-                    todayAttendanceDetails?.punch_out == null
-                      ? 'N/A'
-                      : `${hours}h ${minutes}m`}
-                  </Text>
-                </View>
-              </View> */}
               <View
                 style={{
                   width: responsiveWidth(90),
@@ -942,36 +850,6 @@ const Attendance = () => {
                   onCancel={hideToDatePicker}
                 />
               </View>
-              {/*   Export button  */}
-              {/* <View
-                style={{
-                  flexDirection: 'row',
-                  alignItems: 'center',
-                  justifyContent: 'space-between',
-                  marginTop: 10,
-                }}>
-                <Text
-                  style={{
-                    color: currentTheme.text,
-                    fontWeight: 'bold',
-                    fontSize: 20,
-                    textAlign: 'right',
-                    marginLeft: 20,
-                  }}>
-                  Export Attendance
-                </Text>
-                <TouchableOpacity
-                  style={{marginRight: 30}}
-                  onPress={() => handleExport()}>
-                  <AntDesign
-                    name="export"
-                    size={35}
-                    color={currentTheme.text}
-                  />
-                </TouchableOpacity>
-              </View> */}
-
-              {/* Logs codes */}
               <View
                 style={{
                   width: responsiveWidth(90),
@@ -1084,6 +962,7 @@ const Attendance = () => {
               </View>
             </ScrollView>
           </View>
+       
         </>
       )}
     </SafeAreaView>
@@ -1178,4 +1057,10 @@ const styles = StyleSheet.create({
     width: responsiveWidth(15),
   },
   buttonText: {color: '#fff', fontWeight: 'bold'},
+  overlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0,0,0,0.3)',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
 });

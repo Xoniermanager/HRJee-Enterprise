@@ -232,17 +232,17 @@ const ApplyLeave = ({navigation}) => {
     try {
       if (startDate == '' || startDate == [] || startDate == undefined) {
         showMessage({
-          message: 'Please select startdate',
+          message: 'Please select Start Date',
           type: 'danger',
         });
       } else if (endDate == '' || endDate == [] || endDate == undefined) {
         showMessage({
-          message: 'Please select enddate',
+          message: 'Please select End Date',
           type: 'danger',
         });
       } else if (value1 == undefined || value1 == '' || value1 == []) {
         showMessage({
-          message: 'Please select leave type',
+          message: 'Please select Leave type',
           type: 'danger',
         });
       } else if (reason == '') {
@@ -583,12 +583,13 @@ const ApplyLeave = ({navigation}) => {
             <TouchableOpacity
               onPress={() => handleSubmit()}
               style={{
-                marginBottom: 5,
+                marginBottom: 150,
                 backgroundColor: currentTheme.background_v2,
                 padding: 18,
                 width: '90%',
                 alignSelf: 'center',
                 borderRadius: 50,
+                
               }}>
               {loaderApply ? (
                 <ActivityIndicator size="small" color="#fff" />

@@ -149,14 +149,13 @@ const Person_Detils = () => {
       };
       data.append('profile_image', imagepath);
     }
-    // data.append('profile_image', imagepath ? imagepath : details.profile_image);
     data.append(
       'date_of_birth',
       Start_date != 'undefined-NaN-undefined'
         ? Start_date
         : details.date_of_birth,
     );
-    data.append('name', details.name);   
+    data.append('name', details.name);
     let config = {
       method: 'post',
       maxBodyLength: Infinity,
@@ -232,25 +231,25 @@ const Person_Detils = () => {
             borderTopRightRadius: 40,
             padding: 20,
           }}>
-          <View
-            style={[
-              styles.profileSection,
-              {
-                borderColor: currentTheme.text,
-                shadowColor: currentTheme.text,
-              },
-            ]}>
-            <Image
-              source={{uri: profileImageUri}}
-              style={styles.profileImage}
-            />
+         <View
+      style={[
+        styles.profileSection,
+        {
+          borderColor: currentTheme.text,
+          shadowColor: currentTheme.text,
+        },
+      ]}>
+      <Image
+        source={{uri: profileImageUri}}
+        style={styles.profileImage}
+      />
 
-            <TouchableOpacity
-              style={styles.addButton}
-              onPress={handleImagePick}>
-              <MaterialIcons name="add-a-photo" size={24} color="#fff" />
-            </TouchableOpacity>
-          </View>
+      <TouchableOpacity
+        style={styles.addButton}
+        onPress={handleImagePick}>
+        <MaterialIcons name="add-a-photo" size={20} color="#fff" />
+      </TouchableOpacity>
+    </View>
           <View
             style={[
               styles.inputContainer,
@@ -306,7 +305,7 @@ const Person_Detils = () => {
             />
           </View>
           <Text style={[styles.label, {color: currentTheme.text}]}>
-            Select Blood Group
+             Blood Group
           </Text>
           <FlatList
             data={bloodGroups}
@@ -338,11 +337,15 @@ const Person_Detils = () => {
               );
             }}
           />
+            <Text style={[styles.label, {color: currentTheme.text}]}>
+             Marital Status
+          </Text>
           <View
             style={[
               styles.checkboxContainer,
               {backgroundColor: currentTheme.inputText_color},
             ]}>
+              
             <CheckBox
               isChecked={single}
               onClick={() => handleMerridChange('S')}
@@ -358,7 +361,9 @@ const Person_Detils = () => {
               checkBoxColor={currentTheme.text}
             />
           </View>
-
+          <Text style={[styles.label, {color: currentTheme.text}]}>
+             Gender
+          </Text>
           <View
             style={[
               styles.checkboxContainer,
@@ -386,6 +391,9 @@ const Person_Detils = () => {
               checkBoxColor={currentTheme.text}
             />
           </View>
+          <Text style={[styles.label, {color: currentTheme.text}]}>
+             D.O.B
+          </Text>
           <TouchableOpacity
             onPress={showFromDatePicker}
             style={[
@@ -439,9 +447,7 @@ const Person_Detils = () => {
     </SafeAreaView>
   );
 };
-
 export default Person_Detils;
-
 const styles = StyleSheet.create({
   container: {
     flex: 1,
@@ -461,21 +467,6 @@ const styles = StyleSheet.create({
     color: '#001B76',
     marginBottom: 20,
   },
-  // profileSection: {
-  //   alignItems: 'center',
-  //   marginBottom: 20,
-  //   width: 100,
-  //   height: 100,
-  //   borderRadius: 50,
-  //   alignSelf: 'center',
-  // },
-  // profileImage: {
-  //   width: 100,
-  //   height: 100,
-  //   borderRadius: 50,
-  //   resizeMode: 'contain',
-  //   borderWidth: 0.5,
-  // },
   editIcon: {
     position: 'absolute',
     bottom: 0,
@@ -560,7 +551,7 @@ const styles = StyleSheet.create({
     height: 130,
     borderWidth: 2,
     borderRadius: 65,
-    overflow: 'hidden',
+    // overflow: 'hidden',  // Removed to allow the icon to go outside
     shadowOffset: {width: 0, height: 2},
     shadowOpacity: 0.2,
     shadowRadius: 4,
@@ -574,16 +565,18 @@ const styles = StyleSheet.create({
   profileImage: {
     width: '100%',
     height: '100%',
+    borderRadius: 65, // Ensures image is clipped as a circle
   },
   addButton: {
     position: 'absolute',
-
     backgroundColor: '#007bff',
     borderRadius: 20,
     padding: 6,
     elevation: 4,
-    top: 4,
-    right: 15,
+    right: -2,
+    bottom: -3,
+    borderWidth: 2,
+    borderColor: '#fff',
   },
   label: {
     fontSize: 18,

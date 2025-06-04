@@ -149,21 +149,23 @@ const Policy = () => {
                                 justifyContent: 'center',
                                 alignSelf: 'flex-end',
                               }}>
-                              <Text
+                              {/* <Text
                                 style={{
                                   color: currentTheme.newsText,
                                   width: '90%',
                                   fontSize: 16,
-                                  marginTop: 10,
+                                  marginTop: 25,
                                 }}>
                                 {item?.title}
-                              </Text>
+                              </Text> */}
                               <View
                                 style={{
                                   flexDirection: 'row',
                                   justifyContent: 'space-between',
                                   marginVertical: 5,
                                   alignItems: 'center',
+                                  marginTop: 25,
+                                 
                                 }}>
                                 <TouchableOpacity
                                   onPress={() =>

@@ -21,6 +21,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import {getLeaveType} from '../../../APINetwork/ComponentApi';
 import HomeSkeleton from '../../Skeleton/HomeSkeleton';
 import {useIsFocused} from '@react-navigation/native';
+import PullToRefresh from '../../../PullToRefresh';
 const Leaves = ({navigation}) => {
   const {currentTheme, theme} = useContext(ThemeContext);
   const isFocused = useIsFocused();
@@ -75,6 +76,10 @@ const Leaves = ({navigation}) => {
       console.error('Error making POST request:', error);
     }
   }
+  const handleRefresh = async () => {
+    check();
+    checkLeaves();
+  };
   useEffect(() => {
     check();
     checkLeaves();
@@ -95,7 +100,6 @@ const Leaves = ({navigation}) => {
         justifyContent: 'center',
         backgroundColor:'#BAAEFC',
         width: responsiveWidth(28),
-        // height: responsiveHeight(20),
         marginHorizontal: 5,
         borderRadius: 20,
         shadowColor: '#000',
@@ -126,7 +130,7 @@ const Leaves = ({navigation}) => {
             color: currentTheme.text,
             textAlign: 'center',
           }}>
-          {item.leave_name} Leave
+          {item.leave_name}
         </Text>
         <Text style={{fontSize: 14, color: currentTheme.text, marginBottom: 2}}>
           Available: {item.avaialble}
@@ -143,11 +147,11 @@ const Leaves = ({navigation}) => {
 
   const getColor = status => {
     switch (status) {
-      case 'Approved':
+      case 'APPROVED':
         return '#0CD533';
       case 'PENDING':
         return '#0000ff';
-      case 'Rejected':
+      case 'REJECTED':
         return 'red';
       default:
         return 'grey';
@@ -234,16 +238,17 @@ const Leaves = ({navigation}) => {
   return (
     <SafeAreaView
       style={[styles.container, {backgroundColor: currentTheme.background_v2}]}>
+          <PullToRefresh onRefresh={handleRefresh}>
       <ScrollView
         style={{
           width: '100%',
-          height: '100%',
           backgroundColor: currentTheme.background,
           borderTopLeftRadius: 40,
           marginTop: responsiveHeight(1),
           borderTopRightRadius: 40,
+          height: responsiveHeight(100),
         }}>
-        <View style={{margin: 18}}>
+        <View style={{margin: 18,}}>
           <View style={{flexDirection: 'row', justifyContent: 'flex-end'}}>
             <TouchableOpacity
               onPress={() => navigation.navigate('ApplyLeave')}
@@ -306,6 +311,7 @@ const Leaves = ({navigation}) => {
           </View>
         </View>
       </ScrollView>
+      </PullToRefresh>
     </SafeAreaView>
   );
 };
@@ -321,17 +327,13 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     marginBottom: responsiveHeight(0),
   },
-  container1: {
-    flex: 1,
-    padding: 20,
-    backgroundColor: '#f5f5f5',
-  },
+
   menu: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     marginBottom: 20,
     marginTop: 10,
-    marginBottom: 25,
+    // marginBottom: 25,
   },
   menuItem: {
     flex: 1,

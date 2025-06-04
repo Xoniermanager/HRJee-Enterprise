@@ -1,6 +1,7 @@
 import { ActivityIndicator, StyleSheet, Text, View } from 'react-native'
-import React from 'react'
+import React, { useState } from 'react'
 const Reload = () => {
+  const [loaderModal, setLoaderModal] = useState(true);
   return (
     <View style={styles.container}>
      <ActivityIndicator size="large" color="#0433DA"  />

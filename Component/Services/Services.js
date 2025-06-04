@@ -70,7 +70,12 @@ const Services = ({navigation}) => {
   ];
   const renderServicesList = ({item}) => (
     <TouchableOpacity
-      onPress={() => navigation.navigate(item.nav)}
+    onPress={() => {
+      navigation.navigate({
+        name: item.nav,
+        params: { screen: 'Services' },
+      });
+    }}
       activeOpacity={1}
       style={[
         styles.item,

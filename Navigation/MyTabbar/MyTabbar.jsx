@@ -7,6 +7,8 @@ import Attendance from '../../Component/Attendance/Attendance';
 import Services from '../../Component/Services/Services';
 import MyDrawer from '../MyDrawer/MyDrawer';
 import { ThemeContext } from '../../Store/ConetxtApi.jsx/ConextApi';
+import MyStack from '../MyStack/MyStack';
+import MyStackTab from '../MyStack/MyStackTab';
 
 const MyTabbar = ({ route }) => {
   const Tab = createBottomTabNavigator();
@@ -57,7 +59,7 @@ const MyTabbar = ({ route }) => {
       />
 
       <Tab.Screen
-        name="Attendance"
+        name="Attendances"
         component={Attendance}
         options={{
           unmountOnBlur: true,
@@ -114,9 +116,10 @@ const MyTabbar = ({ route }) => {
 
       <Tab.Screen
         name="Services"
-        component={Services}
+        component={MyStackTab}
         options={{
           unmountOnBlur: true,
+          headerShown: false,
           tabBarIcon: ({ focused }) => (
             <View style={{ marginTop: 5, justifyContent: 'center', alignItems: 'center' }}>
               {!focused ? (

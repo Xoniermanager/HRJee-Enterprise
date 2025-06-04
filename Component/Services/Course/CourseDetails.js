@@ -11,10 +11,12 @@ import {
 } from 'react-native';
 import {coourseDeatils} from '../../../APINetwork/ComponentApi';
 import {BASE_URL} from '../../../utils';
+import Reload from '../../../Reload';
 
 const CourseDetails = ({route}) => {
   const {id} = route.params;
-  const [list, setList] = useState();
+  const [list, setList] = useState(null);
+
   const getDetails = async () => {
     const token = await AsyncStorage.getItem('TOKEN');
     const url = `${BASE_URL}/course/details/${id}`;
@@ -23,16 +25,22 @@ const CourseDetails = ({route}) => {
       setList(response.data.data);
     }
   };
+
   useEffect(() => {
     getDetails();
   }, []);
+
+  if (list == null) {
+    return <Reload />;
+  }
+
   const renderItem = ({item, index}) => {
     return (
       <View key={index}>
         <View style={styles.card}>
           <Text style={styles.sectionTitle}>Curriculum Details</Text>
           <View style={styles.moduleContainer}>
-            <Text style={styles.moduleTitle}>Module 1:{item.title}</Text>
+            <Text style={styles.moduleTitle}>Module 1: {item.title}</Text>
             <View style={styles.row}>
               <View style={styles.labelContainer}>
                 <Text style={styles.label}>Instructor</Text>
@@ -57,9 +65,10 @@ const CourseDetails = ({route}) => {
             </View>
           </View>
         </View>
-        {item.curriculam_assignment.map(val => {
+
+        {item.curriculam_assignment.map((val, i) => {
           return (
-            <View style={styles.card}>
+            <View key={i} style={styles.card}>
               <Text style={styles.sectionTitle}>Assignments</Text>
               <View style={styles.moduleContainer}>
                 <Text style={styles.moduleTitle}>Assignment</Text>
@@ -99,7 +108,6 @@ const CourseDetails = ({route}) => {
 
   return (
     <ScrollView style={styles.container}>
-      {/* Course Details Section */}
       <View style={styles.card}>
         <Text style={styles.sectionTitle}>Course Details</Text>
         <View style={styles.row}>
@@ -123,11 +131,14 @@ const CourseDetails = ({route}) => {
           </View>
         </View>
       </View>
-      <FlatList
-        data={list?.curriculums}
-        renderItem={renderItem}
-        keyExtractor={item => item.id}
-      />
+
+      <View style={{marginBottom: 110}}>
+        <FlatList
+          data={list?.curriculums}
+          renderItem={renderItem}
+          keyExtractor={item => item.id.toString()}
+        />
+      </View>
     </ScrollView>
   );
 };
@@ -187,10 +198,12 @@ const styles = StyleSheet.create({
   button: {
     backgroundColor: '#0E0E64',
     paddingVertical: 8,
-    paddingHorizontal: 12,
+    paddingHorizontal: 16,
     borderRadius: 5,
     marginTop: 5,
     alignItems: 'center',
+    alignSelf: 'flex-start',
+    minWidth: 120,
   },
   buttonText: {
     color: '#FFF',

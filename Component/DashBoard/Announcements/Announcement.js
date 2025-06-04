@@ -110,19 +110,19 @@ const Announcement = ({navigation}) => {
               getAnnouncementApiData == null ||
               getAnnouncementApiData == [] ? (
                 <View
-                  style={[
-                    styles.container_imagebackground,
-                    {overflow: 'hidden', borderRadius: 20},
-                  ]}>
-                  <ImageBackground
-                    source={image}
-                    resizeMode="cover"
-                    style={[styles.image, {borderRadius: 20}]}>
-                    <View style={styles.textContainer}>
-                      <Text style={styles.text}>No Data Available</Text>
-                    </View>
-                  </ImageBackground>
-                </View>
+                style={[
+                  styles.container_imagebackground,
+                  {overflow: 'hidden', borderRadius: 20},
+                ]}>
+                <ImageBackground
+                  source={image}
+                  resizeMode="cover"
+                  style={[styles.image, {borderRadius: 20}]}>
+                  <View style={styles.textContainer}>
+                    <Text style={styles.text}>No Data Available</Text>
+                  </View>
+                </ImageBackground>
+              </View>
               ) : (
                 <View style={{margin: 20}}>
                   <FlatList
@@ -172,7 +172,7 @@ const styles = StyleSheet.create({
   },
   image: {
     flex: 1,
-    height: 130,
+    height: responsiveHeight(65),
   },
   header: {
     fontSize: 24,

@@ -8,7 +8,7 @@ import { logout } from '../../APINetwork/ComponentApi';
 import { BASE_URL } from '../../utils';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { showMessage } from "react-native-flash-message";
-import { useNavigation } from '@react-navigation/native';
+import { CommonActions, useNavigation } from '@react-navigation/native';
 import { ThemeContext } from '../../Store/ConetxtApi.jsx/ConextApi';
 import { responsiveFontSize } from 'react-native-responsive-dimensions';
 import VersionCheck from 'react-native-version-check';
@@ -55,7 +55,12 @@ export default function CustomDrawer(props) {
       if (response?.data?.status) {
         showMessage({ message: response.data.message, type: "success" });
         await AsyncStorage.removeItem('TOKEN');
-        navigation.navigate('LoginScreen');
+        navigation.dispatch(
+          CommonActions.reset({
+            index: 0,
+            routes: [{ name: 'LoginScreen' }],
+          })
+        );
       }
     } catch (error) {
       console.log('Error making POST request:', error);
@@ -119,7 +124,7 @@ const styles = StyleSheet.create({
   },
   versionContainer: {
     position: 'absolute',
-    bottom: 110,
+    bottom: 130,
     left: 0,
     right: 140,
     alignItems: 'center',

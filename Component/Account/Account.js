@@ -8,7 +8,6 @@ import {
   StyleSheet,
   SafeAreaView,
   FlatList,
-  Platform,
   Linking,
 } from 'react-native';
 import {
@@ -17,7 +16,11 @@ import {
   responsiveFontSize,
 } from 'react-native-responsive-dimensions';
 import FontAwesome from 'react-native-vector-icons/FontAwesome';
-import {DrawerActions, useNavigation} from '@react-navigation/native';
+import {
+  DrawerActions,
+  useIsFocused,
+  useNavigation,
+} from '@react-navigation/native';
 import {BASE_URL} from '../../utils';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import {getProfile} from '../../APINetwork/ComponentApi';
@@ -27,40 +30,40 @@ import Themes from '../Theme/Theme';
 import {ThemeContext} from '../../Store/ConetxtApi.jsx/ConextApi';
 const Account = () => {
   const {currentTheme, theme} = useContext(ThemeContext);
+  const IsFouced = useIsFocused();
   const showData = [
     {
       id: 1,
       uri: require('../../assets/HomeScreen/calendar.png'),
       name: 'Attendance',
-     
-      backgroundcolor:'#BAAEFC',
-      nav:'Attendance'
+
+      backgroundcolor: '#BAAEFC',
+      nav: 'Attendance',
     },
     {
       id: 2,
       uri: require('../../assets/HomeScreen/leave.png'),
       name: 'Leave',
-     
-      backgroundcolor:'#F9B7D5',
-      nav:'Leaves'
+
+      backgroundcolor: '#F9B7D5',
+      nav: 'Leaves',
     },
     {
       id: 3,
       uri: require('../../assets/HomeScreen/medal.png'),
       name: 'Award',
-     
-      backgroundcolor:'#44D5FB',
-      nav:'Reward'
+
+      backgroundcolor: '#44D5FB',
+      nav: 'Reward',
     },
   ];
   const [getProfileApiData, setGetProfileApiData] = useState('');
   const [getAssetsApiData, setGetAssetsApiData] = useState('');
   const [loader, setLoader] = useState(false);
-  const [show, setShow] = useState(false);
   const navigation = useNavigation();
   const renderServicesList = ({item}) => (
     <TouchableOpacity
-    onPress={()=>navigation.navigate(item.nav)}
+      onPress={() => navigation.navigate(item.nav)}
       style={{
         justifyContent: 'center',
         backgroundColor: item.backgroundcolor,
@@ -119,7 +122,6 @@ const Account = () => {
   }
   async function AssetsList() {
     try {
-      // setLoader(true);
       let token = await AsyncStorage.getItem('TOKEN');
       const url = `${BASE_URL}/assets`;
       const response = await getProfile(url, token);
@@ -138,11 +140,35 @@ const Account = () => {
   useEffect(() => {
     check();
     AssetsList();
-  }, []);
+  }, [IsFouced]);
   if (loader) {
     return <AccountSkeleton />;
   }
-  
+  function calculateWorkDuration(joiningDateStr) {
+    const startDate = new Date(joiningDateStr);
+    const endDate = new Date();
+    let years = endDate.getFullYear() - startDate.getFullYear();
+    let months = endDate.getMonth() - startDate.getMonth();
+    let days = endDate.getDate() - startDate.getDate();
+    if (days < 0) {
+      months--;
+      const previousMonth = new Date(
+        endDate.getFullYear(),
+        endDate.getMonth(),
+        0,
+      );
+      days += previousMonth.getDate();
+    }
+    if (months < 0) {
+      years--;
+      months += 12;
+    }
+    return `At work for: ${years} year${
+      years !== 1 ? 's' : ''
+    }, ${months} month${months !== 1 ? 's' : ''}, ${days} day${
+      days !== 1 ? 's' : ''
+    }`;
+  }
   return (
     <SafeAreaView
       style={[styles.container, {backgroundColor: currentTheme.background_v2}]}>
@@ -151,16 +177,7 @@ const Account = () => {
           style={{
             marginTop: 15,
           }}>
-          <View style={{flexDirection: 'row', alignSelf: 'center'}}>
-            <Text style={styles.name}>Profile</Text>
-            <TouchableOpacity
-              onPress={() =>
-                navigation.dispatch(DrawerActions.openDrawer('MyDrawer'))
-              }
-              style={{marginLeft: 5}}>
-              <FontAwesome style={{}} name="edit" size={30} color="#fff" />
-            </TouchableOpacity>
-          </View>
+        
           <View style={{marginTop: 10, alignSelf: 'center'}}>
             {getProfileApiData?.details?.profile_image == '' ||
             getProfileApiData?.details?.profile_image == [] ||
@@ -187,10 +204,21 @@ const Account = () => {
                 source={{uri: getProfileApiData?.details?.profile_image}}
               />
             )}
+              <View style={{flexDirection: 'row', alignSelf: 'center'}}>
+            <Text style={styles.name}>Profile</Text>
+            <TouchableOpacity
+              onPress={() =>
+                navigation.dispatch(DrawerActions.openDrawer('MyDrawer'))
+              }
+              style={{marginLeft: 5}}>
+              <FontAwesome style={{}} name="edit" size={30} color="#fff" />
+            </TouchableOpacity>
+          </View>
             <Text style={styles.name}>{getProfileApiData?.name}</Text>
             <Text style={styles.name}>{getProfileApiData?.details?.phone}</Text>
             <Text style={styles.name}>{getProfileApiData?.email}</Text>
           </View>
+          
         </View>
 
         <View
@@ -209,7 +237,7 @@ const Account = () => {
               marginVertical: 10,
               fontWeight: 'bold',
             }}>
-            At work for : 4 years, 1 month, 20 Day
+            {calculateWorkDuration(getProfileApiData?.details?.joining_date)}
           </Text>
           <FlatList
             style={{alignSelf: 'center'}}
@@ -219,7 +247,6 @@ const Account = () => {
             renderItem={renderServicesList}
             keyExtractor={item => item.id}
           />
-          {/* This is bank details */}
           <View
             style={{
               alignSelf: 'center',
@@ -424,94 +451,71 @@ const Account = () => {
               </TouchableOpacity>
             </View>
             {expandedassets ? (
-              <View
-                style={{
-                  marginBottom: expandedassets == true ? 8 : 0,
-                  borderBottomLeftRadius: 10,
-                  borderBottomRightRadius: 10,
-                }}>
-                <View
-                  style={{
-                    borderTopWidth: expandedassets == true ? 0 : 2,
-                    borderWidth: 1,
-                    borderColor: currentTheme.background_v2,
-                    backgroundColor: currentTheme.background,
-                    borderTopLeftRadius: 0,
-                    borderBottomLeftRadius: 0,
-                    borderBottomRightRadius: 0,
-                  }}>
-                  <>
-                    {getAssetsApiData?.map((elements, index) => {
-                      return (
-                        <View
-                          key={index}
-                          style={[
-                            styles.card,
-                            {
-                              backgroundColor: currentTheme.background,
-                              borderWidth: 0.5,
-                              borderColor: currentTheme.background_v2,
-                            },
-                          ]}>
-                          <View style={styles.content}>
-                            <Text
-                              style={[
-                                styles.title,
-                                {color: currentTheme.text},
-                              ]}>
-                              Assigned Date
-                            </Text>
-                            <Text
-                              style={[
-                                styles.title,
-                                {color: currentTheme.text},
-                              ]}>
-                              {elements?.assigned_date
-                                ? elements?.assigned_date
-                                : 'N/A'}
-                            </Text>
-                          </View>
-                          <View style={styles.content}>
-                            <Text
-                              style={[
-                                styles.title,
-                                {color: currentTheme.text},
-                              ]}>
-                              Returned Date
-                            </Text>
-                            <Text
-                              style={[
-                                styles.title,
-                                {color: currentTheme.text},
-                              ]}>
-                              {elements?.returned_date
-                                ? elements?.returned_date
-                                : 'N/A'}
-                            </Text>
-                          </View>
-                          <View style={styles.content}>
-                            <Text
-                              style={[
-                                styles.title,
-                                {color: currentTheme.text},
-                              ]}>
-                              Comment
-                            </Text>
-                            <Text
-                              style={[
-                                styles.title,
-                                {color: currentTheme.text},
-                              ]}>
-                              {elements?.comment ? elements?.comment : 'N/A'}
-                            </Text>
-                          </View>
-                        </View>
-                      );
-                    })}
-                  </>
-                </View>
-              </View>
-            ) : null}
+  <View
+    style={{
+      marginBottom: expandedassets == true ? 8 : 0,
+      borderBottomLeftRadius: 10,
+      borderBottomRightRadius: 10,
+    }}>
+    <View
+      style={{
+        borderTopWidth: expandedassets == true ? 0 : 2,
+        borderWidth: 1,
+        borderColor: currentTheme.background_v2,
+        backgroundColor: currentTheme.background,
+        borderTopLeftRadius: 0,
+        borderBottomLeftRadius: 0,
+        borderBottomRightRadius: 0,
+      }}>
+      {getAssetsApiData && getAssetsApiData.length > 0 ? (
+        getAssetsApiData.map((elements, index) => (
+          <View
+            key={index}
+            style={[
+              styles.card,
+              {
+                backgroundColor: currentTheme.background,
+                borderWidth: 0.5,
+                borderColor: currentTheme.background_v2,
+              },
+            ]}>
+            <View style={styles.content}>
+              <Text style={[styles.title, {color: currentTheme.text}]}>
+                Assigned Date
+              </Text>
+              <Text style={[styles.title, {color: currentTheme.text}]}>
+                {elements?.assigned_date || 'N/A'}
+              </Text>
+            </View>
+            <View style={styles.content}>
+              <Text style={[styles.title, {color: currentTheme.text}]}>
+                Returned Date
+              </Text>
+              <Text style={[styles.title, {color: currentTheme.text}]}>
+                {elements?.returned_date || 'N/A'}
+              </Text>
+            </View>
+            <View style={styles.content}>
+              <Text style={[styles.title, {color: currentTheme.text}]}>
+                Comment
+              </Text>
+              <Text style={[styles.title, {color: currentTheme.text}]}>
+                {elements?.comment || 'N/A'}
+              </Text>
+            </View>
+          </View>
+        ))
+      ) : (
+        <View style={{padding: 16, alignItems: 'center'}}>
+          <Text style={{color: currentTheme.text, fontSize: 14}}>
+            No Data Found
+          </Text>
+        </View>
+      )}
+    </View>
+  </View>
+) : null}
+
           </View>
 
           {/* This is Address details */}
@@ -577,73 +581,84 @@ const Account = () => {
               </TouchableOpacity>
             </View>
             {expandeddocuments ? (
-              <View
-                style={{
-                  marginBottom: expandeddocuments == true ? 8 : 0,
-                  borderBottomLeftRadius: 10,
-                  borderBottomRightRadius: 10,
-                }}>
-                <View
-                  style={{
-                    borderTopWidth: expandeddocuments == true ? 0 : 2,
-                    borderWidth: 1,
-                    borderColor: currentTheme.background_v2,
-                    backgroundColor: currentTheme.background,
-                    borderTopLeftRadius: 0,
-                    borderBottomLeftRadius: 0,
-                    borderBottomRightRadius: 0,
-                  }}>
-                  <>
-                    {documentdetailsdata?.map((elements, index) => {
-                      let fileURL = elements?.document;
-                      console.log(fileURL, 'fileURL');
-                      let fileName = elements?.document_types?.name;
-                      let fileExtension = fileURL.split('.').pop();
+  <View
+    style={{
+      marginBottom: expandeddocuments == true ? 8 : 0,
+      borderBottomLeftRadius: 10,
+      borderBottomRightRadius: 10,
+    }}>
+    <View
+      style={{
+        borderTopWidth: expandeddocuments == true ? 0 : 2,
+        borderWidth: 1,
+        borderColor: currentTheme.background_v2,
+        backgroundColor: currentTheme.background,
+        borderTopLeftRadius: 0,
+        borderBottomLeftRadius: 0,
+        borderBottomRightRadius: 0,
+      }}>
+      {documentdetailsdata && documentdetailsdata.length > 0 ? (
+        documentdetailsdata.map((elements, index) => {
+          let fileURL = elements?.document;
+          let fileName = elements?.document_types?.name;
+          let fileExtension = fileURL?.split('.').pop();
 
-                      return (
-                        <View
-                          key={index}
-                          style={[
-                            styles.card,
-                            {
-                              backgroundColor: currentTheme.background,
-                              borderWidth: 0.5,
-                              borderColor: currentTheme.background_v2,
-                            },
-                          ]}>
-                          <View style={styles.content}>
-                            <Text
-                              style={[
-                                styles.title,
-                                {color: currentTheme.text},
-                              ]}>
-                              {fileName}
-                            </Text>
-                            <Text
-                              style={[
-                                styles.description,
-                                {color: currentTheme.text},
-                              ]}>
-                              {fileExtension}
-                            </Text>
-                            <TouchableOpacity
-                              onPress={() => Linking.openURL(fileURL)}>
-                              <Text
-                                style={[
-                                  styles.description,
-                                  styles.downloadtxt,
-                                ]}>
-                                Download
-                              </Text>
-                            </TouchableOpacity>
-                          </View>
-                        </View>
-                      );
-                    })}
-                  </>
-                </View>
+          return (
+            <View
+              key={index}
+              style={[
+                styles.card,
+                {
+                  backgroundColor: currentTheme.background,
+                  borderWidth: 0.5,
+                  borderColor: currentTheme.background_v2,
+                },
+              ]}>
+              <View style={styles.content}>
+                <Text style={[styles.title, {color: currentTheme.text}]}>
+                  {fileName || 'Unknown Document'}
+                </Text>
+                <Text
+                  style={[
+                    styles.description,
+                    {color: currentTheme.text},
+                  ]}>
+                  {fileExtension || 'Unknown'}
+                </Text>
+                {fileURL ? (
+                  <TouchableOpacity onPress={() => Linking.openURL(fileURL)}>
+                    <Text
+                      style={[
+                        styles.description,
+                        styles.downloadtxt,
+                      ]}>
+                      Download
+                    </Text>
+                  </TouchableOpacity>
+                ) : (
+                  <Text
+                    style={[
+                      styles.description,
+                      {color: currentTheme.text},
+                    ]}>
+                    No file URL available
+                  </Text>
+                )}
               </View>
-            ) : null}
+            </View>
+          );
+        })
+      ) : (
+        <View style={{padding: 16, alignItems: 'center'}}>
+          <Text style={{color: currentTheme.text, fontSize: 14}}>
+            No Documents Found
+          </Text>
+        </View>
+      )}
+    </View>
+  </View>
+) : null}
+
           </View>
         </View>
       </ScrollView>

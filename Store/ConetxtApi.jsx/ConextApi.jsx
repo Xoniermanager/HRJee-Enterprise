@@ -183,6 +183,7 @@ const ConextApi = ({children}) => {
         const RequestAttendance = response?.data?.data?.menu_access?.filter(
           item => item?.title == 'Attendance Request',
         );
+
         setRequestAttendance(RequestAttendance);
         const Announcements = response?.data?.data?.menu_access?.filter(
           item => item?.title == 'Announcements',

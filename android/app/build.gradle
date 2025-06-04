@@ -80,8 +80,8 @@ android {
         applicationId "com.hrjee_enterprise"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
-        versionCode 16
-        versionName "1.15"
+        versionCode 17
+        versionName "1.16"
         missingDimensionStrategy 'react-native-camera', 'mlkit'
     }
     signingConfigs {

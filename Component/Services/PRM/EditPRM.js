@@ -31,7 +31,9 @@ import Reload from '../../../Reload';
 import {showMessage} from 'react-native-flash-message';
 import axios from 'axios';
 import {useNavigation} from '@react-navigation/native';
-const EditPRM = () => {
+const EditPRM = ({route}) => {
+  const {id}=route?.params;
+  console.log(id)
   const navigation = useNavigation();
   const {currentTheme,} = useContext(ThemeContext);
   const [list, setList] = useState(null);
@@ -75,8 +77,9 @@ const EditPRM = () => {
   };
   const detailsListAPI = async () => {
     const token = await AsyncStorage.getItem('TOKEN');
-    const url = `${BASE_URL}/get/prm/request/details/2`;
+    const url = `${BASE_URL}/get/prm/request/details/${id}`;
     const response = await PRMCategory(url, token);
+    console.log(response.data.data.document,'document')
     setDetails({
         'Text':response.data.data.remark,
         'amount':response.data.data.amount
@@ -108,12 +111,10 @@ const EditPRM = () => {
       };
       data.append('document', imagepath);
     }
-    console.log(data, 'data');
-
     let config = {
       method: 'post',
       maxBodyLength: Infinity,
-      url: `${BASE_URL}/update/prm/request/2`,
+      url: `${BASE_URL}/update/prm/request/${id}`,
       headers: {
         'Content-Type': 'multipart/form-data',
         Authorization: `Bearer ${token}`,
@@ -132,6 +133,7 @@ const EditPRM = () => {
       })
       .catch(error => {
         setLoader(false);
+        console.log(error,'error')
 
       });
   };
@@ -219,7 +221,7 @@ const EditPRM = () => {
           ]}>
           <TextInput
             style={[styles.textInput, {color: currentTheme.text}]}
-            placeholder="Type Text..."
+            placeholder="Enter Message"
             placeholderTextColor={currentTheme.text}
             value={details.Text}
             onChangeText={value => handleInputChange('Text', value)}
@@ -233,7 +235,8 @@ const EditPRM = () => {
           {photo ? (
             <Image
               style={{width: responsiveWidth(40), height: responsiveHeight(8)}}
-              source={{uri: photo.path}}
+              source={{uri: photo?.path}}
+
             />
           ) : (
             <Text style={{color: Themes == 'dark' ? '#000' : '#000'}}>

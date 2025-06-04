@@ -52,28 +52,35 @@ const AddAddress = ({route}) => {
     getItem();
   }, []);
   const fetchCoordinates = async address => {
-    try {
-      const response = await axios.get(
-        `https://maps.googleapis.com/maps/api/geocode/json`,
-        {
-          params: {
-            address,
-            key:'AIzaSyCAdzVvYFPUpI3mfGWUTVXLDTerw1UWbdg',
+    if(address){
+      try {
+        const response = await axios.get(
+          `https://maps.googleapis.com/maps/api/geocode/json`,
+          {
+            params: {
+              address,
+              key:'AIzaSyCAdzVvYFPUpI3mfGWUTVXLDTerw1UWbdg',
+            },
           },
-        },
-      );
-      if (response.data.results.length > 0) {
-        const location = response.data.results[0].geometry.location;
-        setLat(location.lat.toString());
-        setLong(location.lng.toString());
+        );
+        if (response.data.results.length > 0) {
+          const location = response.data.results[0].geometry.location;
+          setLat(location.lat.toString());
+          setLong(location.lng.toString());
+        }
+      } catch (error) {
+        console.log(error,'error')
+        showMessage({
+          message: `${error.response.data.error_message}`,
+          type: 'danger',
+        });
       }
-    } catch (error) {
-      console.log(error,'error')
-      showMessage({
-        message: `${error.response.data.error_message}`,
-        type: 'danger',
-      });
     }
+    else{
+      setLat('');
+      setLong('')
+    }
+
   };
   const address_Request = async () => {
     const token = await AsyncStorage.getItem('TOKEN');

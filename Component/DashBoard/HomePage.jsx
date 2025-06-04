@@ -120,6 +120,7 @@ const HomePage = () => {
   const [breakId, setBreakId] = useState(null);
   const [breakLoader, setBreakLoader] = useState(false);
   const [leaveLoader, setLeaveLoader] = useState(false);
+  const [breakDescription,setBreakDescription]=useState(null);
 
   const toggleModal = () => {
     setModalVisible(!isModalVisible);
@@ -489,7 +490,7 @@ const HomePage = () => {
     } else if (reasonText.trim() === '') {
       setBreakModal(false);
       showMessage({
-        message: 'Please Enter Reason',
+        message: 'Please Enter Message',
         type: 'danger',
         duration: 2000,
       });
@@ -2175,7 +2176,7 @@ const HomePage = () => {
           animationIn="slideInUp" // Animation when showing the modal
           animationOut="slideOutDown" // Animation when hiding the modal
           animationInTiming={500} // Duration for animation in (milliseconds)
-          animationOutTiming={500} // Duration for animation out (milliseconds)
+          animationOutTiming={500} 
         >
           <View style={styles.bottomSheet}>
             <Text style={styles.title}>Introducing</Text>
@@ -2355,7 +2356,7 @@ const HomePage = () => {
           <View style={styles.modalContainer}>
             <View style={styles.modalContent}>
               <Text style={{color: '#333', fontSize: 15, marginVertical: 5}}>
-                Select Break Type
+                Select Break Type :-
               </Text>
               <Dropdown
                 style={styles.dropdown}
@@ -2369,15 +2370,19 @@ const HomePage = () => {
                 valueField="id"
                 placeholder="Select Break Type"
                 value={breakValue}
-                onChange={item => setBreakValue(item.id)}
+              onChange={item => [setBreakValue(item.id),setBreakDescription(item)]}
               />
-
+                {breakDescription?.description ? (
+                  <Text style={{color: '#000', fontSize: 13, marginTop: 5}}>
+                    {breakDescription.description}
+                  </Text>
+                ) : null}
               <Text style={{color: '#333', fontSize: 15, marginVertical: 5}}>
-                Reason
+              Message :-
               </Text>
               <TextInput
                 style={styles.input}
-                placeholder="Reason"
+                placeholder="Message"
                 value={reasonText}
                 onChangeText={prev => setReasonText(prev)}
                 placeholderTextColor="#999"

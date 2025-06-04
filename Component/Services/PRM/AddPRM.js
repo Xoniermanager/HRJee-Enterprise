@@ -77,6 +77,7 @@ const AddPRM = () => {
   }, []);
   if (list == null) {
     return <Reload />;
+    
   }
   const Update_Profile = async () => {
     if (value1 == null) {
@@ -84,9 +85,16 @@ const AddPRM = () => {
         message: 'Please select the Category',
         type: 'danger',
       });
-    } else if (details.Text.trim() === '' || details.amount.trim() === '') {
+    } 
+    else if (details.amount.trim() === '') {
       showMessage({
-        message: 'Please enter the text',
+        message: 'Please enter the Amount',
+        type: 'danger',
+      });
+    }
+    else if (details.Text.trim() === '') {
+      showMessage({
+        message: 'Please enter the Message',
         type: 'danger',
       });
     } else {
@@ -215,7 +223,7 @@ const AddPRM = () => {
           ]}>
           <TextInput
             style={[styles.textInput, {color: currentTheme.text}]}
-            placeholder="Type Text..."
+            placeholder="Enter Message"
             placeholderTextColor={currentTheme.text}
             value={details.Text}
             onChangeText={value => handleInputChange('Text', value)}

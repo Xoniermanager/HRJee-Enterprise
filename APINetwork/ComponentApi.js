@@ -292,3 +292,7 @@ export const breakout=(url,token)=>{
   return item;
 }
 
+export const listdocument=(url,token)=>{
+  const item =axiosGet(url,token)
+  return item;
+}

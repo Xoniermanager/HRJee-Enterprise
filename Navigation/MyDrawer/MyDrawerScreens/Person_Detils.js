@@ -512,7 +512,7 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
   },
   checkboxContainer: {
-    backgroundColor: '#E0F7FE',
+    backgroundColor: '#fff',
     borderRadius: 20,
     paddingHorizontal: 15,
     paddingVertical: 10,

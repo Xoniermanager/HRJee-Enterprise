@@ -28,7 +28,7 @@ const ResetPassword = ({route}) => {
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [otp, setOTP] = useState('');
-  const [secondsRemaining, setSecondsRemaining] = useState(120); // 2 minutes
+  const [secondsRemaining, setSecondsRemaining] = useState(120);
   const {email} = route.params;
 
   // Countdown Timer

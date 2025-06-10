@@ -72,6 +72,7 @@ const HolidayList = () => {
               style={{
                 marginHorizontal: responsiveWidth(5),
                 marginTop: responsiveHeight(1),
+                marginBottom:140
               }}>
               {holidays?.length > 0 ? (
                 holidays?.map((holiday, index) => (

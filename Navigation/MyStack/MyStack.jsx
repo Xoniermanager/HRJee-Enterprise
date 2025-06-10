@@ -58,6 +58,7 @@ import CourseDetails from '../../Component/Services/Course/CourseDetails';
 import Maps from '../../Component/Tracking/Maps';
 import AllPunchIn from '../../Component/DashBoard/AllPunchIn';
 import FaceCamera from '../../Component/DashBoard/FaceCamera';
+import UploadDocumentScreen from '../../Component/Services/UploadDocument/UploadDocumentScreen';
 
 const MyStack = () => {
   const {currentTheme} = useContext(ThemeContext);
@@ -483,6 +484,22 @@ const MyStack = () => {
         component={Announcement}
         options={{
           title: 'Announcement',
+
+          headerBackTitleVisible: false,
+          headerStyle: {
+            backgroundColor: currentTheme.background_v2,
+          },
+          headerTintColor: '#fff',
+          headerTitleStyle: {
+            fontWeight: '500',
+          },
+        }}
+      />
+      <Stack.Screen
+        name="UploadDocumentScreen"
+        component={UploadDocumentScreen}
+        options={{
+          title: 'Upload Document',
 
           headerBackTitleVisible: false,
           headerStyle: {

@@ -142,7 +142,7 @@ const Attendance = () => {
   useEffect(() => {
     getTodayAttendance();
     attendance_by_month();
-  }, []);
+  }, [currentMonth]);
   useEffect(() => {
     if (fromDate && toDate) {
       getSearchAttendence();
@@ -324,25 +324,53 @@ const Attendance = () => {
     }
   };
   const presentDates = monthList?.attendanceDetails?.map(item => item.punch_in.split(' ')[0]);
-  // const absentDates = ['2025-04-05', '2025-04-09', '2025-04-30'];
+  const absentDates = monthList?.absentDetails?.map(item => item.date.split(' ')[0]);
   const holidayDates = monthList?.holidayDetails?.map(item => item.date.split(' ')[0]);
-  // const leaveDates = ['2025-04-04', '2025-04-25', '2025-04-26'];
+  const leaveDetails = monthList?.leaveDetails || [];
   // const outdutyates = ['2025-04-23',];
 
   const markedDates = {};
-
+      console.log(presentDates,'presentDates')
   presentDates?.forEach(date => {
     markedDates[date] = { status: 'present' };
   });
-  // absentDates?.forEach(date => {
-  //   markedDates[date] = { status: 'absent' };
-  // });
+  absentDates?.forEach(date => {
+    markedDates[date] = { status: 'absent' };
+  });
   holidayDates?.forEach(date => {
     markedDates[date] = { status: 'holiday' };
   });
-  // leaveDates?.forEach(date => {
-  //   markedDates[date] = { status: 'leave' };
-  // });
+  leaveDetails?.forEach(leave => {
+    if (leave.is_half_day === 0) {
+      const startDate = moment(leave.from);
+      const endDate = moment(leave.to);
+  
+      for (
+        let date = moment(startDate);
+        date.diff(endDate, 'days') <= 0;
+        date.add(1, 'days')
+      ) {
+        const formattedDate = date.format('YYYY-MM-DD');
+        markedDates[formattedDate] = { status: 'leave' };
+      }
+    }
+  });
+  leaveDetails?.forEach(leave => {
+    if (leave.is_half_day === 1) {
+      const startDate = moment(leave.from);
+      const endDate = moment(leave.to);
+  
+      for (
+        let date = moment(startDate);
+        date.diff(endDate, 'days') <= 0;
+        date.add(1, 'days')
+      ) {
+        const formattedDate = date.format('YYYY-MM-DD');
+        markedDates[formattedDate] = { status: 'halfday' };
+      }
+    }
+  });
+
   // outdutyates?.forEach(date => {
   //   markedDates[date] = { status: 'outduty' };
   // });
@@ -398,6 +426,7 @@ const Attendance = () => {
                 let backgroundColor = '#fff';
                 let textColor = '#000';
                 if (mark?.status === 'holiday' || isSunday) {
+                  console.log(mark?.status)
                   backgroundColor = 'blue';
                   textColor = '#fff';
                 } else if (mark?.status === 'present') {
@@ -409,6 +438,10 @@ const Attendance = () => {
                 }
                 else if (mark?.status === 'leave') {
                   backgroundColor = 'orange';
+                  textColor = '#fff';
+                }
+                else if (mark?.status === 'halfday') {
+                  backgroundColor = 'pink';
                   textColor = '#fff';
                 }
                 else if (mark?.status === 'outduty') {

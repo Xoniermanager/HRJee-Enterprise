@@ -112,6 +112,7 @@ const ConextApi = ({children}) => {
         name: 'Visit Location',
         nav: 'LocationList',
       },
+
       {
         id: 4,
         uri: require('../../assets/Services/s4.png'),
@@ -123,6 +124,12 @@ const ConextApi = ({children}) => {
         uri: require('../../assets/HomeScreen/course.webp'),
         name: 'Training',
         nav: 'Course',
+      },
+      {
+        id: 6,
+        uri: require('../../assets/Services/s7.png'),
+        name: 'Upload Document',
+        nav: 'UploadDocumentScreen',
       },
      ]
       response?.data?.data.menu_access?.map((item) => {

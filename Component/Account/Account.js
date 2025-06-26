@@ -9,6 +9,7 @@ import {
   SafeAreaView,
   FlatList,
   Linking,
+  Switch,
 } from 'react-native';
 import {
   responsiveHeight,
@@ -28,8 +29,10 @@ import RNFetchBlob from 'rn-fetch-blob';
 import AccountSkeleton from '../Skeleton/AccountSkeleton';
 import Themes from '../Theme/Theme';
 import {ThemeContext} from '../../Store/ConetxtApi.jsx/ConextApi';
+import axios from 'axios';
+import { showMessage } from 'react-native-flash-message';
 const Account = () => {
-  const {currentTheme, theme} = useContext(ThemeContext);
+  const {currentTheme, liveLocationActive} = useContext(ThemeContext);
   const IsFouced = useIsFocused();
   const showData = [
     {
@@ -91,6 +94,33 @@ const Account = () => {
   const [expandeddocuments, setExpandedDocuments] = useState(false);
   const [bankdetailsdata, setBankDetailsData] = useState('');
   const [documentdetailsdata, setGetDocumentApiData] = useState([]);
+  const [isEnabled, setIsEnabled] = useState(false);
+  const toggleSwitch = async() => {
+    setIsEnabled(previous => !previous)
+    try {
+      const token = await AsyncStorage.getItem('TOKEN');
+      console.log(token);
+      let config = {
+        method: 'patch',
+        maxBodyLength: Infinity,
+        url: `${BASE_URL}/toggle-location-tracking`,
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      };
+
+      const response = await axios.request(config);
+      console.log(response.data.message);
+      if (response.data.status) {
+        showMessage({message: response.data.message, type: 'success'});
+      } else {
+        setIsEnabled(isEnabled);
+        showMessage({message: response.data.message, type: 'danger'});
+      }
+    } catch (error) {
+      console.log(error);
+    }
+  };
   const toggleExpandedBank = () => {
     setExpandedBank(!expandedbank);
   };
@@ -137,6 +167,15 @@ const Account = () => {
       setLoader(false);
     }
   }
+  useEffect(() => {
+    if (liveLocationActive === 0) {
+      setIsEnabled(false);
+    } else {
+      setIsEnabled(true);
+    }
+  }, [liveLocationActive]);
+
+
   useEffect(() => {
     check();
     AssetsList();
@@ -256,6 +295,38 @@ const Account = () => {
               borderTopRightRadius: 10,
               borderBottomRightRadius: 10,
             }}>
+               <View
+              style={{
+                marginBottom: expandedbank == true ? 0 : 8,
+                borderWidth: 1,
+                borderColor: currentTheme.background_v2,
+                width: '95%',
+                backgroundColor: currentTheme.background,
+                opacity: 1,
+                elevation: 10,
+                borderTopLeftRadius: 50,
+                borderBottomLeftRadius: expandedbank == true ? 0 : 50,
+                borderTopRightRadius: 50,
+                borderBottomRightRadius: expandedbank == true ? 0 : 50,
+                padding: 15,
+                flexDirection: 'row',
+                justifyContent: 'space-between',
+                alignItems: 'center',
+              }}>
+              <Text
+                style={{
+                  color: currentTheme.text,
+                  fontSize: responsiveFontSize(2.3),
+                }}>
+               Location Tracking
+              </Text>
+                  <Switch
+            trackColor={{ false: "#767577", true: "#81b0ff" }}
+            thumbColor={isEnabled ? "#f5dd4b" : "#f4f3f4"}
+            onValueChange={toggleSwitch}
+            value={isEnabled}
+          />
+            </View>
             <View
               style={{
                 marginBottom: expandedbank == true ? 0 : 8,

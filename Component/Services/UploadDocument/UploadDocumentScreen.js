@@ -24,6 +24,7 @@ const UploadDocumentScreen = () => {
 
   const getListDocument = async () => {
     try {
+      setLoader(true);
       const token = await AsyncStorage.getItem('TOKEN');
       const url = `${BASE_URL}/config/required-documents`;
       const response = await listdocument(url, token);
@@ -34,7 +35,9 @@ const UploadDocumentScreen = () => {
         file: null,
       }));
       setDocuments(apiDocs || []);
+      setLoader(false);
     } catch (error) {
+      setLoader(false);
       console.log('Error fetching documents:', error);
       Alert.alert('Error', 'Failed to load document list.');
     }
@@ -73,7 +76,6 @@ const UploadDocumentScreen = () => {
 
     setLoader(true);
     const formData = new FormData();
-    console.log(documents, 'documents');
     documents.forEach(doc => {
       if (doc.file) {
         formData.append(`documents[${doc.id}]`, {
@@ -83,7 +85,6 @@ const UploadDocumentScreen = () => {
         });
       }
     });
-    console.log(formData);
     try {
       const response = await axios.post(
         `${BASE_URL}/update/documents`,
@@ -156,13 +157,17 @@ const UploadDocumentScreen = () => {
           style={styles.submitButton}
           onPress={handleSubmit}
           disabled={loader}>
-          {loader ? (
-            <ActivityIndicator size="small" color="#fff" />
-          ) : (
-            <Text style={styles.submitText}>Submit</Text>
-          )}
+          <Text style={styles.submitText}>Submit</Text>
         </TouchableOpacity>
       </ScrollView>
+
+      {/* Loader Overlay */}
+      {loader && (
+        <View style={styles.loaderOverlay}>
+          <ActivityIndicator size="large" color="#fff" />
+          <Text style={styles.loaderText}>Uploading...</Text>
+        </View>
+      )}
     </Root>
   );
 };
@@ -228,5 +233,22 @@ const styles = StyleSheet.create({
     color: '#fff',
     fontSize: 16,
     fontWeight: 'bold',
+  },
+  loaderOverlay: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    zIndex: 1000,
+  },
+  loaderText: {
+    marginTop: 10,
+    color: '#fff',
+    fontSize: 16,
+    fontWeight: '500',
   },
 });

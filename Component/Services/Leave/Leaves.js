@@ -1,151 +1,69 @@
-import React, {useContext, useEffect, useState} from 'react';
+import React, { useContext, useEffect, useState, useCallback } from 'react';
 import {
   View,
   Text,
-  Image,
   StyleSheet,
   TouchableOpacity,
   SafeAreaView,
   ScrollView,
   FlatList,
 } from 'react-native';
-import {
-  responsiveFontSize,
-  responsiveHeight,
-  responsiveWidth,
-} from 'react-native-responsive-dimensions';
+import { responsiveFontSize, responsiveHeight, responsiveWidth } from 'react-native-responsive-dimensions';
+import { useIsFocused } from '@react-navigation/native';
 import AntDesign from 'react-native-vector-icons/AntDesign';
-import {ThemeContext} from '../../../Store/ConetxtApi.jsx/ConextApi';
-import {BASE_URL} from '../../../utils';
-import AsyncStorage from '@react-native-async-storage/async-storage';
-import {getLeaveType} from '../../../APINetwork/ComponentApi';
-import HomeSkeleton from '../../Skeleton/HomeSkeleton';
-import {useIsFocused} from '@react-navigation/native';
-import PullToRefresh from '../../../PullToRefresh';
-const Leaves = ({navigation}) => {
-  const {currentTheme, theme} = useContext(ThemeContext);
-  const isFocused = useIsFocused();
-  const [list, setList] = useState(null);
-  const [aviLeaves, setAviLeaves] = useState(null);
-  const showData = [
-    {
-      id: 1,
-      uri: require('../../../assets/HomeScreen/calendar.png'),
-      name: 'View',
-      num: 'Calendar',
-      backgroundcolor: theme == 'light' ? '#44D5FB' : '#242B3A',
-    },
-    {
-      id: 2,
-      uri: require('../../../assets/HomeScreen/holiday.png'),
-      name: 'View',
-      num: 'Holiday',
-      backgroundcolor: theme == 'light' ? '#F9B7D5' : '#242B3A',
-    },
-    {
-      id: 3,
-      uri: require('../../../assets/HomeScreen/leave.png'),
-      name: 'Leave',
-      num: 'Balance',
-      backgroundcolor: theme == 'light' ? '#BAAEFC' : '#242B3A',
-    },
-  ];
-  async function check() {
-    try {
-      let token = await AsyncStorage.getItem('TOKEN');
-      const url = `${BASE_URL}/leaves`;
-      const response = await getLeaveType(url, token);
-      if (response?.data?.status == true) {
-        setList(response?.data?.data.data);
-      } else {
-      }
-    } catch (error) {
-      console.error('Error making POST request:', error);
-    }
-  }
-  async function checkLeaves() {
-    try {
-      let token = await AsyncStorage.getItem('TOKEN');
-      const url = `${BASE_URL}/available-leaves`;
-      const response = await getLeaveType(url, token);
-      if (response?.data?.status == true) {
-        setAviLeaves(response?.data?.data);
-      } else {
-      }
-    } catch (error) {
-      console.error('Error making POST request:', error);
-    }
-  }
-  const handleRefresh = async () => {
-    check();
-    checkLeaves();
-  };
-  useEffect(() => {
-    check();
-    checkLeaves();
-  }, [isFocused]);
-  if (list == null) {
-    return <HomeSkeleton />;
-  }
-  function getLeaveDays(from, to) {
-    const fromDate = new Date(from);
-    const toDate = new Date(to);
-    const timeDifference = toDate.getTime() - fromDate.getTime();
-    const dayDifference = timeDifference / (1000 * 3600 * 24) + 1;
-    return dayDifference;
-  }
-  const renderServicesList = ({item}) => (
-    <View
-      style={{
-        justifyContent: 'center',
-        backgroundColor:'#BAAEFC',
-        width: responsiveWidth(28),
-        marginHorizontal: 5,
-        borderRadius: 20,
-        shadowColor: '#000',
-        shadowOffset: {width: 0, height: 2},
-        shadowOpacity: 0.2,
-        shadowRadius: 4,
-        elevation: 3,
-        
-      
-      }}>
-      <View style={{padding: 10, alignItems: 'center'}}>
-        <Image
-          style={{
-            height: 60,
-            width: 60,
-            marginBottom: 10,
-            resizeMode: 'contain',
-            borderRadius: 20,
-           
-          }}
-          source={require('../../../assets/HomeScreen/leave.png')}
-        />
-        <Text
-          style={{
-            marginBottom: 4,
-            fontSize: 16,
-            fontWeight: '600',
-            color: currentTheme.text,
-            textAlign: 'center',
-          }}>
-          {item.leave_name}
-        </Text>
-        <Text style={{fontSize: 14, color: currentTheme.text, marginBottom: 2}}>
-          Available: {item.avaialble}
-        </Text>
-        <Text style={{fontSize: 14, color: currentTheme.text, marginBottom: 2}}>
-          Used: {item.used}
-        </Text>
-        <Text style={{fontSize: 14, color: currentTheme.text}}>
-          Total: {item.totalLeaves}
-        </Text>
-      </View>
-    </View>
-  );
 
-  const getColor = status => {
+import { ThemeContext } from '../../../Store/ConetxtApi.jsx/ConextApi';
+import { BASE_URL } from '../../../utils';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { getLeaveType } from '../../../APINetwork/ComponentApi';
+
+import HomeSkeleton from '../../Skeleton/HomeSkeleton';
+import PullToRefresh from '../../../PullToRefresh';
+
+const Leaves = ({ navigation }) => {
+  const { currentTheme, theme } = useContext(ThemeContext);
+  const isFocused = useIsFocused();
+  const [leaveList, setLeaveList] = useState(null);
+  const [availableLeaves, setAvailableLeaves] = useState([]);
+
+  const fetchLeaves = useCallback(async () => {
+    try {
+      const token = await AsyncStorage.getItem('TOKEN');
+      const res = await getLeaveType(`${BASE_URL}/leaves`, token);
+      if (res?.data?.status) setLeaveList(res.data.data.data);
+    } catch (err) {
+      console.error('Error fetching leaves:', err);
+    }
+  }, []);
+
+  const fetchAvailableLeaves = useCallback(async () => {
+    try {
+      const token = await AsyncStorage.getItem('TOKEN');
+      const res = await getLeaveType(`${BASE_URL}/available-leaves`, token);
+      if (res?.data?.status) setAvailableLeaves(res.data.data);
+    } catch (err) {
+      console.error('Error fetching available leaves:', err);
+    }
+  }, []);
+
+  const handleRefresh = async () => {
+    await Promise.all([fetchLeaves(), fetchAvailableLeaves()]);
+  };
+
+  useEffect(() => {
+    if (isFocused) handleRefresh();
+  }, [isFocused]);
+
+  if (!leaveList) return <HomeSkeleton />;
+
+  const getLeaveDays = (from, to) => {
+    const start = new Date(from);
+    const end = new Date(to);
+    const diff = (end - start) / (1000 * 60 * 60 * 24) + 1;
+    return diff;
+  };
+
+  const getColor = (status) => {
     switch (status) {
       case 'APPROVED':
         return '#0CD533';
@@ -154,259 +72,184 @@ const Leaves = ({navigation}) => {
       case 'REJECTED':
         return 'red';
       default:
-        return 'grey';
+        return 'gray';
     }
   };
-  const formatHalfDay = halfDay => {
-    if (halfDay === 'first_half') return 'First Half';
-    if (halfDay === 'second_half') return 'Second Half';
-    return halfDay;
+
+  const formatHalfDay = (value) => {
+    if (value === 'first_half') return 'First Half';
+    if (value === 'second_half') return 'Second Half';
+    return value;
   };
-  const renderLeaveList = ({item}) => {
+
+  const renderAvailableLeave = ({ item }) => (
+    <View style={[styles.card, { backgroundColor: '#BAAEFC' }]}>
+      <Text style={[styles.cardTitle, { color: currentTheme.text }]}>{item.leave_name}</Text>
+      <Text style={styles.cardText}>Available: {item.avaialble}</Text>
+      <Text style={styles.cardText}>Used: {item.used}</Text>
+      <Text style={styles.cardText}>Total: {item.totalLeaves}</Text>
+    </View>
+  );
+
+  const renderLeaveItem = ({ item }) => {
+    const statusColor = getColor(item.leave_status.name);
     return (
-      <View style={[styles.leaveStatus]}>
-        <View
-          style={[
-            styles.leaveItem,
-            styles.approved,
-            {
-              borderLeftColor: getColor(item.leave_status.name),
-              backgroundColor: currentTheme.background,
-              borderWidth: 0.5,
-              borderColor: getColor(item.leave_status.name),
-            },
-          ]}>
-          <View
-            style={{
-              flexDirection: 'row',
-              justifyContent: 'space-between',
-              alignItems: 'center',
-            }}>
-            <AntDesign
-              style={{
-                backgroundColor: getColor(item.leave_status.name),
-                padding: 12,
-                borderRadius: 30,
-              }}
-              name="calendar"
-              size={30}
-              color="#fff"
-            />
-            <View style={{marginHorizontal: 8}}>
-              <Text style={[styles.leaveText, {color: currentTheme.text}]}>
-                {item?.from} - {item?.to}
-              </Text>
-              {item.from_half_day != null ? (
-                <Text
-                  style={[
-                    {
-                      color: currentTheme.text,
-                      fontSize: 14,
-                      color: '#000',
-                      textAlign: 'center',
-                    },
-                  ]}>
-                  {`${formatHalfDay(item.from_half_day)} to ${formatHalfDay(
-                    item.to_half_day,
-                  )}`}
-                </Text>
-              ) : null}
-              <Text
-                style={[
-                  {
-                    color: currentTheme.text,
-                    fontSize: 14,
-                    color: '#000',
-                    textAlign: 'center',
-                  },
-                ]}>
-                {getLeaveDays(item?.from, item?.to)} Day - {item?.reason}
-              </Text>
-            </View>
-            <View
-              style={{
-                backgroundColor: getColor(item.leave_status.name),
-                borderRadius: 10,
-              }}>
-              <Text style={styles.statusText}>{item?.leave_status.name}</Text>
-            </View>
-          </View>
+      <View style={[styles.leaveItem, { borderColor: statusColor, backgroundColor: currentTheme.background }]}>
+        <AntDesign name="calendar" size={30} color="#fff" style={[styles.icon, { backgroundColor: statusColor }]} />
+        <View style={styles.leaveDetails}>
+          <Text style={[styles.leaveText, { color: currentTheme.text }]}>
+            {item.from} - {item.to}
+          </Text>
+          {item.from_half_day && (
+            <Text style={styles.halfDayText}>
+              {formatHalfDay(item.from_half_day)} to {formatHalfDay(item.to_half_day)}
+            </Text>
+          )}
+          <Text style={styles.reasonText}>
+            {getLeaveDays(item.from, item.to)} Day - {item.reason}
+          </Text>
+        </View>
+        <View style={[styles.statusBadge, { backgroundColor: statusColor }]}>
+          <Text style={styles.statusText}>{item.leave_status.name}</Text>
         </View>
       </View>
     );
   };
+
   return (
-    <SafeAreaView
-      style={[styles.container, {backgroundColor: currentTheme.background_v2}]}>
-          <PullToRefresh onRefresh={handleRefresh}>
-      <ScrollView
-        style={{
-          width: '100%',
-          backgroundColor: currentTheme.background,
-          borderTopLeftRadius: 40,
-          marginTop: responsiveHeight(1),
-          borderTopRightRadius: 40,
-          height: responsiveHeight(100),
-        }}>
-        <View style={{margin: 18,}}>
-          <View style={{flexDirection: 'row', justifyContent: 'flex-end'}}>
+    <SafeAreaView style={[styles.container, { backgroundColor:'#fff' }]}>
+      <PullToRefresh onRefresh={handleRefresh}>
+        <ScrollView contentContainerStyle={{ paddingBottom: 80 }}>
+          <View style={styles.headerButtons}>
             <TouchableOpacity
               onPress={() => navigation.navigate('ApplyLeave')}
-              style={[
-                styles.applyButton,
-                {backgroundColor: currentTheme.background_v2, marginRight: 20},
-              ]}>
+              style={[styles.applyButton, { backgroundColor: currentTheme.background_v2 }]}
+            >
               <Text style={styles.applyButtonText}>Apply Leave</Text>
             </TouchableOpacity>
             <TouchableOpacity
               onPress={() => navigation.navigate('CompOff')}
-              style={[
-                styles.applyButton,
-                {backgroundColor: currentTheme.background_v2},
-              ]}>
+              style={[styles.applyButton, { backgroundColor: currentTheme.background_v2 }]}
+            >
               <Text style={styles.applyButtonText}>Comp Off</Text>
             </TouchableOpacity>
           </View>
-          <View
-            style={{
-              width: '100%',
-              height: 1,
-              backgroundColor: '#000',
-              marginTop: responsiveHeight(1),
-            }}></View>
-          <Text
-            style={{
-              marginBottom: 4,
-              fontSize: 16,
-              fontWeight: '600',
-              color: currentTheme.text,
-              textAlign: 'center',
-            }}>
-            Available Leave
-          </Text>
-          <View style={styles.menu}>
-            <FlatList
-              style={{alignSelf: 'center'}}
-              horizontal
-              showsHorizontalScrollIndicator={false}
-              data={aviLeaves}
-              renderItem={renderServicesList}
-              keyExtractor={item => item.id}
-            />
-          </View>
-          <View
-            style={{width: '100%', height: 1, backgroundColor: '#000'}}></View>
-          <View style={styles.menu}>
-            <FlatList
-              style={{alignSelf: 'center'}}
-              data={list}
-              renderItem={renderLeaveList}
-              ListEmptyComponent={
-                <View style={styles.emptyContainer}>
-                  <Text style={styles.emptyText}>Data not found</Text>
-                </View>
-              }
-              keyExtractor={item => item.id}
-            />
-          </View>
-        </View>
-      </ScrollView>
+
+          <Text style={[styles.sectionTitle, { color: currentTheme.text }]}>Available Leave</Text>
+
+          <FlatList
+            data={availableLeaves}
+            horizontal
+            renderItem={renderAvailableLeave}
+            keyExtractor={(item) => item.id?.toString()}
+            showsHorizontalScrollIndicator={false}
+            contentContainerStyle={{ paddingHorizontal: 10 }}
+          />
+
+          <Text style={[styles.sectionTitle, { color: currentTheme.text }]}>Leave History</Text>
+
+          <FlatList
+            data={leaveList}
+            renderItem={renderLeaveItem}
+            keyExtractor={(item) => item.id?.toString()}
+            ListEmptyComponent={<Text style={styles.emptyText}>No leave history found.</Text>}
+            contentContainerStyle={{ paddingHorizontal: 10 }}
+          />
+        </ScrollView>
       </PullToRefresh>
     </SafeAreaView>
   );
 };
+
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#0E0E64',
   },
-  name: {
-    color: '#fff',
-    fontSize: responsiveFontSize(3),
-    fontWeight: 'bold',
-    textAlign: 'center',
-    marginBottom: responsiveHeight(0),
-  },
-
-  menu: {
+  headerButtons: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
-    marginBottom: 20,
+    justifyContent: 'flex-end',
     marginTop: 10,
-    // marginBottom: 25,
+    marginHorizontal: 10,
   },
-  menuItem: {
-    flex: 1,
-    margin: 5,
-    padding: 20,
+  applyButton: {
+    padding: 10,
+    marginLeft: 10,
     borderRadius: 10,
-    alignItems: 'center',
-    backgroundColor: '#add8e6', // Default background color
   },
-  menuText: {
+  applyButtonText: {
+    color: '#fff',
+    fontSize: 14,
+  },
+  sectionTitle: {
     fontSize: 16,
-    fontWeight: 'bold',
+    fontWeight: '600',
+    textAlign: 'center',
+    marginVertical: 10,
   },
-  leaveStatus: {
-    marginBottom: 20,
+  card: {
+    padding: 10,
+    borderRadius: 20,
+    marginRight: 10,
+    shadowColor: '#000',
+    shadowOpacity: 0.2,
+    shadowRadius: 4,
+    elevation: 3,
+    width: responsiveWidth(28),
+    alignItems: 'center',
+  },
+  cardTitle: {
+    fontSize: 16,
+    fontWeight: '600',
+    marginBottom: 4,
+  },
+  cardText: {
+    fontSize: 14,
+    color: '#000',
   },
   leaveItem: {
-    marginBottom: responsiveHeight(2),
-    padding: 20,
+    borderWidth: 0.5,
     borderRadius: 10,
-    backgroundColor: '#ffffff', // Default background color
-    shadowColor: '#000',
-    shadowOffset: {width: 0, height: 1},
-    shadowOpacity: 0.3,
-    shadowRadius: 2,
-    elevation: 7,
+    padding: 15,
+    marginBottom: 15,
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  icon: {
+    padding: 12,
+    borderRadius: 30,
+  },
+  leaveDetails: {
+    flex: 1,
+    marginHorizontal: 10,
   },
   leaveText: {
     fontSize: 14,
-    color: '#000',
     fontWeight: 'bold',
-    textAlign: 'center',
+  },
+  halfDayText: {
+    fontSize: 14,
+    color: '#000',
+  },
+  reasonText: {
+    fontSize: 14,
+    color: '#000',
+  },
+  statusBadge: {
+    borderRadius: 10,
+    paddingHorizontal: 10,
+    paddingVertical: 6,
   },
   statusText: {
     fontSize: 14,
     fontWeight: 'bold',
-    marginHorizontal: 10,
-    marginVertical: 8,
     color: '#fff',
   },
-  approved: {
-    borderLeftWidth: 5,
-    borderLeftColor: '#0CD533',
-  },
-  applied: {
-    borderLeftWidth: 5,
-    borderLeftColor: 'blue',
-  },
-  rejected: {
-    borderLeftWidth: 5,
-    borderLeftColor: 'red',
-  },
-  applyButton: {
-    padding: 10,
-    borderRadius: 10,
-    backgroundColor: '#0000ff',
-    alignItems: 'center',
-    alignSelf: 'flex-end',
-  },
-  applyButtonText: {
-    color: '#ffffff',
-    fontSize: 14,
-    // fontWeight: 'bold',
-  },
-  emptyContainer: {
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginTop: 20,
-  },
   emptyText: {
+    textAlign: 'center',
     fontSize: 16,
     color: 'gray',
-    fontWeight: 'bold',
+    marginTop: 20,
   },
 });
+
 export default Leaves;

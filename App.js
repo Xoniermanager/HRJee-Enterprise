@@ -18,6 +18,7 @@ import FlashMessage from 'react-native-flash-message';
 import {navigationRef} from './APINetwork/NavigationService';
 import NetInfo from '@react-native-community/netinfo';
 import VersionCheck from 'react-native-version-check';
+import { MenuProvider } from 'react-native-popup-menu';
 const App = () => {
   const [isModalVisible, setIsModalVisible] = useState(false);
   const checkTrackingPermission = async () => {
@@ -112,6 +113,7 @@ checkTrackingPermission();
   };
   return (
     <ConextApi>
+         <MenuProvider>
       <StatusBar barStyle="light-content" backgroundColor="#0E0E64" />
       <NavigationContainer ref={navigationRef}>
         <MyStack />
@@ -133,6 +135,7 @@ checkTrackingPermission();
           </View>
         </View>
       </Modal>
+      </MenuProvider>
     </ConextApi>
   );
 };

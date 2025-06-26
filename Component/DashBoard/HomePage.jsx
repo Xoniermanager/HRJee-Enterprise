@@ -931,17 +931,20 @@ const HomePage = () => {
       const cleanup = () => {
         if (watchId !== null) Geolocation.clearWatch(watchId);
       };
+
       cleanup();
+
       while (BackgroundService.isRunning(veryIntensiveTask)) {
         if (!timerOn) {
           cleanup();
           break;
         }
+
         if (!(await requestLocationPermission())) {
-          Alert.alert('Permission Denied', 'Location permission is required.');
           setTracking(false);
           return;
         }
+        console.log("yash",watchId)
         watchId = Geolocation.watchPosition(
           async ({coords: {latitude, longitude}}) => {
             try {
@@ -955,7 +958,7 @@ const HomePage = () => {
                 const distance = getDistance(oldLocation, newLocation);
                 console.log('Distance:', Math.floor(distance));
 
-                if (Math.floor(distance) >= 0) {
+                if (Math.floor(distance) >= 150) {
                   sendStoredLocation(newLocation, distance, oldLocation);
                   await AsyncStorage.setItem(
                     'oldLocation',
@@ -981,6 +984,7 @@ const HomePage = () => {
             showLocationDialog: true,
           },
         );
+        console.log(watchId,'watchId')
 
         setWatchId(watchId);
 
@@ -1618,8 +1622,7 @@ const HomePage = () => {
 
             <View
               style={{flexDirection: 'row', justifyContent: 'space-between'}}>
-              {requestAttendance?.length > 0 ? (
-                <TouchableOpacity
+              <TouchableOpacity
                   onPress={() => setModalRequest(true)}
                   style={{marginLeft: 2}}>
                   <Text
@@ -1636,8 +1639,6 @@ const HomePage = () => {
                     Attendance Request
                   </Text>
                 </TouchableOpacity>
-              ) : null}
-
               {inTime && inTimeBreak == null && !outTime && (
                 <TouchableOpacity
                   onPress={() => setBreakModal(true)}

@@ -382,7 +382,9 @@ const Attendance = () => {
         styles.container,
         {backgroundColor: currentTheme.attendance_background_v2},
       ]}>
-      <View
+    
+        <ScrollView style={{marginBottom:60}}> 
+        <View
         style={{
           marginTop: 15,
         }}>
@@ -401,7 +403,7 @@ const Attendance = () => {
           />
         </View>
       </View>
-      {!isEnabled ? (
+        {!isEnabled ? (
         <>
           <View
             style={{
@@ -716,6 +718,8 @@ const Attendance = () => {
               borderTopRightRadius: 40,
               marginTop: responsiveHeight(1.5),
               flex: 1,
+              // marginHorizontal:5
+              padding:10
             }}>
             <ScrollView>
               <View
@@ -998,6 +1002,7 @@ const Attendance = () => {
        
         </>
       )}
+        </ScrollView>
     </SafeAreaView>
   );
 };
@@ -1030,15 +1035,16 @@ const styles = StyleSheet.create({
     justifyContent: 'space-around',
     alignItems: 'center',
     backgroundColor: 'navy',
-    padding: 10,
+    padding:10,
     borderRadius: 10,
     marginBottom: 20,
+    
   },
   statusItem: {
     alignItems: 'center',
     borderRadius: 10,
-    paddingVertical: 10,
-    paddingHorizontal: 10,
+    paddingVertical:8,
+    paddingHorizontal:8,
   },
   statusText: {
     color: 'white',

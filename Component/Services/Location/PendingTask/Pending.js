@@ -40,6 +40,24 @@ const TaskScreen = () => {
   list.data.filter((item, index) => {
     return item.user_end_status == 'pending';
   });
+  const UpdateStatus = async id => {
+    const token = await AsyncStorage.getItem('TOKEN');
+    const url = `${BASE_URL}/change/task/status/${id}`;
+    console.log(url,token)
+    let form = 0;
+    const data = {
+      user_end_status: 'processing',
+    };
+    const response = await UpdateStatusTask(url, data, token, form);
+    console.log(response,'response')
+    if (response.data.status) {
+      showMessage({
+        message: response.data.message,
+        type: 'success',
+      });
+      getasignTask();
+    }
+  };
 
   const renderItem = ({item}) => {
     const isExpanded = expanded === item.id;
@@ -91,22 +109,7 @@ const TaskScreen = () => {
       </LinearGradient>
     );
   };
-  const UpdateStatus = async id => {
-    const token = await AsyncStorage.getItem('TOKEN');
-    const url = `${BASE_URL}/change/task/status/${id}`;
-    let form = 0;
-    const data = {
-      user_end_status: 'processing',
-    };
-    const response = await UpdateStatusTask(url, data, token, form);
-    if (response.data.status) {
-      showMessage({
-        message: response.data.message,
-        type: 'success',
-      });
-      getasignTask();
-    }
-  };
+
 
   return (
     <View style={{backgroundColor: currentTheme.background, flex: 1}}>

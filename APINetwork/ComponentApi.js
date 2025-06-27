@@ -296,3 +296,7 @@ export const listdocument=(url,token)=>{
   const item =axiosGet(url,token)
   return item;
 }
+export const reports=(url,data)=>{
+  const item=axiosGet(url,data);
+  return item;
+}

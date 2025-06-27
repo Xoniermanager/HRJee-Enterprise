@@ -2,11 +2,12 @@ import React, {useEffect, useState} from 'react';
 import {
   View,
   Text,
-  TouchableOpacity,    
+  TouchableOpacity,
   ScrollView,
   StyleSheet,
   Alert,
   ActivityIndicator,
+  Linking,
 } from 'react-native';
 import DocumentPicker from 'react-native-document-picker';
 import AntDesign from 'react-native-vector-icons/AntDesign';
@@ -15,12 +16,26 @@ import axios from 'axios';
 import {Root, Popup} from 'popup-ui';
 import {useNavigation} from '@react-navigation/native';
 import {BASE_URL} from '../../../utils';
-import {listdocument} from '../../../APINetwork/ComponentApi';
+import {getProfile, listdocument} from '../../../APINetwork/ComponentApi';
 
 const UploadDocumentScreen = () => {
   const [loader, setLoader] = useState(false);
   const [documents, setDocuments] = useState([]);
   const navigation = useNavigation();
+
+  const check = async () => {
+    try {
+      let token = await AsyncStorage.getItem('TOKEN');
+      const url = `${BASE_URL}/profile/details`;
+      const response = await getProfile(url, token);
+      if (response?.data?.status === true) {
+        const existingDocs = response?.data?.data?.document_details || [];
+        mergeDocumentsWithExisting(existingDocs);
+      }
+    } catch (error) {
+      console.log('Error fetching profile details:', error);
+    }
+  };
 
   const getListDocument = async () => {
     try {
@@ -43,8 +58,32 @@ const UploadDocumentScreen = () => {
     }
   };
 
+  const mergeDocumentsWithExisting = (existingDocs) => {
+    setDocuments(prevDocs => {
+      return prevDocs.map(doc => {
+        const matched = existingDocs.find(
+          ed => ed.document_type_id === doc.id
+        );
+        if (matched) {
+          return {
+            ...doc,
+            is_mandatory: 0,
+            file: {
+              uri: matched.document,
+              name: matched.document.split('/').pop(),
+              type: 'application/pdf',
+              existing: true,
+            },
+          };
+        }
+        return doc;
+      });
+    });
+  };
+
   useEffect(() => {
     getListDocument();
+    check();
   }, []);
 
   const pickDocument = async index => {
@@ -53,7 +92,11 @@ const UploadDocumentScreen = () => {
         type: DocumentPicker.types.allFiles,
       });
       const updated = [...documents];
-      updated[index].file = result;
+      updated[index].file = {
+        ...result,
+        existing: false,
+      };
+      updated[index].is_mandatory = 0; // reset required if replaced
       setDocuments(updated);
     } catch (err) {
       if (!DocumentPicker.isCancel(err)) {
@@ -77,7 +120,7 @@ const UploadDocumentScreen = () => {
     setLoader(true);
     const formData = new FormData();
     documents.forEach(doc => {
-      if (doc.file) {
+      if (doc.file && !doc.file.existing) {
         formData.append(`documents[${doc.id}]`, {
           uri: doc.file.uri,
           name: doc.file.name,
@@ -85,6 +128,7 @@ const UploadDocumentScreen = () => {
         });
       }
     });
+
     try {
       const response = await axios.post(
         `${BASE_URL}/update/documents`,
@@ -110,15 +154,12 @@ const UploadDocumentScreen = () => {
     } catch (error) {
       console.log('Upload error:', error?.response || error.message);
       if (error.response && error.response.status === 401) {
-        console.log(error.response.data);
         Popup.show({
           type: 'Warning',
           title: 'Session Expired',
           textBody: error.response.data.message,
           buttonText: 'Login',
-          callback: () => {
-            Popup.hide();
-          },
+          callback: () => Popup.hide(),
         });
       } else {
         Alert.alert('Error', 'Something went wrong. Please try again.');
@@ -147,9 +188,19 @@ const UploadDocumentScreen = () => {
               onPress={() => pickDocument(index)}>
               <AntDesign name="pluscircle" size={20} color="#0E0E64" />
               <Text style={styles.uploadText}>
-                {doc.file ? doc.file.name : 'Upload Document'}
+                {doc.file?.name || 'Upload Document'}
               </Text>
             </TouchableOpacity>
+
+            {doc.file?.existing && (
+              <TouchableOpacity
+                onPress={() => Linking.openURL(doc.file.uri)}
+                style={styles.uploadedLink}>
+                <Text style={styles.uploadedDocText}>
+                  📎 {doc.file.name || 'View Uploaded Document'}
+                </Text>
+              </TouchableOpacity>
+            )}
           </View>
         ))}
 
@@ -161,7 +212,6 @@ const UploadDocumentScreen = () => {
         </TouchableOpacity>
       </ScrollView>
 
-      {/* Loader Overlay */}
       {loader && (
         <View style={styles.loaderOverlay}>
           <ActivityIndicator size="large" color="#fff" />
@@ -220,6 +270,13 @@ const styles = StyleSheet.create({
     marginLeft: 10,
     color: '#0E0E64',
     fontWeight: '500',
+  },
+  uploadedLink: {
+    marginTop: 8,
+  },
+  uploadedDocText: {
+    color: '#007AFF',
+    textDecorationLine: 'underline',
   },
   submitButton: {
     backgroundColor: '#0E0E64',

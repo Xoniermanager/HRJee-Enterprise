@@ -9,7 +9,8 @@ import {
   SafeAreaView,
   Alert,
 Modal,
-  Dimensions
+  Dimensions,
+  ScrollView
 } from 'react-native';
 import BottomSheet from '@gorhom/bottom-sheet';
 import React, {useState, useEffect, useRef, useCallback, useMemo} from 'react';
@@ -240,7 +241,8 @@ const LoginScreen = () => {
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
     <SafeAreaView style={LoginGuestStyle.contanier}>
-        <Image
+       <ScrollView>
+       <Image
           source={require('../../assets/logo.png')}
           style={LoginGuestStyle.Img_icon}
         />
@@ -367,6 +369,7 @@ const LoginScreen = () => {
           </TouchableOpacity>
         </View>
       </BottomSheet>
+       </ScrollView>
       <FlashMessage position="top" />
     </SafeAreaView>
     </GestureHandlerRootView>

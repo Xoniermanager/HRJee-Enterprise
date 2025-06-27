@@ -18,6 +18,7 @@ import React, {useState, useEffect, useContext} from 'react';
 import {
   responsiveFontSize,
   responsiveHeight,
+  responsiveScreenHeight,
   responsiveWidth,
 } from 'react-native-responsive-dimensions';
 import {Calendar} from 'react-native-calendars';
@@ -383,7 +384,7 @@ const Attendance = () => {
         {backgroundColor: currentTheme.attendance_background_v2},
       ]}>
     
-        <ScrollView style={{marginBottom:60}}> 
+        <ScrollView style={{marginBottom:80}}> 
         <View
         style={{
           marginTop: 15,
@@ -453,14 +454,15 @@ const Attendance = () => {
             return (
                   <TouchableOpacity
                     style={{
-                      width: 42,
-                      height: 42,
+                      width:responsiveWidth(10.5),
+                      height:responsiveScreenHeight(5.5),
                       justifyContent: 'center',
                       alignItems: 'center',
                       borderWidth: 1,
                       borderColor: '#ccc',
                       borderRadius: 8,
                       backgroundColor: backgroundColor,
+                    
                     }}
                     onPress={() => onDayPress(date)}>
                     <Text
@@ -780,7 +782,7 @@ const Attendance = () => {
                   onPress={showFromDatePicker}
                   style={{
                     borderWidth: Platform.OS == 'ios' ? 0.2 : null,
-                    marginHorizontal: 5,
+                    marginHorizontal:5,
                     borderRadius: 15,
                     backgroundColor: currentTheme.background,
                     padding: 15,

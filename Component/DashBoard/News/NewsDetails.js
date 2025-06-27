@@ -38,10 +38,7 @@ const NewsDetails = ({navigation}) => {
       const response = await getNews(url, token);
 
       if (response?.data?.status === true) {
-        showMessage({
-          message: `${response?.data?.message}`,
-          type: 'success',
-        });
+      
         setGetNewsApiData(response?.data?.data);
 
         setLoader(false);

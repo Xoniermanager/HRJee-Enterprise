@@ -59,6 +59,9 @@ import Maps from '../../Component/Tracking/Maps';
 import AllPunchIn from '../../Component/DashBoard/AllPunchIn';
 import FaceCamera from '../../Component/DashBoard/FaceCamera';
 import UploadDocumentScreen from '../../Component/Services/UploadDocument/UploadDocumentScreen';
+import MapTask from '../../Component/Services/Location/MapTask';
+import TaskReportScreen from '../../Component/Services/Reports/TaskReportScreen';
+import SupportPage from '../../Component/Services/SupportPage/SupportPage';
 
 const MyStack = () => {
   const {currentTheme} = useContext(ThemeContext);
@@ -134,6 +137,54 @@ const MyStack = () => {
         component={Salary}
         options={{
           title: 'Salary Slip',
+
+          headerBackTitleVisible: false,
+          headerStyle: {
+            backgroundColor: currentTheme.background_v2,
+          },
+          headerTintColor: '#fff',
+          headerTitleStyle: {
+            fontWeight: '500',
+          },
+        }}
+      />
+        <Stack.Screen
+        name="MapTask"
+        component={MapTask}
+        options={{
+          title: 'Location',
+
+          headerBackTitleVisible: false,
+          headerStyle: {
+            backgroundColor: currentTheme.background_v2,
+          },
+          headerTintColor: '#fff',
+          headerTitleStyle: {
+            fontWeight: '500',
+          },
+        }}
+      />
+       <Stack.Screen
+        name="TaskReportScreen"
+        component={TaskReportScreen}
+        options={{
+          title: 'Location',
+
+          headerBackTitleVisible: false,
+          headerStyle: {
+            backgroundColor: currentTheme.background_v2,
+          },
+          headerTintColor: '#fff',
+          headerTitleStyle: {
+            fontWeight: '500',
+          },
+        }}
+      />
+       <Stack.Screen
+        name="SupportPage"
+        component={SupportPage}
+        options={{
+          title: 'Support',
 
           headerBackTitleVisible: false,
           headerStyle: {

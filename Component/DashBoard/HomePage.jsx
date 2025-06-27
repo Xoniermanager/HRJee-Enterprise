@@ -19,6 +19,7 @@ import {
 } from 'react-native-responsive-dimensions';
 import DatePicker from 'react-native-date-picker';
 import LinearGradient from 'react-native-linear-gradient';
+import GetLocation from 'react-native-get-location';
 import Geolocation from 'react-native-geolocation-service';
 import {Calendar} from 'react-native-calendars';
 import {ScrollView} from 'react-native-gesture-handler';
@@ -35,6 +36,7 @@ import {
   breakout,
   getLeaveType,
   gettodayattendance,
+  locationSend,
   punchin,
 } from '../../APINetwork/ComponentApi';
 import {Dropdown} from 'react-native-element-dropdown';
@@ -46,7 +48,7 @@ import AntDesign from 'react-native-vector-icons/AntDesign';
 import {ThemeContext} from '../../Store/ConetxtApi.jsx/ConextApi';
 import {useIsFocused, useNavigation} from '@react-navigation/native';
 import FaceCamera from './FaceCamera';
-import GetLocation from 'react-native-get-location';
+
 import axios from 'axios';
 import BackgroundService from 'react-native-background-actions';
 import NotificationController from '../../PushNotification/NotificationController';
@@ -120,7 +122,7 @@ const HomePage = () => {
   const [breakId, setBreakId] = useState(null);
   const [breakLoader, setBreakLoader] = useState(false);
   const [leaveLoader, setLeaveLoader] = useState(false);
-  const [breakDescription,setBreakDescription]=useState(null);
+  const [breakDescription, setBreakDescription] = useState(null);
 
   const toggleModal = () => {
     setModalVisible(!isModalVisible);
@@ -547,12 +549,16 @@ const HomePage = () => {
         label: 'Morning',
         value: 'first_half',
         labelStyle: {color: currentTheme.text}, // Customize label style here
+        color: currentTheme.text,
+        borderColor: currentTheme.text,
       },
       {
         id: '2',
         label: 'Afternoon',
         value: 'second_half',
         labelStyle: {color: currentTheme.text}, // Customize label style here
+        color: currentTheme.text,
+        borderColor: currentTheme.text,
       },
     ],
     [],
@@ -564,12 +570,16 @@ const HomePage = () => {
         label: 'Morning',
         value: 'option1',
         labelStyle: {color: currentTheme.text},
+        color: '#000',
+        borderColor: '#000',
       },
       {
         id: '2',
         label: 'Afternoon',
         value: 'option2',
         labelStyle: {color: currentTheme.text},
+        color: currentTheme.text,
+        borderColor: currentTheme.text,
       },
     ],
     [],
@@ -581,12 +591,16 @@ const HomePage = () => {
         label: 'Morning',
         value: 'option1',
         labelStyle: {color: currentTheme.text}, // Customize label style here
+        color: currentTheme.text,
+        borderColor: currentTheme.text,
       },
       {
         id: '2',
         label: 'Afternoon',
         value: 'option2',
         labelStyle: {color: currentTheme.text},
+        color: currentTheme.text,
+        borderColor: currentTheme.text,
       },
     ],
     [],
@@ -899,6 +913,7 @@ const HomePage = () => {
           ],
         };
         const response = await locationSend(url, data, token, form);
+        console.log(response.data);
       } catch (error) {
         console.error('Error sending stored location:', error.response.data);
       }
@@ -944,7 +959,6 @@ const HomePage = () => {
           setTracking(false);
           return;
         }
-        console.log("yash",watchId)
         watchId = Geolocation.watchPosition(
           async ({coords: {latitude, longitude}}) => {
             try {
@@ -956,9 +970,9 @@ const HomePage = () => {
 
               if (oldLocation) {
                 const distance = getDistance(oldLocation, newLocation);
-                console.log('Distance:', Math.floor(distance));
+                console.log('Distance yash:', Math.floor(distance));
 
-                if (Math.floor(distance) >= 150) {
+                if (Math.floor(distance) >= 0) {
                   sendStoredLocation(newLocation, distance, oldLocation);
                   await AsyncStorage.setItem(
                     'oldLocation',
@@ -984,7 +998,7 @@ const HomePage = () => {
             showLocationDialog: true,
           },
         );
-        console.log(watchId,'watchId')
+        console.log('watchId', watchId);
 
         setWatchId(watchId);
 
@@ -1309,7 +1323,6 @@ const HomePage = () => {
   }
   if (isCameraOpen) {
     return <FaceCamera punchIn={punch_IN} />;
-   
   } else {
     return (
       <View style={{flex: 1, backgroundColor: currentTheme.background}}>
@@ -1483,7 +1496,7 @@ const HomePage = () => {
                     ) : null}
                   </>
                 )}
-                {!inTime && !outTime && allowfacenex==1 && (
+                {!inTime && !outTime && allowfacenex == 1 && (
                   <View
                     style={{
                       marginTop: 10,
@@ -1623,22 +1636,22 @@ const HomePage = () => {
             <View
               style={{flexDirection: 'row', justifyContent: 'space-between'}}>
               <TouchableOpacity
-                  onPress={() => setModalRequest(true)}
-                  style={{marginLeft: 2}}>
-                  <Text
-                    style={[
-                      {
-                        fontSize: 15,
-                        fontWeight: '500',
-                        backgroundColor: currentTheme.background_v2,
-                        padding: 10,
-                        borderRadius: 10,
-                        color: '#fff',
-                      },
-                    ]}>
-                    Attendance Request
-                  </Text>
-                </TouchableOpacity>
+                onPress={() => setModalRequest(true)}
+                style={{marginLeft: 2}}>
+                <Text
+                  style={[
+                    {
+                      fontSize: 15,
+                      fontWeight: '500',
+                      backgroundColor: currentTheme.background_v2,
+                      padding: 10,
+                      borderRadius: 10,
+                      color: '#fff',
+                    },
+                  ]}>
+                  Attendance Request
+                </Text>
+              </TouchableOpacity>
               {inTime && inTimeBreak == null && !outTime && (
                 <TouchableOpacity
                   onPress={() => setBreakModal(true)}
@@ -2177,8 +2190,7 @@ const HomePage = () => {
           animationIn="slideInUp" // Animation when showing the modal
           animationOut="slideOutDown" // Animation when hiding the modal
           animationInTiming={500} // Duration for animation in (milliseconds)
-          animationOutTiming={500} 
-        >
+          animationOutTiming={500}>
           <View style={styles.bottomSheet}>
             <Text style={styles.title}>Introducing</Text>
             <Text style={styles.subTitle}>Dark Mode</Text>
@@ -2371,15 +2383,18 @@ const HomePage = () => {
                 valueField="id"
                 placeholder="Select Break Type"
                 value={breakValue}
-              onChange={item => [setBreakValue(item.id),setBreakDescription(item)]}
+                onChange={item => [
+                  setBreakValue(item.id),
+                  setBreakDescription(item),
+                ]}
               />
-                {breakDescription?.description ? (
-                  <Text style={{color: '#000', fontSize: 13, marginTop: 5}}>
-                    {breakDescription.description}
-                  </Text>
-                ) : null}
+              {breakDescription?.description ? (
+                <Text style={{color: '#000', fontSize: 13, marginTop: 5}}>
+                  {breakDescription.description}
+                </Text>
+              ) : null}
               <Text style={{color: '#333', fontSize: 15, marginVertical: 5}}>
-              Message :-
+                Message :-
               </Text>
               <TextInput
                 style={styles.input}

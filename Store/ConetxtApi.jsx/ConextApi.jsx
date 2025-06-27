@@ -131,6 +131,18 @@ const ConextApi = ({children}) => {
         name: 'Upload Document',
         nav: 'UploadDocumentScreen',
       },
+      {
+        id: 7,
+        uri: require('../../assets/Services/s8.webp'),
+        name: 'Reports',
+        nav: 'TaskReportScreen',
+      },
+      {
+        id: 8,
+        uri: require('../../assets/Services/s9.webp'),
+        name: 'Support',
+        nav: 'SupportPage',
+      },
      ]
       response?.data?.data.menu_access?.map((item) => {
         if (item.title=="Request Attendance") {

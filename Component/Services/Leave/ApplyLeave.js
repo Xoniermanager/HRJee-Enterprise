@@ -56,12 +56,16 @@ const ApplyLeave = ({navigation}) => {
         label: 'Morning',
         value: 'first_half',
         labelStyle: {color: '#fff'}, // Customize label style here
+        color: '#fff',     
+        borderColor: '#fff',
       },
       {
         id: '2',
         label: 'Afternoon',
         value: 'second_half',
-        labelStyle: {color: '#fff'}, // Customize label style here
+        labelStyle: {color: '#fff'},
+        color: '#fff',     
+        borderColor: '#fff',
       },
     ],
     [],
@@ -73,12 +77,16 @@ const ApplyLeave = ({navigation}) => {
         label: 'Morning',
         value: 'option1',
         labelStyle: {color: '#fff'}, // Customize label style here
+        color: '#fff',     
+        borderColor: '#fff',
       },
       {
         id: '2',
         label: 'Afternoon',
         value: 'option2',
         labelStyle: {color: '#fff'}, // Customize label style here
+        color: '#fff',     
+        borderColor: '#fff',
       },
     ],
     [],
@@ -90,12 +98,16 @@ const ApplyLeave = ({navigation}) => {
         label: 'Morning',
         value: 'option1',
         labelStyle: {color: '#fff'},
+        color: '#fff',     
+        borderColor: '#fff',
       },
       {
         id: '2',
         label: 'Afternoon',
         value: 'option2',
         labelStyle: {color: '#fff'},
+        color: '#fff',     
+        borderColor: '#fff',
       },
     ],
     [],
@@ -484,6 +496,7 @@ const ApplyLeave = ({navigation}) => {
                   }}>
                   <RadioGroup
                     containerStyle={{flexDirection: 'row'}}
+                    
                     radioButtons={radioButtons}
                     onPress={setSelectedId}
                     selectedId={selectedId}

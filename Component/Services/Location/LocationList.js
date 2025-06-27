@@ -41,8 +41,6 @@ const TaskPage = () => {
   const [mapView, setMapView] = useState(false);
   const [filterVisible, setFilterVisible] = useState(false);
   const [locationFilter, setLocationFilter] = useState('');
-  const [taskFilter, setTaskFilter] = useState('');
-  const [projectFilter, setProjectFilter] = useState('');
   const [addressLatitude, setAddressLatitude] = useState(null);
   const [modalVisible, setModalVisible] = useState(false);
   const [list, setList] = useState(null);
@@ -236,7 +234,11 @@ const TaskPage = () => {
             justifyContent: 'space-between',
             alignItems: 'center',
           }}>
-          <Text style={styles.taskTitle}>{responseData.city}</Text>
+            <View style={{width:responsiveWidth(44)}}>
+            
+            <Text style={styles.taskTitle}>{responseData.name}</Text>
+            </View>
+         
 
           <View style={{flexDirection: 'row', alignItems: 'center'}}>
             <Text
@@ -303,7 +305,7 @@ const TaskPage = () => {
           {addressLatitude && (
             <TouchableOpacity
               onPress={() =>
-                navigation.navigate('Map', {
+                navigation.navigate('MapTask', {
                   lat: addressLatitude.lat,
                   lng: addressLatitude.lng,
                   visitAddress:item.visit_address,
@@ -351,7 +353,10 @@ const TaskPage = () => {
             justifyContent: 'space-between',
             alignItems: 'center',
           }}>
-          <Text style={styles.taskTitle}>{responseData.name}</Text>
+      <View style={{width:responsiveWidth(44)}}>
+            
+            <Text style={styles.taskTitle}>{responseData.name}</Text>
+            </View>
 
           <View style={{flexDirection: 'row', alignItems: 'center'}}>
             <Text
@@ -416,7 +421,7 @@ const TaskPage = () => {
           {addressLatitude && selected == item.id && (
             <TouchableOpacity
               onPress={() =>
-                navigation.navigate('Map', {
+                navigation.navigate('MapTask', {
                   lat: addressLatitude.lat,
                   lng: addressLatitude.lng,
                   visitAddress:item.visit_address,
@@ -538,6 +543,10 @@ const TaskPage = () => {
               type: 'success',
             });
             getTask();
+            setRemark('');
+            setPhoto(null);
+            setFileResponse([]);
+            setValue(null);
           } else {
             setLoader(false);
             setModalVisible(false);

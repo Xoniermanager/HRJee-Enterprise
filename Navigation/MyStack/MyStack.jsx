@@ -62,6 +62,7 @@ import UploadDocumentScreen from '../../Component/Services/UploadDocument/Upload
 import MapTask from '../../Component/Services/Location/MapTask';
 import TaskReportScreen from '../../Component/Services/Reports/TaskReportScreen';
 import SupportPage from '../../Component/Services/SupportPage/SupportPage';
+import AddAttendance from '../../Component/Services/AttendanceRequest/AddAttendance';
 
 const MyStack = () => {
   const {currentTheme} = useContext(ThemeContext);
@@ -185,6 +186,22 @@ const MyStack = () => {
         component={SupportPage}
         options={{
           title: 'Support',
+
+          headerBackTitleVisible: false,
+          headerStyle: {
+            backgroundColor: currentTheme.background_v2,
+          },
+          headerTintColor: '#fff',
+          headerTitleStyle: {
+            fontWeight: '500',
+          },
+        }}
+      />
+       <Stack.Screen
+        name="AddAttendance"
+        component={AddAttendance}
+        options={{
+          title: 'Add Attendance',
 
           headerBackTitleVisible: false,
           headerStyle: {

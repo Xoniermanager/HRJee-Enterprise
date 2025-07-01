@@ -23,18 +23,22 @@ const RequestList = () => {
   const isFocuesd = useIsFocused();
   const [list, setList] = useState(null);
   const {currentTheme} = useContext(ThemeContext);
+
   const getRequestlist = async () => {
     const token = await AsyncStorage.getItem('TOKEN');
     const url = `${BASE_URL}/attendance/request/list`;
     const response = await asignTask(url, token);
     setList(response?.data?.data?.data);
   };
+
   useEffect(() => {
     getRequestlist();
   }, [isFocuesd]);
-  const handleRefresh=()=>{
+
+  const handleRefresh = () => {
     getRequestlist();
-  }
+  };
+
   const handleDelete = id => {
     Alert.alert(
       'Delete Confirmation',
@@ -45,10 +49,7 @@ const RequestList = () => {
       ],
     );
   };
-  if(list==null){
-    return <Reload/>
-  }
-  
+
   const deleteItem = async id => {
     const token = await AsyncStorage.getItem('TOKEN');
     const config = {
@@ -69,7 +70,6 @@ const RequestList = () => {
       })
       .catch(error => {
         if (error.response.status == '401') {
-        
           showMessage({
             message: error.response.data.msg,
             type: 'danger',
@@ -77,7 +77,8 @@ const RequestList = () => {
         }
       });
   };
-  const renderItem = ({item, index}) => {
+
+  const renderItem = ({item}) => {
     return (
       <LinearGradient
         start={{x: 0, y: 0}}
@@ -108,12 +109,11 @@ const RequestList = () => {
           <View style={styles.detailRow}>
             <Text style={styles.label}>Status</Text>
             <Text style={[styles.value, {color: 'orange', fontWeight: 'bold'}]}>
-            {item?.status?.toUpperCase()}
+              {item?.status?.toUpperCase()}
             </Text>
           </View>
         </View>
 
-        {/* Action Buttons */}
         {item?.status == 'pending' ? (
           <View style={styles.actionContainer}>
             <TouchableOpacity
@@ -133,30 +133,58 @@ const RequestList = () => {
       </LinearGradient>
     );
   };
+
+  if (list == null) {
+    return <Reload />;
+  }
+
   return (
     <View style={styles.container}>
-       <PullToRefresh onRefresh={handleRefresh}>
-      <FlatList
-        data={list}
-        renderItem={renderItem}
-        keyExtractor={item => item.id}
-        contentContainerStyle={styles.container}
-        ListEmptyComponent={
-          <View style={styles.emptyContainer}>
-            <Text style={styles.emptyText}>No data found</Text>
-          </View>
-        }
-      />
+      <PullToRefresh onRefresh={handleRefresh}>
+        <FlatList
+          ListHeaderComponent={
+            <View style={styles.headerContainer}>
+              <TouchableOpacity
+                style={styles.requestButton}
+                onPress={() => navigation.navigate('AddAttendance' , {id: 0})}>
+                <Text style={styles.buttonText}>+ Request Attendance</Text>
+              </TouchableOpacity>
+            </View>
+          }
+          data={list}
+          renderItem={renderItem}
+          keyExtractor={item => item.id.toString()}
+          contentContainerStyle={{marginBottom:80}}
+          ListEmptyComponent={
+            <View style={styles.emptyContainer}>
+              <Text style={styles.emptyText}>No data found</Text>
+            </View>
+          }
+        />
       </PullToRefresh>
     </View>
   );
 };
-
 export default RequestList;
-
 const styles = StyleSheet.create({
   container: {
     padding: 10,
+  },
+  headerContainer: {
+    marginBottom: 10,
+    alignItems: 'flex-end',
+  },
+  requestButton: {
+    backgroundColor: '#0E0E64',
+    paddingVertical: 10,
+    paddingHorizontal: 15,
+    borderRadius: 8,
+    elevation: 2,
+  },
+  buttonText: {
+    color: '#fff',
+    fontWeight: 'bold',
+    fontSize: 16,
   },
   card: {
     borderRadius: 10,
@@ -189,6 +217,7 @@ const styles = StyleSheet.create({
   actionContainer: {
     flexDirection: 'row',
     alignItems: 'center',
+    marginTop: 10,
   },
   iconButton: {
     padding: 8,

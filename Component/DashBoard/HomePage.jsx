@@ -1049,7 +1049,7 @@ const HomePage = () => {
         type: 'danger',
         duration: 2000,
       });
-    } else if (punchInRequest == null) {
+    } else if (punchOut == null) {
       setModalRequest(false);
       showMessage({
         message: 'Please enter Punch out Time',
@@ -1071,6 +1071,7 @@ const HomePage = () => {
         reason: reasonText,
       });
       const url = `${BASE_URL}/attendance/request/store`;
+      console.log(data,url)
       let form = 0;
       const response = await AttendanceRequest(url, data, token, form);
       if (response.data.status) {

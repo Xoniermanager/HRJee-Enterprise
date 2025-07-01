@@ -47,10 +47,13 @@ const axiosPost = async (url, data, token, form) => {
           console.log(error);
         });
     }
+    console.log(error?.response)
     showMessage({
-      message: error.response?.data?.message,
+      message: error?.response?.data?.message?.date?.[0] || error?.response?.data?.message || 'Something went wrong',
       type: 'danger',
+      duration:4000
     });
+    
     if (error?.response?.status === 401) {
       navigate('Login');
     }

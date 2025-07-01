@@ -721,7 +721,7 @@ const Attendance = () => {
               marginTop: responsiveHeight(1.5),
               flex: 1,
               // marginHorizontal:5
-              padding:10
+              padding:0
             }}>
             <ScrollView>
               <View
@@ -775,26 +775,27 @@ const Attendance = () => {
               <View
                 style={{
                   flexDirection: 'row',
-                  alignSelf: 'center',
-                  marginVertical: 0,
+                  justifyContent: 'center',
+                  marginVertical: 10,
                 }}>
                 <TouchableOpacity
                   onPress={showFromDatePicker}
                   style={{
-                    borderWidth: Platform.OS == 'ios' ? 0.2 : null,
-                    marginHorizontal:5,
+                    width: responsiveWidth(40),
+                    height: responsiveHeight(15),
                     borderRadius: 15,
                     backgroundColor: currentTheme.background,
                     padding: 15,
                     elevation: 7,
-                    alignSelf: 'center',
+                    marginHorizontal: 5,
+                    alignItems: 'center',
                     marginTop: responsiveHeight(2.5),
                     borderWidth: 0.5,
                     borderColor: currentTheme.text,
                   }}>
                   <Text
                     style={{
-                      fontSize: 20,
+                      fontSize:15,
                       color: currentTheme.text,
                       textAlign: 'center',
                       marginTop: 5,
@@ -805,14 +806,16 @@ const Attendance = () => {
                     style={{
                       backgroundColor: currentTheme.inputText_color,
                       flexDirection: 'row',
-                      marginTop: 5,
                       borderRadius: 10,
                       padding: 8,
+                      alignItems: 'center',
+                      marginTop:5,
+                      paddingHorizontal:10
                     }}>
                     <Text
                       style={{
-                        fontSize: 16,
-                        marginHorizontal: 20,
+                        fontSize: 15,
+                        // marginHorizontal: 20,
                         color: currentTheme.text,
                       }}>
                       {fromDate ? fromDate : '-- / -- / ---- '}
@@ -822,6 +825,7 @@ const Attendance = () => {
                         height: 20,
                         width: 20,
                         tintColor: currentTheme.text,
+                        marginLeft:5
                       }}
                       source={require('../../assets/Attendence/dates.png')}
                     />
@@ -830,20 +834,21 @@ const Attendance = () => {
                 <TouchableOpacity
                   onPress={showToDatePicker}
                   style={{
-                    borderWidth: Platform.OS == 'ios' ? 0.2 : null,
-                    marginHorizontal: 5,
+                    width: responsiveWidth(40),
+                    height: responsiveHeight(15),
                     borderRadius: 15,
                     backgroundColor: currentTheme.background,
                     padding: 15,
                     elevation: 7,
-                    alignSelf: 'center',
+                    marginHorizontal: 5,
+                    alignItems: 'center',
                     marginTop: responsiveHeight(2.5),
                     borderWidth: 0.5,
                     borderColor: currentTheme.text,
                   }}>
                   <Text
                     style={{
-                      fontSize: 20,
+                      fontSize:15,
                       color: currentTheme.text,
                       textAlign: 'center',
                       marginTop: 5,
@@ -856,12 +861,15 @@ const Attendance = () => {
                       flexDirection: 'row',
                       marginTop: 5,
                       borderRadius: 10,
-                      padding: 8,
+                      padding:10,
+                      marginTop:5,
+                      paddingHorizontal:10
+
                     }}>
                     <Text
                       style={{
-                        fontSize: 16,
-                        marginHorizontal: 20,
+                        fontSize: 15,
+                        // marginHorizontal: 20,
                         color: currentTheme.text,
                       }}>
                       {toDate ? toDate : '-- / -- / ---- '}
@@ -871,6 +879,7 @@ const Attendance = () => {
                         height: 20,
                         width: 20,
                         tintColor: currentTheme.text,
+                        marginLeft:5
                       }}
                       source={require('../../assets/Attendence/dates.png')}
                     />
@@ -1034,23 +1043,27 @@ const styles = StyleSheet.create({
   },
   statusContainer: {
     flexDirection: 'row',
-    justifyContent: 'space-around',
+    flexWrap: 'wrap',
+    justifyContent: 'space-between', // Spread items evenly
     alignItems: 'center',
     backgroundColor: 'navy',
-    padding:10,
+    padding: 10,
     borderRadius: 10,
     marginBottom: 20,
+    gap:5, 
     
   },
   statusItem: {
     alignItems: 'center',
     borderRadius: 10,
-    paddingVertical:8,
+    paddingVertical:10,
     paddingHorizontal:8,
+    
   },
   statusText: {
     color: 'white',
     fontWeight: 'bold',
+    
   },
   statusValue: {
     color: 'white',

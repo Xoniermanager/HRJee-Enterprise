@@ -913,7 +913,7 @@ const HomePage = () => {
           ],
         };
         const response = await locationSend(url, data, token, form);
-        console.log(response.data);
+        console.log(response.data,"yashlocation");
       } catch (error) {
         console.error('Error sending stored location:', error.response.data);
       }
@@ -972,7 +972,8 @@ const HomePage = () => {
                 const distance = getDistance(oldLocation, newLocation);
                 console.log('Distance yash:', Math.floor(distance));
 
-                if (Math.floor(distance) >= 0) {
+                if (Math.floor(distance) >=150) {
+                  console.log("yash")
                   sendStoredLocation(newLocation, distance, oldLocation);
                   await AsyncStorage.setItem(
                     'oldLocation',

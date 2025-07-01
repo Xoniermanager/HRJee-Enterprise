@@ -66,7 +66,7 @@ const LoginScreen = () => {
   useEffect(() => {
     requestUserPermission();
   }, []);
-  const snapPoints = useMemo(() => ['1%', '60%'], []);
+  const snapPoints = useMemo(() => ['1%', '100%'], []);
   const toggleShowPassword = () => {
     setShowPassword(!showPassword);
   };
@@ -239,7 +239,7 @@ const LoginScreen = () => {
     setFaceEmail('');
   }
   return (
-    <GestureHandlerRootView style={{ flex: 1 }}>
+    <GestureHandlerRootView style={{ flex: 1,height:'100%' }}>
     <SafeAreaView style={LoginGuestStyle.contanier}>
        <ScrollView>
        <Image
@@ -351,7 +351,10 @@ const LoginScreen = () => {
             </View>
           </View>
         </Modal>
-        <BottomSheet ref={bottomSheetRef} index={-1} snapPoints={snapPoints}>
+       
+       </ScrollView>
+      <FlashMessage position="top" />
+      <BottomSheet ref={bottomSheetRef} index={-1} snapPoints={snapPoints}>
         <View style={styles.sheetContent}>
           <Image source={{ uri: userInfo?.details?.profile_image }} style={styles.avatar} />
           <Text style={styles.name}>{userInfo?.name}</Text>
@@ -369,8 +372,6 @@ const LoginScreen = () => {
           </TouchableOpacity>
         </View>
       </BottomSheet>
-       </ScrollView>
-      <FlashMessage position="top" />
     </SafeAreaView>
     </GestureHandlerRootView>
   );

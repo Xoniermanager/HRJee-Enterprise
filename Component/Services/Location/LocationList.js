@@ -234,12 +234,7 @@ const TaskPage = () => {
             justifyContent: 'space-between',
             alignItems: 'center',
           }}>
-            <View style={{width:responsiveWidth(44)}}>
-            
-            <Text style={styles.taskTitle}>{responseData.name}</Text>
-            </View>
-         
-
+          <Text style={styles.taskTitle}>{responseData.name}</Text>
           <View style={{flexDirection: 'row', alignItems: 'center'}}>
             <Text
               style={{
@@ -572,7 +567,7 @@ const TaskPage = () => {
     const token = await AsyncStorage.getItem('TOKEN');
     const url = `${BASE_URL}/assign/task?search_term=${text}`;
     console.log(url);
-    const response = await getAccesss(url, token);
+    const response = await asignTask(url, token);
     if (response.data.status) {
       setList(response.data.data.data);
     }
@@ -595,7 +590,7 @@ const TaskPage = () => {
     console.log('Filter URL:', url);
 
     try {
-      const response = await getAccesss(url, token);
+      const response = await asignTask(url, token);
       setResetLoader(false);
       if (response.data?.status) {
         setFilterVisible(false);
@@ -925,7 +920,7 @@ const styles = StyleSheet.create({
     textAlign: 'center',
   },
   card: {
-    padding: 15,
+    padding: 12,
     borderRadius: 18,
     marginBottom: 20,
   },
@@ -966,6 +961,7 @@ const styles = StyleSheet.create({
     borderTopLeftRadius: 16,
     borderBottomLeftRadius: 16,
     alignSelf: 'flex-end',
+    
   },
   sidebarTitle: {
     fontSize: 18,
@@ -1031,13 +1027,15 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     backgroundColor: 'rgba(0,0,0,0.5)',
+   
   },
   modalView: {
     backgroundColor: 'white',
     padding: 20,
     borderRadius: 10,
-    width: '90%',
+    width: '95%',
     alignItems: 'center',
+   
   },
   modalTitle: {
     fontSize: 18,
@@ -1048,24 +1046,26 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     marginBottom: 20,
+    // justifyContent:'space-around'
   },
   cameraButton: {
     borderColor: 'blue',
     borderWidth: 1,
     padding: 10,
     borderRadius: 5,
-    marginRight: 10,
+    // marginRight: 10,
     backgroundColor: '#fff',
   },
   galleryButton: {
     borderColor: 'orange',
     borderWidth: 1,
     padding: 10,
-    borderRadius: 5,
-    marginLeft: 10,
+    borderRadius: 5, 
+    // marginLeft: 10,
   },
   orText: {
-    marginHorizontal: 5,
+    marginHorizontal:3,
+    color:'#000'
   },
   uploadButton: {
     backgroundColor: 'blue',

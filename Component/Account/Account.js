@@ -270,7 +270,7 @@ const Account = () => {
           }}>
           <Text
             style={{
-              fontSize: 18,
+              fontSize: 15,
               color: currentTheme.text,
               alignSelf: 'center',
               marginVertical: 10,

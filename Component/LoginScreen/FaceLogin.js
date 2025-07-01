@@ -43,13 +43,6 @@ const FaceLogin = ({route}) => {
 
     return () => clearInterval(progressInterval);
   }, []);
-
-  useEffect(() => {
-    if (!pictureTaken) {
-      setTimeout(() => takePicture(), 2000);
-    }
-  }, [pictureTaken]);
-
   const takePicture = async () => {
     if (cameraRef.current && !pictureTaken) {
       setPictureTaken(true);
@@ -256,7 +249,7 @@ const styles = StyleSheet.create({
     marginBottom: 20,
   },
   progressText: {
-    fontSize: 20,
+    fontSize: 16,
     fontWeight: 'bold',
     color: '#fff',
     textAlign: 'center',

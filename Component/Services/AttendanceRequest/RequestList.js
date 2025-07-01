@@ -108,7 +108,7 @@ const RequestList = () => {
           <View style={styles.detailRow}>
             <Text style={styles.label}>Status</Text>
             <Text style={[styles.value, {color: 'orange', fontWeight: 'bold'}]}>
-              {item?.status}
+            {item?.status?.toUpperCase()}
             </Text>
           </View>
         </View>

@@ -13,6 +13,7 @@ import {AnimatedCircularProgress} from 'react-native-circular-progress';
 import {RNCamera} from 'react-native-camera';
 const {width, height} = Dimensions.get('window');
 const FaceCamera = ({punchIn}) => {
+  const [tempImage,setTempImage]=useState('')
   const s3 = new S3({
     accessKeyId: AWS_ACCESS_KEY,
     secretAccessKey: AWS_SECRET_KEY,
@@ -34,29 +35,22 @@ const FaceCamera = ({punchIn}) => {
     user_details,
   } = useContext(ThemeContext);
   const [matchProgress, setMatchProgress] = useState(0);
-
+  const progressIntervalRef = useRef(null);
   useEffect(() => {
     if (isCameraOpen) {
-      let progressInterval = setInterval(() => {
-        setMatchProgress(prev => {
-          if (prev >= 1) {
-            clearInterval(progressInterval);
+      let progress = 0;
+  clearInterval(progressIntervalRef.current);
+  progressIntervalRef.current = setInterval(() => {
+    progress = Math.min(progress + 0.05, 1);
+    setMatchProgress(progress);
+  },300);
+     
 
-            return 1;
-          }
-          return prev + 0.1;
-        });
-      }, 1000);
-
-      return () => clearInterval(progressInterval);
+      // return () => clearInterval(progressInterval);
     }
   }, [isCameraOpen]);
 
-  useEffect(() => {
-    if (isCameraOpen) {
-      setTimeout(() => takePicture(), 2000);
-    }
-  }, [isCameraOpen]);
+
 
   const takePicture = async () => {
     if (cameraRef.current) {
@@ -68,6 +62,7 @@ const FaceCamera = ({punchIn}) => {
           uploadFaceKYC(s3ObjectKey);
         } else {
           let uploaddata = await uploadTmpImage(photo.uri);
+          setTempImage(uploaddata?.key);
           const s3ObjectKey = uploaddata?.key;
           const ss = await compareFaces(s3ObjectKey);
         }
@@ -100,15 +95,10 @@ const FaceCamera = ({punchIn}) => {
     const url = `${BASE_URL}/user/punchIn/image`;
     let form = 0;
     const data = {
-      face_punchin_kyc: '12345678.png',
+      face_punchin_kyc: tempImage,
     };
     const response = await faceuploadKyc(url, data, token, form);
-    if (response.data.status) {
-      showMessage({
-        message: response.data.message,
-        type: 'success',
-      });
-    }
+    console.log(response.data)
   };
   const uploadFirstImage = async uri => {
     try {
@@ -289,14 +279,16 @@ const FaceCamera = ({punchIn}) => {
         }
       } else if (data?.UnmatchedFaces.length > 0) {
         showMessage({
-          message: 'Face do not match',
+          message: 'Employee face does not match the registered data',
           type: 'danger',
-          duration: 3000,
+          duration: 4000,
         });
         setIsCameraOpen(false);
       } else {
+        punchInFaceKyc();
         punchIn();
         setIsCameraOpen(false);
+       
       }
     });
   };
@@ -316,6 +308,7 @@ const FaceCamera = ({punchIn}) => {
             alignItems: 'center',
             width: '100%',
             height: '80%',
+
           }}
           type={RNCamera.Constants.Type.front}
           captureAudio={false}
@@ -340,33 +333,7 @@ const FaceCamera = ({punchIn}) => {
           )}
         </RNCamera>
       )}
-      {/* {isCameraOpen && device ? (
-        <View style={styles.cameraContainer}>
-          <View style={styles.outerCircle}>
-            <View style={styles.innerCircle}>
-              <Camera
-                ref={cameraRef}
-                style={styles.camera}
-                device={device}
-                isActive={true}
-                photo={true}
-              />
-            </View>
-          </View>
-        </View>
-      ) : null}
-      {isCameraOpen && (
-        <View style={styles.progressContainer}>
-          <Text style={styles.progressText}>
-            Face Match: {Math.round(matchProgress * 100)}%
-          </Text>
-          <ProgressBar
-            progress={matchProgress}
-            color={getProgressBarColor()}
-            style={styles.progressBar}
-          />
-        </View>
-      )} */}
+     
     </View>
   );
 };
@@ -399,10 +366,10 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     marginTop: 20,
-    marginBottom: 70,
+    marginBottom: 90,
   },
   progressText: {
-    fontSize: 20,
+    fontSize: 16,
     fontWeight: 'bold',
     color: '#fff',
     textAlign: 'center',
@@ -411,3 +378,4 @@ const styles = StyleSheet.create({
 });
 
 export default FaceCamera;
+

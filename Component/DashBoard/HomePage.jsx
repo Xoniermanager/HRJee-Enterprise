@@ -60,9 +60,11 @@ const HomePage = () => {
   const date = new Date(selected);
   const [modalRequest, setModalRequest] = useState(false);
   const [startdateRequest, setStartdateRequest] = useState(new Date());
-  const [openstartdate, setOpenStartDate] = useState(false);
-  const [punchInRequest, setPunchInRequest] = useState(null);
-  const [punchOut, setPunchOut] = useState(null);
+  const [openStartDate, setOpenStartDate] = useState(false);
+  const [punchInTime, setPunchInTime] = useState(new Date());
+  const [punchOutTime, setPunchOutTime] = useState(new Date());
+  const [openPunchIn, setOpenPunchIn] = useState(false);
+  const [openPunchOut, setOpenPunchOut] = useState(false);
   const [reasonText, setReasonText] = useState('');
   const [breakModal, setBreakModal] = useState(false);
   const {
@@ -112,7 +114,6 @@ const HomePage = () => {
   const [loading, setloading] = useState(false);
   const [availableLeavesList, setAvailableLeavesList] = useState(null);
   const [inTimeBreak, setInTimeBreak] = useState(null);
-  const [elapsedTime, setElapsedTime] = useState(0);
   const [breaktime, setBreaktime] = useState('');
   const [listBreak, setListBreak] = useState(null);
   const [breakValue, setBreakValue] = useState(null);
@@ -913,7 +914,7 @@ const HomePage = () => {
           ],
         };
         const response = await locationSend(url, data, token, form);
-        console.log(response.data,"yashlocation");
+        console.log(response.data, 'yashlocation');
       } catch (error) {
         console.error('Error sending stored location:', error.response.data);
       }
@@ -972,8 +973,8 @@ const HomePage = () => {
                 const distance = getDistance(oldLocation, newLocation);
                 console.log('Distance yash:', Math.floor(distance));
 
-                if (Math.floor(distance) >=150) {
-                  console.log("yash")
+                if (Math.floor(distance) >= 150) {
+                  console.log('yash');
                   sendStoredLocation(newLocation, distance, oldLocation);
                   await AsyncStorage.setItem(
                     'oldLocation',
@@ -1023,75 +1024,59 @@ const HomePage = () => {
       console.error('Error starting background service:', e);
     }
   };
-  function convertTo24Hour(time) {
-    let [hours, minutes] = time.match(/\d+/g);
-    let period = time.match(/AM|PM/i);
 
-    hours = parseInt(hours, 10);
-    minutes = parseInt(minutes, 10);
-
-    if (period && period[0].toUpperCase() === 'PM' && hours !== 12) {
-      hours += 12;
-    } else if (period && period[0].toUpperCase() === 'AM' && hours === 12) {
-      hours = 0;
-    }
-
-    return `${hours.toString().padStart(2, '0')}:${minutes
-      .toString()
-      .padStart(2, '0')}`;
-  }
   const attendance_Request = async () => {
     const token = await AsyncStorage.getItem('TOKEN');
-    if (punchInRequest == null) {
-      setModalRequest(false);
+
+    if (!punchInTime) {
       showMessage({
         message: 'Please enter Punch In Time',
         type: 'danger',
         duration: 2000,
       });
-    } else if (punchOut == null) {
-      setModalRequest(false);
+    } else if (!punchOutTime) {
       showMessage({
-        message: 'Please enter Punch out Time',
+        message: 'Please enter Punch Out Time',
         type: 'danger',
         duration: 2000,
       });
     } else if (reasonText.trim() === '') {
-      setModalRequest(false);
       showMessage({
         message: 'Please Enter Reason',
         type: 'danger',
         duration: 2000,
       });
     } else {
-      let data = JSON.stringify({
+      setLoader(true);
+
+      // Format: H:i (e.g., 8:00, 13:45)
+      const formatToHi = date => {
+        const hours = date.getHours(); // 0-23
+        const minutes = date.getMinutes().toString().padStart(2, '0');
+        return `${hours}:${minutes}`;
+      };
+
+      const data = JSON.stringify({
         date: startdateRequest.toISOString().split('T')[0],
-        punch_in: convertTo24Hour(punchInRequest),
-        punch_out: convertTo24Hour(punchOut),
+        punch_in: formatToHi(punchInTime),
+        punch_out: formatToHi(punchOutTime),
         reason: reasonText,
       });
+
       const url = `${BASE_URL}/attendance/request/store`;
-      console.log(data,url)
-      let form = 0;
-      const response = await AttendanceRequest(url, data, token, form);
-      if (response.data.status) {
+      console.log(data, url);
+
+      const response = await AttendanceRequest(url, data, token, 0);
+      setLoader(false);
         setModalRequest(false);
-        setPunchInRequest(null);
-        setPunchOut(null);
+      if (response?.data?.status) {
         setReasonText('');
         showMessage({
-          message: `${response?.data?.message}`,
+          message: response?.data?.message,
           type: 'success',
         });
       } else {
-        const payload = {
-          data: data,
-          url,
-          url,
-          method: 'post',
-          message: response?.data?.message,
-        };
-        activeLog(payload);
+        setModalRequest(false);
       }
     }
   };
@@ -2304,41 +2289,34 @@ const HomePage = () => {
                 </TouchableOpacity>
               </View>
 
-              <Text style={{color: '#333', fontSize: 15, marginVertical: 5}}>
-                Punch In Time
-              </Text>
-              <Dropdown
-                style={styles.dropdown}
-                placeholderStyle={[{color: '#000'}]}
-                selectedTextStyle={[{color: '#000'}]}
-                itemTextStyle={{
-                  color: '#000',
-                }}
-                data={timeOptions}
-                labelField="label"
-                valueField="value"
-                placeholder="Select Time"
-                value={punchInRequest}
-                onChange={item => setPunchInRequest(item.value)}
-              />
-              {/* Punch Out Time Picker */}
-              <Text style={{color: '#333', fontSize: 15, marginVertical: 5}}>
-                Punch Out Time
-              </Text>
-              <Dropdown
-                style={styles.dropdown}
-                placeholderStyle={[{color: '#000'}]}
-                selectedTextStyle={[{color: '#000'}]}
-                itemTextStyle={{
-                  color: '#000',
-                }}
-                data={timeOptions}
-                labelField="label"
-                valueField="value"
-                placeholder="Select Time"
-                value={punchOut}
-                onChange={item => setPunchOut(item.value)}
-              />
+              <Text style={styles.label}>Punch In Time</Text>
+              <TouchableOpacity
+                style={styles.Date_box}
+                onPress={() => setOpenPunchIn(true)}>
+                <Text style={{color: '#000'}}>
+                  {punchInTime.toLocaleTimeString([], {
+                    hour: '2-digit',
+                    minute: '2-digit',
+                    hour12: true,
+                  })}
+                </Text>
+                <EvilIcons name="clock" size={25} color="#000" />
+              </TouchableOpacity>
+
+              {/* Punch Out Time */}
+              <Text style={styles.label}>Punch Out Time</Text>
+              <TouchableOpacity
+                style={styles.Date_box}
+                onPress={() => setOpenPunchOut(true)}>
+                <Text style={{color: '#000'}}>
+                  {punchOutTime.toLocaleTimeString([], {
+                    hour: '2-digit',
+                    minute: '2-digit',
+                    hour12: true,
+                  })}
+                </Text>
+                <EvilIcons name="clock" size={25} color="#000" />
+              </TouchableOpacity>
 
               <Text style={{color: '#333', fontSize: 15, marginVertical: 5}}>
                 Reason
@@ -2425,17 +2403,40 @@ const HomePage = () => {
         </Modal>
         <DatePicker
           modal
-          open={openstartdate}
+          open={openStartDate}
           date={startdateRequest}
           theme="light"
           mode="date"
-          onConfirm={startdate => {
+          maximumDate={new Date()}
+          onConfirm={date => {
             setOpenStartDate(false);
-            setStartdateRequest(startdate);
+            setStartdateRequest(date);
           }}
-          onCancel={() => {
-            setOpenStartDate(false);
+          onCancel={() => setOpenStartDate(false)}
+        />
+
+        <DatePicker
+          modal
+          mode="time"
+          open={openPunchIn}
+          date={punchInTime}
+          onConfirm={time => {
+            setOpenPunchIn(false);
+            setPunchInTime(time);
           }}
+          onCancel={() => setOpenPunchIn(false)}
+        />
+
+        <DatePicker
+          modal
+          mode="time"
+          open={openPunchOut}
+          date={punchOutTime}
+          onConfirm={time => {
+            setOpenPunchOut(false);
+            setPunchOutTime(time);
+          }}
+          onCancel={() => setOpenPunchOut(false)}
         />
       </View>
     );

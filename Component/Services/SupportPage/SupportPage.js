@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, {useEffect, useState} from 'react';
 import {
   View,
   Text,
@@ -7,16 +7,97 @@ import {
   Linking,
   StyleSheet,
   ScrollView,
+  ActivityIndicator,
 } from 'react-native';
+import {
+  ApplyResigns,
+  WithdrawResigns,
+  asignTask,
+} from '../../../APINetwork/ComponentApi';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import {BASE_URL} from '../../../utils';
+import {useNavigation} from '@react-navigation/native';
+import {showMessage} from 'react-native-flash-message';
 
-const SupportPage = () => {
+const SupportPage = ({route}) => {
   const [subject, setSubject] = useState('');
   const [comment, setComment] = useState('');
-
-  const handleSubmit = () => {
-    alert('Submitted!');
-  };
-
+  const id = route?.params?.id;
+  console.log(id);
+  const navigate = useNavigation();
+  const [loader, setLoader] = useState(false);
+  async function check() {
+    try {
+      let token = await AsyncStorage.getItem('TOKEN');
+      const url = `${BASE_URL}/support/${id}`;
+      const response = await asignTask(url, token);
+      if (response?.data?.status === true) {
+        setSubject(response.data.data.subject);
+        setComment(response.data.data.comment);
+      } else {
+      }
+    } catch (error) {
+      // console.error('Error making POST request:', error);
+    }
+  }
+  useEffect(() => {
+    check();
+  }, []);
+  async function SupportApply() {
+    if (!id) {
+      try {
+        setLoader(true);
+        let token = await AsyncStorage.getItem('TOKEN');
+        const url = `${BASE_URL}/support`;
+        let data = JSON.stringify({
+          subject: subject,
+          comment: comment,
+        });
+        const response = await ApplyResigns(url, data, token);
+        if (response?.data?.status === true) {
+          setLoader(false);
+          showMessage({
+            message: response.data.message,
+            type: 'success',
+          });
+          navigate.goBack();
+        } else {
+          setLoader(false);
+        }
+      } catch (error) {
+        setLoader(false);
+        showMessage({
+          message: error.response.data.message,
+          type: 'danger',
+        });
+      }
+    } else {
+      try {
+        setLoader(true);
+        let token = await AsyncStorage.getItem('TOKEN');
+        const url = `${BASE_URL}/support/${id}`;
+        const from = 0;
+        let data = JSON.stringify({
+          subject: subject,
+          comment: comment,
+        });
+        const response = await WithdrawResigns(url, data, token, from);
+        if (response?.data?.status === true) {
+          setLoader(false);
+          showMessage({
+            message: response.data.message,
+            type: 'success',
+          });
+          navigate.goBack();
+        } else {
+          setLoader(false);
+        }
+      } catch (error) {
+        setLoader(false);
+        console.error('Error making POST request:', error);
+      }
+    }
+  }
   const handleCall = () => {
     Linking.openURL('tel:+919044984373');
   };
@@ -33,7 +114,7 @@ const SupportPage = () => {
           onChangeText={setSubject}
         />
 
-        <Text style={[styles.label, { marginTop: 20 }]}>Comment</Text>
+        <Text style={[styles.label, {marginTop: 20}]}>Comment</Text>
         <TextInput
           style={styles.textArea}
           placeholder="Put your comment here....."
@@ -55,8 +136,12 @@ const SupportPage = () => {
           <Text style={styles.supportNumber}>+91-9044984373</Text>
         </TouchableOpacity>
 
-        <TouchableOpacity style={styles.button} onPress={handleSubmit}>
-          <Text style={styles.buttonText}>Done</Text>
+        <TouchableOpacity style={styles.button} onPress={() => SupportApply()}>
+          {loader ? (
+            <ActivityIndicator size="small" color="#fff" />
+          ) : (
+            <Text style={styles.buttonText}>Submit</Text>
+          )}
         </TouchableOpacity>
       </View>
     </ScrollView>

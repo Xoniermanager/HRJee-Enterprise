@@ -47,17 +47,13 @@ const axiosPost = async (url, data, token, form) => {
           console.log(error);
         });
     }
-    console.log(error?.response)
+console.log(error?.response?.data?.message?.punch_out?.[0],'yash')
     showMessage({
-      message: error?.response?.data?.message?.date?.[0] || error?.response?.data?.message || 'Something went wrong',
+      message: error?.response?.data?.message?.punch_out?.[0] || error?.response?.data?.message?.date?.[0]  || error?.response?.data?.message,
       type: 'danger',
       duration:4000
     });
-    
-    if (error?.response?.status === 401) {
-      navigate('Login');
-    }
-    return Promise.reject(error);
+    return error;
   }
 };
 

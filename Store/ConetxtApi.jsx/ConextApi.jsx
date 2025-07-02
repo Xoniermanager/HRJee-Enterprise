@@ -141,7 +141,7 @@ const ConextApi = ({children}) => {
         id: 8,
         uri: require('../../assets/Services/s9.webp'),
         name: 'Support',
-        nav: 'SupportPage',
+        nav: 'ListSupport',
       },
      ]
       response?.data?.data.menu_access?.map((item) => {

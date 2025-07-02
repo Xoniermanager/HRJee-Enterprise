@@ -59,22 +59,7 @@ const MyStackTab = () => {
         component={Services}
         options={{headerShown: false}}
       />
-      <Stack.Screen
-        name="Attendance"
-        component={Attendance}
-        options={{
-          title: 'Attendance',
-
-          headerBackTitleVisible: false,
-          headerStyle: {
-            backgroundColor: currentTheme.background_v2,
-          },
-          headerTintColor: '#fff',
-          headerTitleStyle: {
-            fontWeight: '500',
-          },
-        }}
-      />
+     
      
 
       <Stack.Screen
@@ -622,7 +607,7 @@ const MyStackTab = () => {
         name="ListOfficeAddress"
         component={ListOfficeAddress}
         options={{
-          title: 'Address Request',
+          title: 'Office Address',
           headerBackTitleVisible: false,
           headerStyle: {
             backgroundColor: currentTheme.background_v2,
@@ -637,7 +622,7 @@ const MyStackTab = () => {
         name="AddAddress"
         component={AddAddress}
         options={{
-          title: 'Address Request',
+          title: 'Office Address',
           headerBackTitleVisible: false,
           headerStyle: {
             backgroundColor: currentTheme.background_v2,
@@ -648,6 +633,7 @@ const MyStackTab = () => {
           },
         }}
       />
+      
     </Stack.Navigator>
   );
 };

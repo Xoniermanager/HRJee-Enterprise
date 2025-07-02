@@ -41,7 +41,7 @@ const Account = () => {
       name: 'Attendance',
 
       backgroundcolor: '#BAAEFC',
-      nav: 'Attendance',
+      nav: 'Attendances',
     },
     {
       id: 2,

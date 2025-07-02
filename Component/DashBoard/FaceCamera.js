@@ -56,12 +56,14 @@ const FaceCamera = ({punchIn}) => {
     if (cameraRef.current) {
       try {
         const photo = await cameraRef.current.takePictureAsync({quality: 0.5});
+        console.log(face_kyc_img,photo)
         if (face_kyc_img == null) {
           let uploaddata = await uploadFirstImage(photo.uri);
           const s3ObjectKey = uploaddata.key;
           uploadFaceKYC(s3ObjectKey);
         } else {
           let uploaddata = await uploadTmpImage(photo.uri);
+          console.log(uploaddata,'uploaddata')
           setTempImage(uploaddata?.key);
           const s3ObjectKey = uploaddata?.key;
           const ss = await compareFaces(s3ObjectKey);
@@ -285,7 +287,6 @@ const FaceCamera = ({punchIn}) => {
         });
         setIsCameraOpen(false);
       } else {
-        punchInFaceKyc();
         punchIn();
         setIsCameraOpen(false);
        

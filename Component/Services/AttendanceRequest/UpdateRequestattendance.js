@@ -1,6 +1,5 @@
 import {
-    ActivityIndicator,
-  Alert,
+  ActivityIndicator,
   ScrollView,
   StyleSheet,
   Text,
@@ -21,271 +20,228 @@ import {
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import {BASE_URL} from '../../../utils';
 import axios from 'axios';
-import { showMessage } from 'react-native-flash-message';
-import { AttendanceRequest } from '../../../APINetwork/ComponentApi';
-import { useNavigation } from '@react-navigation/native';
-import { ThemeContext } from '../../../Store/ConetxtApi.jsx/ConextApi';
+import {showMessage} from 'react-native-flash-message';
+import {AttendanceRequest} from '../../../APINetwork/ComponentApi';
+import {useNavigation} from '@react-navigation/native';
+import {ThemeContext} from '../../../Store/ConetxtApi.jsx/ConextApi';
+
 const UpdateRequestattendance = ({route}) => {
-    const { id } = route?.params || {};
-    const {currentTheme,} = useContext(ThemeContext);
-    const navigation=useNavigation();
-    const [loader,setLoader]=useState(false);
-  const timeOptions = [
-    {label: '08:00 AM', value: '08:00 AM'},
-    {label: '08:15 AM', value: '08:15 AM'},
-    {label: '08:30 AM', value: '08:30 AM'},
-    {label: '08:45 AM', value: '08:45 AM'},
-    {label: '09:00 AM', value: '09:00 AM'},
-    {label: '09:15 AM', value: '09:15 AM'},
-    {label: '09:30 AM', value: '09:30 AM'},
-    {label: '09:45 AM', value: '09:45 AM'},
-    {label: '10:00 AM', value: '10:00 AM'},
-    {label: '10:15 AM', value: '10:15 AM'},
-    {label: '10:30 AM', value: '10:30 AM'},
-    {label: '10:45 AM', value: '10:45 AM'},
-    {label: '11:00 AM', value: '11:00 AM'},
-    {label: '11:15 AM', value: '11:15 AM'},
-    {label: '11:30 AM', value: '11:30 AM'},
-    {label: '11:45 AM', value: '11:45 AM'},
-    {label: '12:00 PM', value: '12:00 PM'},
-    {label: '12:15 PM', value: '12:15 PM'},
-    {label: '12:30 PM', value: '12:30 PM'},
-    {label: '12:45 PM', value: '12:45 PM'},
-    {label: '01:00 PM', value: '01:00 PM'},
-    {label: '01:15 PM', value: '01:15 PM'},
-    {label: '01:30 PM', value: '01:30 PM'},
-    {label: '01:45 PM', value: '01:45 PM'},
-    {label: '02:00 PM', value: '02:00 PM'},
-    {label: '02:15 PM', value: '02:15 PM'},
-    {label: '02:30 PM', value: '02:30 PM'},
-    {label: '02:45 PM', value: '02:45 PM'},
-    {label: '03:00 PM', value: '03:00 PM'},
-    {label: '03:15 PM', value: '03:15 PM'},
-    {label: '03:30 PM', value: '03:30 PM'},
-    {label: '03:45 PM', value: '03:45 PM'},
-    {label: '04:00 PM', value: '04:00 PM'},
-    {label: '04:15 PM', value: '04:15 PM'},
-    {label: '04:30 PM', value: '04:30 PM'},
-    {label: '04:45 PM', value: '04:45 PM'},
-    {label: '05:00 PM', value: '05:00 PM'},
-    {label: '05:15 PM', value: '05:15 PM'},
-    {label: '05:30 PM', value: '05:30 PM'},
-    {label: '05:45 PM', value: '05:45 PM'},
-    {label: '06:00 PM', value: '06:00 PM'},
-    {label: '06:15 PM', value: '06:15 PM'},
-    {label: '06:30 PM', value: '06:30 PM'},
-    {label: '06:45 PM', value: '06:45 PM'},
-    {label: '07:00 PM', value: '07:00 PM'},
-    {label: '07:15 PM', value: '07:15 PM'},
-    {label: '07:30 PM', value: '07:30 PM'},
-    {label: '07:45 PM', value: '07:45 PM'},
-    {label: '08:00 PM', value: '08:00 PM'},
-    {label: '08:15 PM', value: '08:15 PM'},
-    {label: '08:30 PM', value: '08:30 PM'},
-    {label: '08:45 PM', value: '08:45 PM'},
-    {label: '09:00 PM', value: '09:00 PM'},
-    {label: '09:15 PM', value: '09:15 PM'},
-    {label: '09:30 PM', value: '09:30 PM'},
-    {label: '09:45 PM', value: '09:45 PM'},
-    {label: '10:00 PM', value: '10:00 PM'},
-    {label: '10:15 PM', value: '10:15 PM'},
-    {label: '10:30 PM', value: '10:30 PM'},
-    {label: '10:45 PM', value: '10:45 PM'},
-    {label: '11:00 PM', value: '11:00 PM'},
-    {label: '11:15 PM', value: '11:15 PM'},
-    {label: '11:30 PM', value: '11:30 PM'},
-    {label: '11:45 PM', value: '11:45 PM'},
-  ];
+  const {id} = route?.params || {};
+  const {currentTheme} = useContext(ThemeContext);
+  const navigation = useNavigation();
+
+  const [loader, setLoader] = useState(false);
   const [startdateRequest, setStartdateRequest] = useState(new Date());
-  const [openstartdate, setOpenStartDate] = useState(false);
-  const [punchInRequest, setPunchInRequest] = useState(null);
-  const [punchOut, setPunchOut] = useState(null);
+  const [openStartDate, setOpenStartDate] = useState(false);
+
+  const [punchInTime, setPunchInTime] = useState(new Date());
+  const [punchOutTime, setPunchOutTime] = useState(new Date());
+  const [openPunchIn, setOpenPunchIn] = useState(false);
+  const [openPunchOut, setOpenPunchOut] = useState(false);
+
   const [reasonText, setReasonText] = useState('');
-  const getItem = async () => {
-    const token = await AsyncStorage.getItem('TOKEN');
-    const config = {
-      method: 'get',
-      url: `${BASE_URL}/attendance/request/details/${id}`,
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${token}`,
-      },
-    };
-    console.log(config)
-    axios(config)
-      .then(response => {
-        setStartdateRequest(new Date(response.data.data.date));
-        setPunchInRequest(
-          response.data.data.punch_in.split(' ')[1].slice(0, 5),
-        ); // Extract time from datetime
-        setPunchOut(response.data.data.punch_out.split(' ')[1].slice(0, 5));
-        setReasonText(response.data.data.reason);
-      })
-      .catch(error => {
-        console.log(error);
-      });
-  };
+
   useEffect(() => {
+    const getItem = async () => {
+      const token = await AsyncStorage.getItem('TOKEN');
+      const config = {
+        method: 'get',
+        url: `${BASE_URL}/attendance/request/details/${id}`,
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+      };
+
+      try {
+        const response = await axios(config);
+        const data = response.data.data;
+
+        setStartdateRequest(new Date(data.date));
+
+        // Convert "16:25" to Date object
+        const parseTime = timeStr => {
+          const [hours, minutes] = timeStr.split(':');
+          const date = new Date();
+          date.setHours(parseInt(hours));
+          date.setMinutes(parseInt(minutes));
+          date.setSeconds(0);
+          return date;
+        };
+
+        const punchIn = data.punch_in.split(' ')[1].slice(0, 5);
+        const punchOut = data.punch_out.split(' ')[1].slice(0, 5);
+
+        setPunchInTime(parseTime(punchIn));
+        setPunchOutTime(parseTime(punchOut));
+        setReasonText(data.reason);
+      } catch (error) {
+        console.log(error);
+        showMessage({
+          message: 'Failed to load attendance details.',
+          type: 'danger',
+        });
+      }
+    };
+
     getItem();
   }, []);
-  function convertTo24Hour(time) {
-    let [hours, minutes] = time.match(/\d+/g);
-    let period = time.match(/AM|PM/i);
 
-    hours = parseInt(hours, 10);
-    minutes = parseInt(minutes, 10);
-
-    if (period && period[0].toUpperCase() === 'PM' && hours !== 12) {
-      hours += 12;
-    } else if (period && period[0].toUpperCase() === 'AM' && hours === 12) {
-      hours = 0;
-    }
-
-    return `${hours.toString().padStart(2, '0')}:${minutes
-      .toString()
-      .padStart(2, '0')}`;
-  }
   const attendance_Request = async () => {
     const token = await AsyncStorage.getItem('TOKEN');
-    if (punchInRequest == null) {
-      setModalRequest(false);
+
+    if (!punchInTime) {
+      showMessage({message: 'Please enter Punch In Time', type: 'danger'});
+      return;
+    }
+
+    if (!punchOutTime) {
+      showMessage({message: 'Please enter Punch Out Time', type: 'danger'});
+      return;
+    }
+
+    if (reasonText.trim() === '') {
+      showMessage({message: 'Please enter reason', type: 'danger'});
+      return;
+    }
+
+    setLoader(true);
+
+    const formatToHi = date => {
+      const hours = date.getHours();
+      const minutes = date.getMinutes().toString().padStart(2, '0');
+      return `${hours}:${minutes}`;
+    };
+
+    const data = JSON.stringify({
+      date: startdateRequest.toISOString().split('T')[0],
+      punch_in: formatToHi(punchInTime),
+      punch_out: formatToHi(punchOutTime),
+      reason: reasonText,
+    });
+
+    const url = `${BASE_URL}/attendance/request/update/${id}`;
+    const response = await AttendanceRequest(url, data, token, 0);
+    setLoader(false);
+
+    if (response?.data?.status) {
       showMessage({
-        message: 'Please enter Punch In Time',
-        type: 'danger',
+        message: response.data.message,
+        type: 'success',
       });
-    } else if (punchInRequest == null) {
-      setModalRequest(false);
-      showMessage({
-        message: 'Please enter Punch out Time',
-        type: 'danger',
-      });
-    } else if (reasonText.trim() === '') {
-      setModalRequest(false);
-      showMessage({
-        message: 'Please Enter Reason',
-        type: 'danger',
-      });
+      navigation.goBack();
     } else {
-        setLoader(true);
-      let data = JSON.stringify({
-        date: startdateRequest.toISOString().split('T')[0],
-        punch_in: convertTo24Hour(punchInRequest),
-        punch_out: convertTo24Hour(punchOut),
-        reason: reasonText,
-      });
-      const url = `${BASE_URL}/attendance/request/update/${id}`;
-      let form = 0;
-      const response = await AttendanceRequest(url, data, token, form);
-      setLoader(false);
-      if (response.data.status) {
-        setLoader(false);
-        setPunchInRequest(null);
-        setPunchOut(null);
-        setReasonText('');
-        showMessage({
-          message: `${response?.data?.message}`,
-          type: 'success',
-        });
-        navigation.goBack()
-      }
+      
     }
   };
+
   return (
     <ScrollView style={styles.modalContent}>
       <View style={styles.modalContainer}>
-        <View>
-          <Text style={styles.modalTitle}>Enter Attendance Details</Text>
-          <View style={styles.Date_box}>
-            <Text style={{color: Themes == 'dark' ? '#000' : '#000'}}>
-              {startdateRequest?.toISOString().split('T')[0]}
-            </Text>
-            <TouchableOpacity onPress={() => setOpenStartDate(true)}>
-              <EvilIcons
-                name="calendar"
-                style={{
-                  fontSize: 25,
-                  color: Themes == 'dark' ? '#000' : '#000',
-                  alignSelf: 'center',
-                }}
-              />
-            </TouchableOpacity>
-          </View>
+        <Text style={styles.modalTitle}>Enter Attendance Details</Text>
 
-          <Text style={{color: '#333', fontSize: 15, marginVertical: 5}}>
-            Punch In Time
+        {/* Date Field */}
+        <View style={styles.Date_box}>
+          <Text style={{color: '#000'}}>
+            {startdateRequest.toISOString().split('T')[0]}
           </Text>
-          <Dropdown
-            style={styles.dropdown}
-            placeholderStyle={[{color: '#000'}]}
-            selectedTextStyle={[{color: '#000'}]}
-            itemTextStyle={{
-              color: '#000',
-            }}
-            data={timeOptions}
-            labelField="label"
-            valueField="value"
-            placeholder={
-              punchInRequest != null ? punchInRequest : 'Select Time'
-            }
-            value={punchInRequest}
-            onChange={item => setPunchInRequest(item.value)}
-          />
-          {/* Punch Out Time Picker */}
-          <Text style={{color: '#333', fontSize: 15, marginVertical: 5}}>
-            Punch Out Time
-          </Text>
-          <Dropdown
-            style={styles.dropdown}
-            placeholderStyle={[{color: '#000'}]}
-            selectedTextStyle={[{color: '#000'}]}
-            itemTextStyle={{
-              color: '#000',
-            }}
-            data={timeOptions}
-            labelField="label"
-            valueField="value"
-            placeholder={punchOut != null ? punchOut : 'Select Time'}
-            value={punchOut}
-            onChange={item => setPunchOut(item.value)}
-          />
+          <TouchableOpacity onPress={() => setOpenStartDate(true)}>
+            <EvilIcons name="calendar" size={25} color="#000" />
+          </TouchableOpacity>
+        </View>
 
-          <Text style={{color: '#333', fontSize: 15, marginVertical: 5}}>
-            Reason
+        {/* Punch In */}
+        <Text style={styles.label}>Punch In Time</Text>
+        <TouchableOpacity
+          style={styles.Date_box}
+          onPress={() => setOpenPunchIn(true)}>
+          <Text style={{color: '#000'}}>
+            {punchInTime.toLocaleTimeString([], {
+              hour: '2-digit',
+              minute: '2-digit',
+            })}
           </Text>
-          <TextInput
-            style={styles.input}
-            placeholder="Reason"
-            value={reasonText}
-            onChangeText={prev => setReasonText(prev)}
-            placeholderTextColor="#999"
-            multiline
-          />
-          <View style={styles.buttonRow}>
-            <TouchableOpacity
-              style={[styles.saveButton ,{  backgroundColor: currentTheme.background_v2,}]}
-              onPress={() => attendance_Request()}>
-                 {loader ? (
-            <ActivityIndicator size="small" color="#fff" />
-          ) : (
-            <Text style={styles.buttonText}>Save</Text>
-          )}
-            </TouchableOpacity>
-          </View>
+          <EvilIcons name="clock" size={25} color="#000" />
+        </TouchableOpacity>
+
+        {/* Punch Out */}
+        <Text style={styles.label}>Punch Out Time</Text>
+        <TouchableOpacity
+          style={styles.Date_box}
+          onPress={() => setOpenPunchOut(true)}>
+          <Text style={{color: '#000'}}>
+            {punchOutTime.toLocaleTimeString([], {
+              hour: '2-digit',
+              minute: '2-digit',
+            })}
+          </Text>
+          <EvilIcons name="clock" size={25} color="#000" />
+        </TouchableOpacity>
+
+        {/* Reason */}
+        <Text style={{color: '#333', fontSize: 15, marginVertical: 5}}>
+          Reason
+        </Text>
+        <TextInput
+          style={styles.input}
+          placeholder="Reason"
+          value={reasonText}
+          onChangeText={setReasonText}
+          placeholderTextColor="#999"
+          multiline
+        />
+
+        {/* Save Button */}
+        <View style={styles.buttonRow}>
+          <TouchableOpacity
+            style={[styles.saveButton, {backgroundColor: currentTheme.background_v2}]}
+            onPress={attendance_Request}>
+            {loader ? (
+              <ActivityIndicator size="small" color="#fff" />
+            ) : (
+              <Text style={styles.buttonText}>Save</Text>
+            )}
+          </TouchableOpacity>
         </View>
       </View>
+
+      {/* Date Picker Modals */}
       <DatePicker
         modal
-        open={openstartdate}
+        open={openStartDate}
         date={startdateRequest}
-        theme="light"
         mode="date"
-        onConfirm={startdate => {
+        theme="light"
+        maximumDate={new Date()}
+        onConfirm={date => {
           setOpenStartDate(false);
-          setStartdateRequest(startdate);
+          setStartdateRequest(date);
         }}
-        onCancel={() => {
-          setOpenStartDate(false);
+        onCancel={() => setOpenStartDate(false)}
+      />
+
+      <DatePicker
+        modal
+        mode="time"
+        open={openPunchIn}
+        date={punchInTime}
+        onConfirm={time => {
+          setOpenPunchIn(false);
+          setPunchInTime(time);
         }}
+        onCancel={() => setOpenPunchIn(false)}
+      />
+
+      <DatePicker
+        modal
+        mode="time"
+        open={openPunchOut}
+        date={punchOutTime}
+        onConfirm={time => {
+          setOpenPunchOut(false);
+          setPunchOutTime(time);
+        }}
+        onCancel={() => setOpenPunchOut(false)}
       />
     </ScrollView>
   );
@@ -293,6 +249,7 @@ const UpdateRequestattendance = ({route}) => {
 
 export default UpdateRequestattendance;
 
+// Styles
 const styles = StyleSheet.create({
   modalContainer: {
     padding: 20,
@@ -309,6 +266,12 @@ const styles = StyleSheet.create({
     marginBottom: 10,
     textAlign: 'center',
     color: '#000',
+  },
+  label: {
+    marginTop: 10,
+    marginLeft: 10,
+    fontSize: 14,
+    color: '#333',
   },
   input: {
     borderWidth: 1,
@@ -345,18 +308,9 @@ const styles = StyleSheet.create({
     flex: 1,
     marginRight: 5,
   },
-  closeButton: {
-    backgroundColor: '#dc3545',
-    padding: 10,
-    borderRadius: 5,
-    flex: 1,
-    marginLeft: 5,
-  },
-  buttonText: {color: '#fff', textAlign: 'center', fontWeight: 'bold'},
-  dropdown: {
-    backgroundColor: '#f0f0f0',
-    borderRadius: 5,
-    padding: 10,
-    marginBottom: 10,
+  buttonText: {
+    color: '#fff',
+    textAlign: 'center',
+    fontWeight: 'bold',
   },
 });

@@ -154,7 +154,7 @@ export const EditLog=(url,data,token,form) => {
   let item = axiosPut(url,data,token,form);
   return item;
 };
-export const DeleteAddminsterMedi=(url,data,token) => {
+export const deleteRequest=(url,data,token) => {
   let item = axiosDelete(url,data,token);
   return item;
 };

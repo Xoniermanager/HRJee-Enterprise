@@ -54,8 +54,22 @@ const Team = () => {
         renderItem={renderItem}
         keyExtractor={item => item.id}
         ListEmptyComponent={
-          <View style={styles.emptyContainer}>
-            <Text style={styles.emptyText}>No data found</Text>
+          <View>
+            <Image
+              source={{
+                uri: 'https://static.vecteezy.com/system/resources/thumbnails/013/927/147/small_2x/adaptive-interface-design-illustration-concept-on-white-background-vector.jpg',
+              }}
+              style={{padding: 20, height: 250}}
+            />
+            <Text
+              style={{
+                fontSize: 18,
+                color: '#000',
+                fontWeight: '500',
+                textAlign: 'center',
+              }}>
+              Data Not Found
+            </Text>
           </View>
         }
       />
@@ -189,15 +203,7 @@ const styles = StyleSheet.create({
     width: '100%',
     alignItems: 'center',
   },
-  emptyContainer: {
-    alignItems: 'center',
-    padding: 20,
-  },
-  emptyText: {
-    fontSize: 16,
-    color: '#999',
-    fontWeight: 'bold',
-  },
+  
 });
 
 export default Team;

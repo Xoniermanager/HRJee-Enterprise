@@ -88,33 +88,6 @@ const MyTabbar = ({ route }) => {
       />
 
       <Tab.Screen
-        name="MyDrawer"
-        component={MyDrawer}
-        options={{
-          unmountOnBlur: true,
-          tabBarIcon: ({ focused }) => (
-            <View style={{ marginTop: 5, justifyContent: 'center', alignItems: 'center' }}>
-              {!focused ? (
-                <View style={styles.inactiveTabIcon}>
-                  <Image
-                    source={require('../../assets/HomeScreen/user.png')}
-                    style={styles.tabImage}
-                  />
-                </View>
-              ) : (
-                <View style={[styles.activeTabIcon, { backgroundColor: currentTheme.background_v2 }]}>
-                  <Image
-                    source={require('../../assets/HomeScreen/user.png')}
-                    style={styles.tabImage}
-                  />
-                </View>
-              )}
-            </View>
-          ),
-        }}
-      />
-
-      <Tab.Screen
         name="Services"
         component={MyStackTab}
         options={{
@@ -133,6 +106,32 @@ const MyTabbar = ({ route }) => {
                 <View style={[styles.activeTabIcon, { backgroundColor: currentTheme.background_v2 }]}>
                   <Image
                     source={require('../../assets/Services/services.png')}
+                    style={styles.tabImage}
+                  />
+                </View>
+              )}
+            </View>
+          ),
+        }}
+      />
+       <Tab.Screen
+        name="MyDrawer"
+        component={MyDrawer}
+        options={{
+          unmountOnBlur: true,
+          tabBarIcon: ({ focused }) => (
+            <View style={{ marginTop: 5, justifyContent: 'center', alignItems: 'center' }}>
+              {!focused ? (
+                <View style={styles.inactiveTabIcon}>
+                  <Image
+                    source={require('../../assets/HomeScreen/user.png')}
+                    style={styles.tabImage}
+                  />
+                </View>
+              ) : (
+                <View style={[styles.activeTabIcon, { backgroundColor: currentTheme.background_v2 }]}>
+                  <Image
+                    source={require('../../assets/HomeScreen/user.png')}
                     style={styles.tabImage}
                   />
                 </View>

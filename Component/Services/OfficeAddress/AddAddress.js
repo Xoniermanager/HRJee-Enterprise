@@ -8,7 +8,7 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native';
-import React, {useContext, useEffect, useState} from 'react';
+import React, {useContext, useEffect, useRef, useState} from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import {BASE_URL} from '../../../utils';
 import axios from 'axios';
@@ -16,7 +16,9 @@ import {showMessage} from 'react-native-flash-message';
 import {AttendanceRequest} from '../../../APINetwork/ComponentApi';
 import {useNavigation} from '@react-navigation/native';
 import { ThemeContext } from '../../../Store/ConetxtApi.jsx/ConextApi';
+import { GooglePlacesAutocomplete } from "react-native-google-places-autocomplete";
 const AddAddress = ({route}) => {
+  const addressRef = useRef();
   const id = route?.params?.id;
   const {currentTheme,} = useContext(ThemeContext);
   const navigation = useNavigation();
@@ -25,6 +27,7 @@ const AddAddress = ({route}) => {
   const [address, setAddress] = useState('');
   const [lat, setLat] = useState('');
   const [long, setLong] = useState('');
+  const GOOGLE_PLACES_API_KEY = "AIzaSyCAdzVvYFPUpI3mfGWUTVXLDTerw1UWbdg";
 
   const getItem = async () => {
     const token = await AsyncStorage.getItem('TOKEN');
@@ -128,20 +131,39 @@ const AddAddress = ({route}) => {
     <ScrollView style={styles.modalContent}>
       <View style={styles.modalContainer}>
         <View>
+      
           <Text style={{color: '#333', fontSize: 15, marginVertical: 5}}>
             Address
           </Text>
-          <TextInput
-            style={styles.input}
-            placeholder="Address"
-            value={address}
-            onChangeText={text => {
-              setAddress(text);
-              fetchCoordinates(text);
-            }}
-            placeholderTextColor="#999"
-            multiline
-          />
+            <GooglePlacesAutocomplete
+            ref={addressRef}
+                placeholder="Search for a place"
+                placeholderTextColor="#000"
+                onPress={(data, details = null) => {
+                  setAddress(data?.description);
+                  fetchCoordinates(data?.description);
+                }}
+                query={{
+                  key: GOOGLE_PLACES_API_KEY,
+                  language: "en",
+                }}
+                textInputProps={{
+                  value: address,
+                  onChangeText: (text) => {
+                    setAddress(text);
+                  },
+                  placeholderTextColor: '#000',
+                }}
+                
+                styles={{
+                  container: styles.autocompleteContainer,
+                  textInput: styles.textInput,
+                  poweredContainer: styles.poweredContainer,
+                  listView: styles.listView,
+                  description: styles.description,
+                  row: styles.row,
+                }}
+              />
           <Text style={{color: '#333', fontSize: 15, marginVertical: 5}}>
             Latitude
           </Text>
@@ -232,4 +254,46 @@ const styles = StyleSheet.create({
     marginRight: 5,
   },
   buttonText: {color: '#fff', textAlign: 'center', fontWeight: 'bold'},
+  autocompleteContainer: {
+    flex: 1,
+    zIndex: 1, // Ensure it stays on top of other content
+    marginBottom: 20,
+  },
+  textInput: {
+    height: 45,
+    borderColor: "#ccc",
+    borderWidth: 1,
+    borderRadius: 8,
+    paddingLeft: 10,
+    fontSize: 16,
+    backgroundColor: "#fff",
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 2,
+    color: "#000",
+  },
+  poweredContainer: {
+    paddingBottom: 10,
+  },
+  listView: {
+    backgroundColor: "#fff", // White background for the list view
+    borderRadius: 8,
+    elevation: 4, // Shadow for Android
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    color: "#000",
+  },
+  description: {
+    fontSize: 16,
+    color: "#000", // Dark text color for description
+  },
+  row: {
+    padding: 10,
+    borderBottomWidth: 1,
+    borderBottomColor: "#eee",
+  },
 });

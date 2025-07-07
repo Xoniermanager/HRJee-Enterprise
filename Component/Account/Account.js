@@ -30,7 +30,7 @@ import AccountSkeleton from '../Skeleton/AccountSkeleton';
 import Themes from '../Theme/Theme';
 import {ThemeContext} from '../../Store/ConetxtApi.jsx/ConextApi';
 import axios from 'axios';
-import { showMessage } from 'react-native-flash-message';
+import {showMessage} from 'react-native-flash-message';
 const Account = () => {
   const {currentTheme, liveLocationActive} = useContext(ThemeContext);
   const IsFouced = useIsFocused();
@@ -53,10 +53,18 @@ const Account = () => {
     },
     {
       id: 3,
+      uri: require('../../assets/Shift.png'),
+      name: 'Shift',
+
+      backgroundcolor: '#44D5FB',
+      nav: 'Shift',
+    },
+    {
+      id: 4,
       uri: require('../../assets/HomeScreen/medal.png'),
       name: 'Award',
 
-      backgroundcolor: '#44D5FB',
+      backgroundcolor: '#F9B7D5',
       nav: 'Reward',
     },
   ];
@@ -95,8 +103,8 @@ const Account = () => {
   const [bankdetailsdata, setBankDetailsData] = useState('');
   const [documentdetailsdata, setGetDocumentApiData] = useState([]);
   const [isEnabled, setIsEnabled] = useState(false);
-  const toggleSwitch = async() => {
-    setIsEnabled(previous => !previous)
+  const toggleSwitch = async () => {
+    setIsEnabled(previous => !previous);
     try {
       const token = await AsyncStorage.getItem('TOKEN');
       console.log(token);
@@ -175,7 +183,6 @@ const Account = () => {
     }
   }, [liveLocationActive]);
 
-
   useEffect(() => {
     check();
     AssetsList();
@@ -216,7 +223,6 @@ const Account = () => {
           style={{
             marginTop: 15,
           }}>
-        
           <View style={{marginTop: 10, alignSelf: 'center'}}>
             {getProfileApiData?.details?.profile_image == '' ||
             getProfileApiData?.details?.profile_image == [] ||
@@ -243,21 +249,20 @@ const Account = () => {
                 source={{uri: getProfileApiData?.details?.profile_image}}
               />
             )}
-              <View style={{flexDirection: 'row', alignSelf: 'center'}}>
-            <Text style={styles.name}>Profile</Text>
-            <TouchableOpacity
-              onPress={() =>
-                navigation.dispatch(DrawerActions.openDrawer('MyDrawer'))
-              }
-              style={{marginLeft: 5}}>
-              <FontAwesome style={{}} name="edit" size={30} color="#fff" />
-            </TouchableOpacity>
-          </View>
+            <View style={{flexDirection: 'row', alignSelf: 'center'}}>
+              <Text style={styles.name}>Profile</Text>
+              <TouchableOpacity
+                onPress={() =>
+                  navigation.dispatch(DrawerActions.openDrawer('MyDrawer'))
+                }
+                style={{marginLeft: 5}}>
+                <FontAwesome style={{}} name="edit" size={30} color="#fff" />
+              </TouchableOpacity>
+            </View>
             <Text style={styles.name}>{getProfileApiData?.name}</Text>
-            <Text style={styles.name}>{getProfileApiData?.details?.phone}</Text>
-            <Text style={styles.name}>{getProfileApiData?.email}</Text>
+            {/* <Text style={styles.name}>{getProfileApiData?.details?.phone}</Text>
+            <Text style={styles.name}>{getProfileApiData?.email}</Text> */}
           </View>
-          
         </View>
 
         <View
@@ -295,7 +300,7 @@ const Account = () => {
               borderTopRightRadius: 10,
               borderBottomRightRadius: 10,
             }}>
-               <View
+            <View
               style={{
                 marginBottom: expandedbank == true ? 0 : 8,
                 borderWidth: 1,
@@ -318,14 +323,14 @@ const Account = () => {
                   color: currentTheme.text,
                   fontSize: responsiveFontSize(2.3),
                 }}>
-               Location Tracking
+                Location Tracking
               </Text>
-                  <Switch
-            trackColor={{ false: "#767577", true: "#81b0ff" }}
-            thumbColor={isEnabled ? "#f5dd4b" : "#f4f3f4"}
-            onValueChange={toggleSwitch}
-            value={isEnabled}
-          />
+              <Switch
+                trackColor={{false: '#767577', true: '#81b0ff'}}
+                thumbColor={isEnabled ? '#f5dd4b' : '#f4f3f4'}
+                onValueChange={toggleSwitch}
+                value={isEnabled}
+              />
             </View>
             <View
               style={{
@@ -522,71 +527,76 @@ const Account = () => {
               </TouchableOpacity>
             </View>
             {expandedassets ? (
-  <View
-    style={{
-      marginBottom: expandedassets == true ? 8 : 0,
-      borderBottomLeftRadius: 10,
-      borderBottomRightRadius: 10,
-    }}>
-    <View
-      style={{
-        borderTopWidth: expandedassets == true ? 0 : 2,
-        borderWidth: 1,
-        borderColor: currentTheme.background_v2,
-        backgroundColor: currentTheme.background,
-        borderTopLeftRadius: 0,
-        borderBottomLeftRadius: 0,
-        borderBottomRightRadius: 0,
-      }}>
-      {getAssetsApiData && getAssetsApiData.length > 0 ? (
-        getAssetsApiData.map((elements, index) => (
-          <View
-            key={index}
-            style={[
-              styles.card,
-              {
-                backgroundColor: currentTheme.background,
-                borderWidth: 0.5,
-                borderColor: currentTheme.background_v2,
-              },
-            ]}>
-            <View style={styles.content}>
-              <Text style={[styles.title, {color: currentTheme.text}]}>
-                Assigned Date
-              </Text>
-              <Text style={[styles.title, {color: currentTheme.text}]}>
-                {elements?.assigned_date || 'N/A'}
-              </Text>
-            </View>
-            <View style={styles.content}>
-              <Text style={[styles.title, {color: currentTheme.text}]}>
-                Returned Date
-              </Text>
-              <Text style={[styles.title, {color: currentTheme.text}]}>
-                {elements?.returned_date || 'N/A'}
-              </Text>
-            </View>
-            <View style={styles.content}>
-              <Text style={[styles.title, {color: currentTheme.text}]}>
-                Comment
-              </Text>
-              <Text style={[styles.title, {color: currentTheme.text}]}>
-                {elements?.comment || 'N/A'}
-              </Text>
-            </View>
-          </View>
-        ))
-      ) : (
-        <View style={{padding: 16, alignItems: 'center'}}>
-          <Text style={{color: currentTheme.text, fontSize: 14}}>
-            No Data Found
-          </Text>
-        </View>
-      )}
-    </View>
-  </View>
-) : null}
-
+              <View
+                style={{
+                  marginBottom: expandedassets == true ? 8 : 0,
+                  borderBottomLeftRadius: 10,
+                  borderBottomRightRadius: 10,
+                }}>
+                <View
+                  style={{
+                    borderTopWidth: expandedassets == true ? 0 : 2,
+                    borderWidth: 1,
+                    borderColor: currentTheme.background_v2,
+                    backgroundColor: currentTheme.background,
+                    borderTopLeftRadius: 0,
+                    borderBottomLeftRadius: 0,
+                    borderBottomRightRadius: 0,
+                  }}>
+                  {getAssetsApiData && getAssetsApiData.length > 0 ? (
+                    getAssetsApiData.map((elements, index) => (
+                      <View
+                        key={index}
+                        style={[
+                          styles.card,
+                          {
+                            backgroundColor: currentTheme.background,
+                            borderWidth: 0.5,
+                            borderColor: currentTheme.background_v2,
+                          },
+                        ]}>
+                        <View style={styles.content}>
+                          <Text
+                            style={[styles.title, {color: currentTheme.text}]}>
+                            Assigned Date
+                          </Text>
+                          <Text
+                            style={[styles.title, {color: currentTheme.text}]}>
+                            {elements?.assigned_date || 'N/A'}
+                          </Text>
+                        </View>
+                        <View style={styles.content}>
+                          <Text
+                            style={[styles.title, {color: currentTheme.text}]}>
+                            Returned Date
+                          </Text>
+                          <Text
+                            style={[styles.title, {color: currentTheme.text}]}>
+                            {elements?.returned_date || 'N/A'}
+                          </Text>
+                        </View>
+                        <View style={styles.content}>
+                          <Text
+                            style={[styles.title, {color: currentTheme.text}]}>
+                            Comment
+                          </Text>
+                          <Text
+                            style={[styles.title, {color: currentTheme.text}]}>
+                            {elements?.comment || 'N/A'}
+                          </Text>
+                        </View>
+                      </View>
+                    ))
+                  ) : (
+                    <View style={{padding: 16, alignItems: 'center'}}>
+                      <Text style={{color: currentTheme.text, fontSize: 14}}>
+                        No Data Found
+                      </Text>
+                    </View>
+                  )}
+                </View>
+              </View>
+            ) : null}
           </View>
 
           {/* This is Address details */}
@@ -652,84 +662,88 @@ const Account = () => {
               </TouchableOpacity>
             </View>
             {expandeddocuments ? (
-  <View
-    style={{
-      marginBottom: expandeddocuments == true ? 8 : 0,
-      borderBottomLeftRadius: 10,
-      borderBottomRightRadius: 10,
-    }}>
-    <View
-      style={{
-        borderTopWidth: expandeddocuments == true ? 0 : 2,
-        borderWidth: 1,
-        borderColor: currentTheme.background_v2,
-        backgroundColor: currentTheme.background,
-        borderTopLeftRadius: 0,
-        borderBottomLeftRadius: 0,
-        borderBottomRightRadius: 0,
-      }}>
-      {documentdetailsdata && documentdetailsdata.length > 0 ? (
-        documentdetailsdata.map((elements, index) => {
-          let fileURL = elements?.document;
-          let fileName = elements?.document_types?.name;
-          let fileExtension = fileURL?.split('.').pop();
+              <View
+                style={{
+                  marginBottom: expandeddocuments == true ? 8 : 0,
+                  borderBottomLeftRadius: 10,
+                  borderBottomRightRadius: 10,
+                }}>
+                <View
+                  style={{
+                    borderTopWidth: expandeddocuments == true ? 0 : 2,
+                    borderWidth: 1,
+                    borderColor: currentTheme.background_v2,
+                    backgroundColor: currentTheme.background,
+                    borderTopLeftRadius: 0,
+                    borderBottomLeftRadius: 0,
+                    borderBottomRightRadius: 0,
+                  }}>
+                  {documentdetailsdata && documentdetailsdata.length > 0 ? (
+                    documentdetailsdata.map((elements, index) => {
+                      let fileURL = elements?.document;
+                      let fileName = elements?.document_types?.name;
+                      let fileExtension = fileURL?.split('.').pop();
 
-          return (
-            <View
-              key={index}
-              style={[
-                styles.card,
-                {
-                  backgroundColor: currentTheme.background,
-                  borderWidth: 0.5,
-                  borderColor: currentTheme.background_v2,
-                },
-              ]}>
-              <View style={styles.content}>
-                <Text style={[styles.title, {color: currentTheme.text}]}>
-                  {fileName || 'Unknown Document'}
-                </Text>
-                <Text
-                  style={[
-                    styles.description,
-                    {color: currentTheme.text},
-                  ]}>
-                  {fileExtension || 'Unknown'}
-                </Text>
-                {fileURL ? (
-                  <TouchableOpacity onPress={() => Linking.openURL(fileURL)}>
-                    <Text
-                      style={[
-                        styles.description,
-                        styles.downloadtxt,
-                      ]}>
-                      Download
-                    </Text>
-                  </TouchableOpacity>
-                ) : (
-                  <Text
-                    style={[
-                      styles.description,
-                      {color: currentTheme.text},
-                    ]}>
-                    No file URL available
-                  </Text>
-                )}
+                      return (
+                        <View
+                          key={index}
+                          style={[
+                            styles.card,
+                            {
+                              backgroundColor: currentTheme.background,
+                              borderWidth: 0.5,
+                              borderColor: currentTheme.background_v2,
+                            },
+                          ]}>
+                          <View style={styles.content}>
+                            <Text
+                              style={[
+                                styles.title,
+                                {color: currentTheme.text},
+                              ]}>
+                              {fileName || 'Unknown Document'}
+                            </Text>
+                            <Text
+                              style={[
+                                styles.description,
+                                {color: currentTheme.text},
+                              ]}>
+                              {fileExtension || 'Unknown'}
+                            </Text>
+                            {fileURL ? (
+                              <TouchableOpacity
+                                onPress={() => Linking.openURL(fileURL)}>
+                                <Text
+                                  style={[
+                                    styles.description,
+                                    styles.downloadtxt,
+                                  ]}>
+                                  Download
+                                </Text>
+                              </TouchableOpacity>
+                            ) : (
+                              <Text
+                                style={[
+                                  styles.description,
+                                  {color: currentTheme.text},
+                                ]}>
+                                No file URL available
+                              </Text>
+                            )}
+                          </View>
+                        </View>
+                      );
+                    })
+                  ) : (
+                    <View style={{padding: 16, alignItems: 'center'}}>
+                      <Text style={{color: currentTheme.text, fontSize: 14}}>
+                        No Documents Found
+                      </Text>
+                    </View>
+                  )}
+                </View>
               </View>
-            </View>
-          );
-        })
-      ) : (
-        <View style={{padding: 16, alignItems: 'center'}}>
-          <Text style={{color: currentTheme.text, fontSize: 14}}>
-            No Documents Found
-          </Text>
-        </View>
-      )}
-    </View>
-  </View>
-) : null}
-
+            ) : null}
           </View>
         </View>
       </ScrollView>

@@ -325,9 +325,15 @@ const FaceCamera = ({punchIn}) => {
                 duration={300}
                 rotation={0}>
                 {fill => (
-                  <Text style={styles.progressText}>
+                   Math.round(fill) !== 100 ? (
+                    <Text style={styles.progressText}>
                     {Math.round(fill)}% Recognised
                   </Text>
+                  ) : (
+                    <Text style={styles.progressText}>
+                      Please Wait
+                    </Text>
+                  )
                 )}
               </AnimatedCircularProgress>
             </View>

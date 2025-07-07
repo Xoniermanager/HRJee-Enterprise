@@ -64,6 +64,7 @@ import TaskReportScreen from '../../Component/Services/Reports/TaskReportScreen'
 import SupportPage from '../../Component/Services/SupportPage/SupportPage';
 import AddAttendance from '../../Component/Services/AttendanceRequest/AddAttendance';
 import ListSupport from '../../Component/Services/SupportPage/ListSupport';
+import Shift from '../../Component/Account/Shift';
 
 const MyStack = () => {
   const {currentTheme} = useContext(ThemeContext);
@@ -826,6 +827,21 @@ const MyStack = () => {
         component={AddAddress}
         options={{
           title: 'Address Request',
+          headerBackTitleVisible: false,
+          headerStyle: {
+            backgroundColor: currentTheme.background_v2,
+          },
+          headerTintColor: '#fff',
+          headerTitleStyle: {
+            fontWeight: '500',
+          },
+        }}
+      />
+      <Stack.Screen
+        name="Shift"
+        component={Shift}
+        options={{
+          title: 'Employee Shift',
           headerBackTitleVisible: false,
           headerStyle: {
             backgroundColor: currentTheme.background_v2,

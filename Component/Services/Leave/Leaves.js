@@ -7,8 +7,11 @@ import {
   SafeAreaView,
   ScrollView,
   FlatList,
+  Modal,
+  Pressable,
+  TextInput,
 } from 'react-native';
-import { responsiveFontSize, responsiveHeight, responsiveWidth } from 'react-native-responsive-dimensions';
+import { responsiveWidth } from 'react-native-responsive-dimensions';
 import { useIsFocused } from '@react-navigation/native';
 import AntDesign from 'react-native-vector-icons/AntDesign';
 
@@ -21,10 +24,13 @@ import HomeSkeleton from '../../Skeleton/HomeSkeleton';
 import PullToRefresh from '../../../PullToRefresh';
 
 const Leaves = ({ navigation }) => {
-  const { currentTheme, theme } = useContext(ThemeContext);
+  const { currentTheme } = useContext(ThemeContext);
   const isFocused = useIsFocused();
   const [leaveList, setLeaveList] = useState(null);
   const [availableLeaves, setAvailableLeaves] = useState([]);
+  const [modalVisible, setModalVisible] = useState(false);
+  const [selectedLeave, setSelectedLeave] = useState(null);
+  const [comment, setComment] = useState('');
 
   const fetchLeaves = useCallback(async () => {
     try {
@@ -59,8 +65,7 @@ const Leaves = ({ navigation }) => {
   const getLeaveDays = (from, to) => {
     const start = new Date(from);
     const end = new Date(to);
-    const diff = (end - start) / (1000 * 60 * 60 * 24) + 1;
-    return diff;
+    return (end - start) / (1000 * 60 * 60 * 24) + 1;
   };
 
   const getColor = (status) => {
@@ -94,7 +99,13 @@ const Leaves = ({ navigation }) => {
   const renderLeaveItem = ({ item }) => {
     const statusColor = getColor(item.leave_status.name);
     return (
-      <View style={[styles.leaveItem, { borderColor: statusColor, backgroundColor: currentTheme.background }]}>
+      <TouchableOpacity
+        onPress={() => {
+          setSelectedLeave(item);
+          setModalVisible(true);
+        }}
+        style={[styles.leaveItem, { borderColor: statusColor, backgroundColor: currentTheme.background }]}
+      >
         <AntDesign name="calendar" size={30} color="#fff" style={[styles.icon, { backgroundColor: statusColor }]} />
         <View style={styles.leaveDetails}>
           <Text style={[styles.leaveText, { color: currentTheme.text }]}>
@@ -106,18 +117,18 @@ const Leaves = ({ navigation }) => {
             </Text>
           )}
           <Text style={styles.reasonText}>
-            {getLeaveDays(item.from, item.to)} Day - {item.reason}
+            {getLeaveDays(item.from, item.to)} Day - {item.leave_type.name}
           </Text>
         </View>
         <View style={[styles.statusBadge, { backgroundColor: statusColor }]}>
           <Text style={styles.statusText}>{item.leave_status.name}</Text>
         </View>
-      </View>
+      </TouchableOpacity>
     );
   };
 
   return (
-    <SafeAreaView style={[styles.container, { backgroundColor:'#fff' }]}>
+    <SafeAreaView style={styles.container}>
       <PullToRefresh onRefresh={handleRefresh}>
         <ScrollView contentContainerStyle={{ paddingBottom: 80 }}>
           <View style={styles.headerButtons}>
@@ -136,7 +147,6 @@ const Leaves = ({ navigation }) => {
           </View>
 
           <Text style={[styles.sectionTitle, { color: currentTheme.text }]}>Available Leave</Text>
-
           <FlatList
             data={availableLeaves}
             horizontal
@@ -147,7 +157,6 @@ const Leaves = ({ navigation }) => {
           />
 
           <Text style={[styles.sectionTitle, { color: currentTheme.text }]}>Leave History</Text>
-
           <FlatList
             data={leaveList}
             renderItem={renderLeaveItem}
@@ -157,14 +166,106 @@ const Leaves = ({ navigation }) => {
           />
         </ScrollView>
       </PullToRefresh>
+
+      {/* MODAL */}
+      <Modal
+        animationType="slide"
+        transparent={true}
+        visible={modalVisible}
+        onRequestClose={() => setModalVisible(false)}
+      >
+        <View style={styles.modalContainer}>
+          <View style={styles.modalCard}>
+            <Text style={styles.modalTitle}>Leave Details</Text>
+
+            {selectedLeave && (
+              <>
+                <View style={styles.row}>
+                  <Text style={styles.label}>Leave Type:</Text>
+                  <Text style={styles.value}>{selectedLeave.leave_type.name}</Text>
+                </View>
+
+                <View style={styles.row}>
+                  <Text style={styles.label}>From:</Text>
+                  <Text style={styles.value}>{selectedLeave.from}</Text>
+                </View>
+
+                <View style={styles.row}>
+                  <Text style={styles.label}>To:</Text>
+                  <Text style={styles.value}>{selectedLeave.to}</Text>
+                </View>
+
+                {selectedLeave.from_half_day && (
+                  <View style={styles.row}>
+                    <Text style={styles.label}>Half Day:</Text>
+                    <Text style={styles.value}>
+                      {formatHalfDay(selectedLeave.from_half_day)} to {formatHalfDay(selectedLeave.to_half_day)}
+                    </Text>
+                  </View>
+                )}
+
+                <View style={styles.row}>
+                  <Text style={styles.label}>Reason:</Text>
+                  <Text style={styles.value}>{selectedLeave.reason}</Text>
+                </View>
+
+                <View style={styles.row}>
+                  <Text style={styles.label}>Status:</Text>
+                  <Text style={[styles.value, { color: getColor(selectedLeave.leave_status.name) }]}>
+                    {selectedLeave.leave_status.name}
+                  </Text>
+                </View>
+
+                {/* <Text style={styles.label}>Comment:</Text>
+                <TextInput
+                  value={comment}
+                  onChangeText={setComment}
+                  placeholder="Write a comment"
+                  placeholderTextColor="#aaa"
+                  style={styles.input}
+                /> */}
+              </>
+            )}
+
+            <View style={styles.buttonRow}>
+              <Pressable
+                style={[styles.modalButton, { backgroundColor: 'gray' }]}
+                onPress={() => setModalVisible(false)}
+              >
+                <Text style={styles.modalButtonText}>Close</Text>
+              </Pressable>
+
+              {/* {selectedLeave?.leave_status.name === 'PENDING' && (
+                <>
+                  <Pressable
+                    style={[styles.modalButton, { backgroundColor: '#f39c12' }]}
+                    onPress={() => {
+                      // handleWithdraw(selectedLeave.id);
+                    }}
+                  >
+                    <Text style={styles.modalButtonText}>Withdraw</Text>
+                  </Pressable>
+
+                  <Pressable
+                    style={[styles.modalButton, { backgroundColor: '#27ae60' }]}
+                    onPress={() => {
+                      // handleSubmitComment(comment);
+                    }}
+                  >
+                    <Text style={styles.modalButtonText}>Submit</Text>
+                  </Pressable>
+                </>
+              )} */}
+            </View>
+          </View>
+        </View>
+      </Modal>
     </SafeAreaView>
   );
 };
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-  },
+  container: { flex: 1, backgroundColor: '#fff' },
   headerButtons: {
     flexDirection: 'row',
     justifyContent: 'flex-end',
@@ -176,10 +277,7 @@ const styles = StyleSheet.create({
     marginLeft: 10,
     borderRadius: 10,
   },
-  applyButtonText: {
-    color: '#fff',
-    fontSize: 14,
-  },
+  applyButtonText: { color: '#fff', fontSize: 14 },
   sectionTitle: {
     fontSize: 16,
     fontWeight: '600',
@@ -190,22 +288,12 @@ const styles = StyleSheet.create({
     padding: 10,
     borderRadius: 20,
     marginRight: 10,
-    shadowColor: '#000',
-    shadowOpacity: 0.2,
-    shadowRadius: 4,
     elevation: 3,
     width: responsiveWidth(28),
     alignItems: 'center',
   },
-  cardTitle: {
-    fontSize: 16,
-    fontWeight: '600',
-    marginBottom: 4,
-  },
-  cardText: {
-    fontSize: 14,
-    color: '#000',
-  },
+  cardTitle: { fontSize: 16, fontWeight: '600', marginBottom: 4 },
+  cardText: { fontSize: 14, color: '#000' },
   leaveItem: {
     borderWidth: 0.5,
     borderRadius: 10,
@@ -214,41 +302,83 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
   },
-  icon: {
-    padding: 12,
-    borderRadius: 30,
-  },
-  leaveDetails: {
-    flex: 1,
-    marginHorizontal: 10,
-  },
-  leaveText: {
-    fontSize: 14,
-    fontWeight: 'bold',
-  },
-  halfDayText: {
-    fontSize: 14,
-    color: '#000',
-  },
-  reasonText: {
-    fontSize: 14,
-    color: '#000',
-  },
+  icon: { padding: 12, borderRadius: 30 },
+  leaveDetails: { flex: 1, marginHorizontal: 10 },
+  leaveText: { fontSize: 14, fontWeight: 'bold' },
+  halfDayText: { fontSize: 14, color: '#000' },
+  reasonText: { fontSize: 14, color: '#000' },
   statusBadge: {
     borderRadius: 10,
     paddingHorizontal: 10,
     paddingVertical: 6,
   },
-  statusText: {
-    fontSize: 14,
-    fontWeight: 'bold',
-    color: '#fff',
-  },
+  statusText: { fontSize: 14, fontWeight: 'bold', color: '#fff' },
   emptyText: {
     textAlign: 'center',
     fontSize: 16,
     color: 'gray',
     marginTop: 20,
+  },
+  modalContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: '#00000099',
+  },
+  modalCard: {
+    width: '90%',
+    backgroundColor: '#fff',
+    borderRadius: 20,
+    padding: 20,
+    elevation: 5,
+  },
+  modalTitle: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    marginBottom: 15,
+    textAlign: 'center',
+  },
+  row: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginBottom: 8,
+  },
+  label: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    flex: 1,
+    color: '#333',
+  },
+  value: {
+    fontSize: 16,
+    flex: 1,
+    textAlign: 'right',
+    color: '#555',
+  },
+  input: {
+    borderWidth: 1,
+    borderColor: '#ccc',
+    borderRadius: 8,
+    padding: 10,
+    fontSize: 16,
+    marginTop: 8,
+  },
+  buttonRow: {
+    flexDirection: 'row',
+    justifyContent: 'flex-end',
+    marginTop: 20,
+    gap: 10,
+    flexWrap: 'wrap',
+  },
+  modalButton: {
+    paddingHorizontal: 15,
+    paddingVertical: 10,
+    borderRadius: 8,
+    marginLeft: 10,
+  },
+  modalButtonText: {
+    color: '#fff',
+    fontWeight: 'bold',
   },
 });
 

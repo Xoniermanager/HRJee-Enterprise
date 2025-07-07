@@ -218,7 +218,23 @@ const TaskReportScreen = () => {
           keyExtractor={item => item?.id?.toString()}
           contentContainerStyle={{paddingBottom: 100}}
           ListEmptyComponent={
-            <Text style={styles.noTasks}>No tasks found</Text>
+            <View>
+              <Image
+                source={{
+                  uri: 'https://static.vecteezy.com/system/resources/thumbnails/013/927/147/small_2x/adaptive-interface-design-illustration-concept-on-white-background-vector.jpg',
+                }}
+                style={{padding: 20, height: 250}}
+              />
+              <Text
+                style={{
+                  fontSize: 18,
+                  color: '#000',
+                  fontWeight: '500',
+                  textAlign: 'center',
+                }}>
+                Data Not Found
+              </Text>
+            </View>
           }
         />
       </ScrollView>

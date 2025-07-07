@@ -92,9 +92,22 @@ const Resign = () => {
         data={list?.data}
         keyExtractor={item => item.id}
         ListEmptyComponent={
-          <View style={styles.emptyContainer}>
-            <Text style={styles.emptyText}>Data not found</Text>
-          
+          <View>
+            <Image
+              source={{
+                uri: 'https://static.vecteezy.com/system/resources/thumbnails/013/927/147/small_2x/adaptive-interface-design-illustration-concept-on-white-background-vector.jpg',
+              }}
+              style={{padding: 20, height: 250}}
+            />
+            <Text
+              style={{
+                fontSize: 18,
+                color: '#000',
+                fontWeight: '500',
+                textAlign: 'center',
+              }}>
+              Data Not Found
+            </Text>
           </View>
         }
         renderItem={({item}) => (
@@ -249,16 +262,7 @@ const styles = StyleSheet.create({
     marginTop: 10,
   },
   closeButtonText: {color: '#fff', fontSize: 16, fontWeight: 'bold'},
-  emptyContainer: {
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginTop: 20,
-  },
-  emptyText: {
-    fontSize: 16,
-    color: 'gray',
-    fontWeight: 'bold'
-  },
+  
 });
 
 export default Resign;

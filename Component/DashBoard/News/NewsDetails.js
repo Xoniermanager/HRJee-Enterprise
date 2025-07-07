@@ -7,8 +7,10 @@ import {
   ImageBackground,
   TouchableOpacity,
   ScrollView,
+  Linking,
 } from 'react-native';
 import React, {useState, useEffect, useContext} from 'react';
+import Share from 'react-native-share';
 import LinearGradient from 'react-native-linear-gradient';
 import {
   responsiveFontSize,
@@ -54,7 +56,22 @@ const NewsDetails = ({navigation}) => {
     check();
   }, []);
   const image = {uri: 'https://i.postimg.cc/zf8d0r7t/nodata-1.png'};
+  const handleShare = async () => {
+    try {
+      await Share.open({
+        title: getNewsApiData?.news_Category,
+        message: `${getNewsApiData?.title}\n\n${getNewsApiData?.description?.replace(/<[^>]+>/g, '')}`,
+      });
+    } catch (err) {
+      console.log('Share error:', err);
+    }
+  };
 
+  // 🟩 Download Handler
+  const handleDownload = async (image) => {
+    Linking.openURL(image)
+    
+  };
   return (
     <SafeAreaView
       style={[styles.container, {backgroundColor: currentTheme.background_v2}]}>
@@ -109,14 +126,18 @@ const NewsDetails = ({navigation}) => {
                         borderTopLeftRadius: 40,
                         borderTopRightRadius: 40,
                       }}>
-                      <Image
-                        style={{
-                          height: 198,
-                          width: '100%',
-                          resizeMode: 'contain',
-                        }}
-                        source={{uri: getNewsApiData?.image}}
-                      />
+  
+                        <ImageBackground
+                      source={require('../../../assets/newsBanner.png')}
+                      resizeMode='contain'
+                      borderTopLeftRadius={40}
+                      borderTopRightRadius={40}
+                      style={{
+                        height: 198,
+                        width: '100%',
+                       
+                      }}
+                    />
                     </View>
                   </View>
                   <View
@@ -130,6 +151,8 @@ const NewsDetails = ({navigation}) => {
                       alignSelf: 'flex-end',
                       marginRight: 10,
                     }}>
+                        {/* 🔽 Share & Download Buttons */}
+                 
                     <Text
                       style={{
                         fontSize: 15,
@@ -139,6 +162,27 @@ const NewsDetails = ({navigation}) => {
                       }}>
                       {getNewsApiData?.news_Category}
                     </Text>
+                  </View>
+                  <View
+                    style={{
+                      flexDirection: 'row',
+                      justifyContent: 'flex-end',
+                      alignItems: 'center',
+                      marginHorizontal: 20,
+                      marginTop: 10,
+                      gap: 10,
+                    }}>
+                    <TouchableOpacity
+                      onPress={handleShare}
+                      style={styles.actionButton}>
+                      <Text style={styles.actionText}>Share</Text>
+                    </TouchableOpacity>
+
+                    <TouchableOpacity
+                      onPress={()=>handleDownload(getNewsApiData?.file)}
+                      style={styles.actionButton}>
+                      <Text style={styles.actionText}>Download</Text>
+                    </TouchableOpacity>
                   </View>
                   <View style={{margin: 20}}>
                     <Text
@@ -202,5 +246,15 @@ const styles = StyleSheet.create({
   image: {
     flex: 1,
     height: responsiveHeight(65),
+  },
+  actionButton: {
+    backgroundColor: '#F1416C',
+    borderRadius: 20,
+    paddingVertical: 8,
+    paddingHorizontal: 15,
+  },
+  actionText: {
+    color: '#fff',
+    fontWeight: 'bold',
   },
 });

@@ -145,10 +145,10 @@ const ListOfficeAddress = () => {
               backgroundColor: currentTheme.background_v2,
               borderRadius: 5,
               alignItems: 'center',
-              width: responsiveWidth(40),
+              // width: responsiveWidth(40),
              
             }}>
-            <Text style={{color: 'white', fontWeight: '700'}}>ADD ADDRESS</Text>
+            <Text style={{color: 'white', fontWeight: '700'}}> Add Secondary Office Address</Text>
           </TouchableOpacity>
         </View>
         <FlatList

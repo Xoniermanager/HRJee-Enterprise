@@ -6,303 +6,239 @@ import {
   View,
   TouchableOpacity,
   ScrollView,
-  TextInput,
   FlatList,
+  ActivityIndicator,
+  Linking,
 } from 'react-native';
 import React, {useEffect, useState} from 'react';
-import DateTimePicker from '@react-native-community/datetimepicker';
-import LinearGradient from 'react-native-linear-gradient';
+import DatePicker from 'react-native-date-picker';
 import {
-  responsiveFontSize,
   responsiveHeight,
   responsiveWidth,
 } from 'react-native-responsive-dimensions';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { BASE_URL } from '../../../utils';
-import { SalarySlip } from '../../../APINetwork/ComponentApi';
-import { showMessage } from 'react-native-flash-message';
+import {BASE_URL} from '../../../utils';
+import {SalarySlip} from '../../../APINetwork/ComponentApi';
+import {showMessage} from 'react-native-flash-message';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
-const Salary = ({navigation}) => {
-  const arr = [1,];
-  const [list,setList]=useState();
-  const [expandedprofile, setExpandedProfile] = useState(false);
-  const [openStartDate, setOpenStartDate] = useState(false);
-  const [startDate, setStartDate] = useState(new Date());
-  const [openEndDate, setOpenEndDate] = useState(false);
-  const [endDate, setEndDate] = useState(new Date());
-  const toggleExpandedProfile = () => {
-    setExpandedProfile(!expandedprofile);
-  };
-  const handleDateChange = (event, selectedDate) => {
-    setOpenStartDate(false);
-    setStartDate(selectedDate);
-  };
-  const handleDateChangeEnd = (event, selectedDate) => {
-    setOpenEndDate(false);
-    setEndDate(selectedDate);
-  };
-    const SalarySliplist=async()=>{
-      const token=await AsyncStorage.getItem('TOKEN');
-      const url=`${BASE_URL}/generatePaySlip`
-      const response=await SalarySlip(url,token);
-      if(response.data.status){
-        setList([response.data.file_url])
-      }
-      else {
-        setList([])
-        showMessage({
-          message: response.data.message,
-          type: 'danger',
-          duration: 3000,
-          
-        });
-      }
-    }
-    useEffect(()=>{
-      SalarySliplist();
-    },[])
-  const renderSalrySlip = ({item,index}) => {
-    return (
-      <View style={{flexDirection: 'row'}} key={index}>
-        <View style={{position: 'relative', justifyContent: 'center'}}>
-          <View
-            style={{
-              borderWidth: 1.5,
-              height: 50,
-              width: 2,
-              elevation: 7,
-              backgroundColor: '#000',
-              opacity: 0.3,
-            }}></View>
-          <Image
-            style={{
-              height: 15,
-              width: 15,
-              marginLeft: -7,
-              resizeMode: 'contain',
-              position: 'absolute',
-            }}
-            source={require('../../../assets/Attendence/point.png')}
-          />
-        </View>
-        <View
-          style={{
-            marginLeft: 20,
-            marginTop: 5,
-            marginBottom: 5,
-            flexDirection: 'row',
-            backgroundColor: '#EDFBFE',
-            padding: 10,
-            elevation: 7,
-            borderRadius: 10,
-            width:responsiveWidth(80),
-            justifyContent:'space-between'
 
-          }}>
-          <Text style={{color: '#0E0E64', fontSize: 18, textAlign: 'center'}}>
-           Salary Slip
-          </Text>
-          <TouchableOpacity style={{marginRight:15}}>
-            <MaterialCommunityIcons
-                          name="download"
-                          size={30}
-                          color={'#000'}
-                        />
-          </TouchableOpacity>
-        </View>
-      </View>
-    );
+const Salary = ({navigation}) => {
+  const [list, setList] = useState([]);
+  const [selectedDate, setSelectedDate] = useState(new Date());
+  const [open, setOpen] = useState(false);
+  const [loading, setLoading] = useState(false);
+
+  const fetchSalarySlip = async () => {
+    try {
+      setLoading(true);
+      const token = await AsyncStorage.getItem('TOKEN');
+
+      const month = (selectedDate.getMonth() + 1).toString().padStart(2, '0');
+      const year = selectedDate.getFullYear();
+
+      const url = `${BASE_URL}/generatePaySlip?month=${month}&year=${year}`;
+      console.log('API URL:', url);
+
+      const response = await SalarySlip(url, token);
+
+      if (response.data.status) {
+        setList([response.data.file_url]);
+      } else {
+        setList([]);
+        // showMessage({
+        //   message: response.data.message || 'No data found.',
+        //   type: 'danger',
+        //   duration: 3000,
+        // });
+      }
+    } catch (error) {
+      console.error(error);
+      showMessage({
+        message: 'Error fetching salary slip',
+        type: 'danger',
+      });
+    } finally {
+      setLoading(false);
+    }
   };
+
+  const renderSalarySlip = ({item}) => (
+    <View style={styles.timelineRow}>
+      <View style={styles.timelineMarkerContainer}>
+        <View style={styles.timelineLine} />
+        <Image
+          source={require('../../../assets/Attendence/point.png')}
+          style={styles.timelineDot}
+        />
+      </View>
+
+      <View style={styles.slipCard}>
+        <Text style={styles.slipTitle}>Salary Slip</Text>
+        <TouchableOpacity
+          style={styles.downloadIcon}
+          onPress={() => Linking.openURL(item)}>
+          <MaterialCommunityIcons name="download" size={28} color={'#0E0E64'} />
+        </TouchableOpacity>
+      </View>
+    </View>
+  );
+
   return (
     <SafeAreaView style={styles.container}>
-      <View
-        style={{
-          marginTop: 15,
-        }}>
-       
+      <ScrollView
+        style={styles.innerContainer}
+        contentContainerStyle={{paddingBottom: 30}}>
+        <View style={styles.contentWrapper}>
+          {/* Header */}
+          <Text style={styles.label}>Select Month & Year</Text>
 
-        <ScrollView
-          style={{
-            width: '100%',
-            height: '100%',
-            backgroundColor: '#fff',
-            borderTopLeftRadius: 40,
-            marginTop: responsiveHeight(3),
-            borderTopRightRadius: 40,
-          }}>
-          <View style={{marginHorizontal: responsiveWidth(5)}}>
-            {/* <Text
-              style={{
-                color: '#0E0E64',
-                marginVertical: 10,
-                fontSize: 20,
-                fontWeight: 'bold',
-              }}>
-              Select Date Range
+          {/* Date Display */}
+          <TouchableOpacity
+            onPress={() => setOpen(true)}
+            style={styles.dateSelector}>
+            <Text style={styles.dateText}>
+              {selectedDate.toLocaleString('default', {
+                month: 'long',
+                year: 'numeric',
+              })}
             </Text>
-            <View
-              style={{
-                flexDirection: 'row',
-                justifyContent: 'space-between',
-                marginBottom: 5,
-              }}>
-              <View
-                style={{
-                  borderRadius: 15,
-                  padding: 10,
-                  backgroundColor: '#fff',
-                  elevation: 7,
-                  alignSelf: 'center',
-                }}>
-                <Text
-                  style={{
-                    color: '#0E0E64',
-                    fontWeight: 'bold',
-                    fontSize: 18,
-                    textAlign: 'center',
-                  }}>
-                  Start Month
-                </Text>
-                <View
-                  style={{
-                    marginTop: 5,
-                    marginBottom: 5,
-                    flexDirection: 'row',
-                    backgroundColor: '#EDFBFE',
-                    padding: 10,
-                    elevation: 7,
-                    borderRadius: 10,
-                  }}>
-                  <Text
-                    style={{
-                      color: '#0E0E64',
-                      fontSize: 18,
-                      textAlign: 'center',
-                    }}>
-                    {startDate.toISOString().split('T')[0]}
-                  </Text>
-                  <TouchableOpacity onPress={() =>setOpenStartDate(true)}>
-                    <Image
-                      style={{
-                        marginHorizontal: 10,
-                        height: 30,
-                        width: 30,
-                        resizeMode: 'contain',
-                        alignSelf: 'center',
-                      }}
-                      source={require('../../../assets/HomeScreen/calendar.png')}
-                    />
-                  </TouchableOpacity>
-                </View>
-              </View>
-              <View
-                style={{
-                  borderRadius: 15,
-                  padding: 10,
-                  backgroundColor: '#fff',
-                  elevation: 7,
-                  alignSelf: 'center',
-                }}>
-                <Text
-                  style={{
-                    color: '#0E0E64',
-                    fontWeight: 'bold',
-                    fontSize: 18,
-                    textAlign: 'center',
-                  }}>
-                  End Month
-                </Text>
-                <View
-                  style={{
-                    marginTop: 5,
-                    marginBottom: 5,
-                    flexDirection: 'row',
-                    backgroundColor: '#EDFBFE',
-                    padding: 10,
-                    elevation: 7,
-                    borderRadius: 10,
-                  }}>
-                  <Text
-                    style={{
-                      color: '#0E0E64',
-                      fontSize: 18,
-                      textAlign: 'center',
-                    }}>
-                   {endDate.toISOString().split('T')[0]}
-                  </Text>
-                  <TouchableOpacity onPress={() => setOpenEndDate(true)}>
-                    <Image
-                      style={{
-                        marginHorizontal: 10,
-                        height: 30,
-                        width: 30,
-                        resizeMode: 'contain',
-                        alignSelf: 'center',
-                      }}
-                      source={require('../../../assets/HomeScreen/calendar.png')}
-                    />
-                  </TouchableOpacity>
-                </View>
-              </View>
-            </View> */}
-            <Text
-              style={{
-                color: '#0E0E64',
-                fontWeight: 'bold',
-                marginVertical: 10,
-                fontSize: 20,
-              }}>
-              Salary Statement List
-            </Text>
+          </TouchableOpacity>
 
+          {/* Date Picker Modal */}
+          <DatePicker
+            modal
+            open={open}
+            date={selectedDate}
+            mode="date"
+            maximumDate={new Date()}
+            onConfirm={date => {
+              setOpen(false);
+              setSelectedDate(date);
+            }}
+            onCancel={() => setOpen(false)}
+          />
+
+          {/* Fetch Button */}
+          <TouchableOpacity
+            onPress={fetchSalarySlip}
+            style={styles.fetchButton}>
+            <Text style={styles.fetchButtonText}>Fetch Salary Slip</Text>
+          </TouchableOpacity>
+
+          {/* List Header */}
+          <Text style={styles.label}>Salary Statement List</Text>
+
+          {/* Data List */}
+          {loading ? (
+            <ActivityIndicator size="large" color="#0E0E64" />
+          ) : (
             <FlatList
               data={list}
-              showsVerticalScrollIndicator={false}
-              renderItem={renderSalrySlip}
-              keyExtractor={item => item.id}
-              ListEmptyComponent={()=>
-              <View style={{}}>
-                <Text style={{textAlign:'center',fontSize:responsiveFontSize(2),fontWeight:'500',color:'#000'}}>No Data Found</Text>
-                </View>
+              renderItem={renderSalarySlip}
+              keyExtractor={(item, index) => index.toString()}
+              ListEmptyComponent={
+                <Text style={styles.emptyText}>No Data Found</Text>
               }
+              showsVerticalScrollIndicator={false}
             />
-          </View>
-          {openStartDate && (
-          <DateTimePicker
-            value={startDate}
-            mode="date"
-            display="default"
-            onChange={handleDateChange}
-          />
-        )}
-         {openEndDate && (
-          <DateTimePicker
-            value={endDate}
-            mode="date"
-            display="default"
-            onChange={handleDateChangeEnd}
-          />
-        )}
-        </ScrollView>
-      </View>
+          )}
+        </View>
+      </ScrollView>
     </SafeAreaView>
   );
 };
+
 export default Salary;
+
 const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#0E0E64',
   },
-
-  name: {
-    color: '#fff',
-    fontSize: responsiveFontSize(3),
-    fontWeight: 'bold',
-    textAlign: 'center',
-    marginBottom: responsiveHeight(0),
+  innerContainer: {
+    backgroundColor: '#fff',
+    marginTop: responsiveHeight(3),
+    borderTopLeftRadius: 30,
+    borderTopRightRadius: 30,
+    paddingTop: 20,
   },
-  checkbox: {
-    alignSelf: 'center',
+  contentWrapper: {
+    marginHorizontal: responsiveWidth(5),
+  },
+  label: {
+    color: '#0E0E64',
+    fontSize: 18,
+    fontWeight: 'bold',
+    marginVertical: 12,
+  },
+  dateSelector: {
+    backgroundColor: '#EDFBFE',
+    padding: 15,
+    borderRadius: 10,
+    elevation: 5,
+  },
+  dateText: {
+    color: '#0E0E64',
+    fontSize: 16,
+  },
+  fetchButton: {
+    backgroundColor: '#0E0E64',
+    marginTop: 15,
+    paddingVertical: 12,
+    borderRadius: 10,
+    alignItems: 'center',
+  },
+  fetchButtonText: {
+    color: '#fff',
+    fontSize: 16,
+    fontWeight: 'bold',
+  },
+  timelineRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginVertical: 10,
+  },
+  timelineMarkerContainer: {
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  timelineLine: {
+    height: 60,
+    width: 2,
+    backgroundColor: '#000',
+    opacity: 0.2,
+  },
+  timelineDot: {
+    height: 15,
+    width: 15,
+    position: 'absolute',
+    top: 20,
+    left: -6,
+    resizeMode: 'contain',
+  },
+  slipCard: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    backgroundColor: '#EDFBFE',
+    padding: 12,
+    borderRadius: 10,
+    width: responsiveWidth(80),
+    marginLeft: 20,
+    alignItems: 'center',
+    elevation: 5,
+  },
+  slipTitle: {
+    color: '#0E0E64',
+    fontSize: 17,
+    fontWeight: '600',
+  },
+  downloadIcon: {
+    padding: 4,
+  },
+  emptyText: {
+    textAlign: 'center',
+    color: '#999',
+    fontSize: 16,
+    marginTop: 20,
   },
 });

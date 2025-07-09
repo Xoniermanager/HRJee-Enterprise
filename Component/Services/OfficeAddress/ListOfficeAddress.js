@@ -5,6 +5,7 @@ import {
   Text,
   TouchableOpacity,
   View,
+  Image
 } from 'react-native';
 import React, {useContext, useEffect, useState} from 'react';
 import LinearGradient from 'react-native-linear-gradient';
@@ -17,7 +18,7 @@ import {asignTask} from '../../../APINetwork/ComponentApi';
 import {ThemeContext} from '../../../Store/ConetxtApi.jsx/ConextApi';
 import {useIsFocused, useNavigation} from '@react-navigation/native';
 import PullToRefresh from '../../../PullToRefresh';
-import {responsiveWidth} from 'react-native-responsive-dimensions';
+import {responsiveHeight, responsiveWidth} from 'react-native-responsive-dimensions';
 import Reload from '../../../Reload';
 const ListOfficeAddress = () => {
   const navigation = useNavigation();
@@ -158,7 +159,15 @@ const ListOfficeAddress = () => {
           contentContainerStyle={styles.container}
           ListEmptyComponent={
             <View style={styles.emptyContainer}>
-              <Text style={styles.emptyText}>No data found</Text>
+              <Image
+                source={{
+                  uri: 'https://static.vecteezy.com/system/resources/thumbnails/013/927/147/small_2x/adaptive-interface-design-illustration-concept-on-white-background-vector.jpg',
+                }}
+                style={styles.emptyImage}
+              />
+              <Text style={[styles.emptyText, {color: currentTheme.text}]}>
+                No Address Found
+              </Text>
             </View>
           }
         />
@@ -210,5 +219,16 @@ const styles = StyleSheet.create({
     marginHorizontal: 5,
     borderRadius: 5,
     backgroundColor: '#f1f1f1',
+  },
+  emptyImage: {
+    width: responsiveWidth(60),
+    height: responsiveHeight(25),
+    resizeMode: 'contain',
+  },
+  emptyText: {
+    fontSize: 18,
+    fontWeight: '500',
+    textAlign: 'center',
+    marginTop: 20,
   },
 });

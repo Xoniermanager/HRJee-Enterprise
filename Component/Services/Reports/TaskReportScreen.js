@@ -11,6 +11,7 @@ import {
   ActivityIndicator,
   TouchableOpacity,
   Platform,
+  Image
 } from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import {PieChart} from 'react-native-chart-kit';

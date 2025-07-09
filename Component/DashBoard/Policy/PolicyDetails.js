@@ -8,6 +8,7 @@ import {
   TouchableOpacity,
   ScrollView,
   Linking,
+  Alert,
 } from 'react-native';
 import React, {useState, useEffect, useContext} from 'react';
 import LinearGradient from 'react-native-linear-gradient';
@@ -69,9 +70,12 @@ const PolicyDetails = ({navigation}) => {
 
   // 🟩 Download Handler
   const handleDownload = async (image) => {
-    Linking.openURL(image)
-    
-  };
+    if (image) {
+      Linking.openURL(image);
+    } else {
+      Alert.alert('Empty File', 'No document record');
+    }
+  }
   return (
     <SafeAreaView
       style={[styles.container, {backgroundColor: currentTheme.background_v2}]}>

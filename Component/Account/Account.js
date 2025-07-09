@@ -260,8 +260,8 @@ const Account = () => {
               </TouchableOpacity>
             </View>
             <Text style={styles.name}>{getProfileApiData?.name}</Text>
-            {/* <Text style={styles.name}>{getProfileApiData?.details?.phone}</Text>
-            <Text style={styles.name}>{getProfileApiData?.email}</Text> */}
+            <Text style={styles.name}>{getProfileApiData?.details?.phone}</Text>
+            <Text style={styles.name}>{getProfileApiData?.email}</Text>
           </View>
         </View>
 

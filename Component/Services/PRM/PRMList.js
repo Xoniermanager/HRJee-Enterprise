@@ -70,7 +70,7 @@ const PRMList = () => {
           styles.addButton,
           {backgroundColor: currentTheme.background_v2},
         ]}
-        onPress={() => navigation.navigate('AddPRM')}>
+        onPress={() => navigation.navigate('EditPRM')}>
         <Text style={styles.addButtonText}>Add PRM</Text>
       </TouchableOpacity>
       <View style={styles.card}>

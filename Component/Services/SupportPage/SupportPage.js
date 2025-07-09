@@ -46,23 +46,35 @@ const SupportPage = ({route}) => {
   async function SupportApply() {
     if (!id) {
       try {
-        setLoader(true);
-        let token = await AsyncStorage.getItem('TOKEN');
-        const url = `${BASE_URL}/support`;
-        let data = JSON.stringify({
-          subject: subject,
-          comment: comment,
-        });
-        const response = await ApplyResigns(url, data, token);
-        if (response?.data?.status === true) {
-          setLoader(false);
+        if (subject.trim() === '') {
           showMessage({
-            message: response.data.message,
-            type: 'success',
+            message: 'Please enter your subject.',
+            type: 'danger',
           });
-          navigate.goBack();
+        } else if (comment.trim() === '') {
+          showMessage({
+            message: 'Please enter your comment.',
+            type: 'danger',
+          });
         } else {
-          setLoader(false);
+          setLoader(true);
+          let token = await AsyncStorage.getItem('TOKEN');
+          const url = `${BASE_URL}/support`;
+          let data = JSON.stringify({
+            subject: subject,
+            comment: comment,
+          });
+          const response = await ApplyResigns(url, data, token);
+          if (response?.data?.status === true) {
+            setLoader(false);
+            showMessage({
+              message: response.data.message,
+              type: 'success',
+            });
+            navigate.goBack();
+          } else {
+            setLoader(false);
+          }
         }
       } catch (error) {
         setLoader(false);
@@ -73,24 +85,36 @@ const SupportPage = ({route}) => {
       }
     } else {
       try {
-        setLoader(true);
-        let token = await AsyncStorage.getItem('TOKEN');
-        const url = `${BASE_URL}/support/${id}`;
-        const from = 0;
-        let data = JSON.stringify({
-          subject: subject,
-          comment: comment,
-        });
-        const response = await WithdrawResigns(url, data, token, from);
-        if (response?.data?.status === true) {
-          setLoader(false);
+        if (subject.trim() === '') {
           showMessage({
-            message: response.data.message,
-            type: 'success',
+            message: 'Please enter your subject.',
+            type: 'danger',
           });
-          navigate.goBack();
+        } else if (comment.trim() === '') {
+          showMessage({
+            message: 'Please enter your comment.',
+            type: 'danger',
+          });
         } else {
-          setLoader(false);
+          setLoader(true);
+          let token = await AsyncStorage.getItem('TOKEN');
+          const url = `${BASE_URL}/support/${id}`;
+          const from = 0;
+          let data = JSON.stringify({
+            subject: subject,
+            comment: comment,
+          });
+          const response = await WithdrawResigns(url, data, token, from);
+          if (response?.data?.status === true) {
+            setLoader(false);
+            showMessage({
+              message: response.data.message,
+              type: 'success',
+            });
+            navigate.goBack();
+          } else {
+            setLoader(false);
+          }
         }
       } catch (error) {
         setLoader(false);

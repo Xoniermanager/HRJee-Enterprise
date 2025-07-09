@@ -12,12 +12,12 @@ import {
 } from 'react-native';
 import {BASE_URL} from '../../../utils';
 import {asignTask, deleteRequest} from '../../../APINetwork/ComponentApi';
-import Reload from '../../../Reload';
-import { showMessage } from 'react-native-flash-message';
+import {showMessage} from 'react-native-flash-message';
 
 const ListSupport = () => {
   const navigation = useNavigation();
   const isfocuesed = useIsFocused();
+  const [lastPage, setLastPage] = useState('');
   const [list, setList] = useState();
   const [loader, setLoader] = useState();
   const [currentPage, setCurrentPage] = useState(1);
@@ -27,9 +27,8 @@ const ListSupport = () => {
     const url = `${BASE_URL}/support`;
     const response = await asignTask(url, token);
     if (response.data.status) {
-      // console.log(response.data.data.supports?.last_page)
       setList(response.data.data.supports?.data);
-      setLoader(response.data.data.supports?.last_page);
+      setLastPage(response?.data?.data?.last_page);
     }
   };
   useEffect(() => {
@@ -52,34 +51,36 @@ const ListSupport = () => {
     }
   };
 
-  const handleView = id =>
-    Alert.alert('View', `Viewing support request #${id}`);
-  const handleEdit = id =>
-    Alert.alert('Edit', `Editing support request #${id}`);
-  const handleDelete = async(id) =>
-  {
+  const handleDelete = async id => {
     const token = await AsyncStorage.getItem('TOKEN');
-    const url=`${BASE_URL}/support/${id}`;
-    const data=null;
-    const response =await deleteRequest(url,data,token);
-         getlist();
-        showMessage({
-            message: response.data.message,
-            type: 'success',
-          });
-
-    
-  }
-  
+    const url = `${BASE_URL}/support/${id}`;
+    const data = null;
+    const response = await deleteRequest(url, data, token);
+    getlist();
+    showMessage({
+      message: response.data.message,
+      type: 'success',
+    });
+  };
 
   const renderItem = ({item}) => (
     <View style={styles.card}>
       <Text style={styles.subject}>{item.subject}</Text>
-      <Text style={styles.label}>
-        Status: <Text style={styles.status}>{item.status}</Text>
-      </Text>
-      <Text style={styles.label}>Remark: {item.remark}</Text>
-      <Text style={styles.label}>Comment: {item.comment}</Text>
+      <View style={{flexDirection: 'row', justifyContent: 'space-between'}}>
+        <Text style={styles.label}>Status:</Text>
+        <Text style={styles.status}>{item.status}</Text>
+      </View>
+      {item?.remark ? (
+        <View style={{flexDirection: 'row', justifyContent: 'space-between'}}>
+          <Text style={styles.label}>Remark:</Text>
+          <Text style={styles.label}>{item.remark}</Text>
+        </View>
+      ) : null}
+      <View style={{flexDirection: 'row', justifyContent: 'space-between'}}>
+        <Text style={styles.label}>Comment: </Text>
+        <Text style={styles.label}>{item.comment}</Text>
+      </View>
+
       <Text style={styles.date}>
         Created: {item.created_at.slice(0, 16).replace('T', ' ')}
       </Text>
@@ -89,13 +90,8 @@ const ListSupport = () => {
 
       <View style={styles.actions}>
         <TouchableOpacity
-          style={[styles.button, styles.view]}
-          onPress={() => handleView(item.id)}>
-          <Text style={styles.buttonText}>View</Text>
-        </TouchableOpacity>
-        <TouchableOpacity
           style={[styles.button, styles.edit]}
-          onPress={() => navigation.navigate('SupportPage',{id:item.id})}>
+          onPress={() => navigation.navigate('SupportPage', {id: item.id})}>
           <Text style={styles.buttonText}>Edit</Text>
         </TouchableOpacity>
         {item?.remark == null ? (
@@ -126,24 +122,24 @@ const ListSupport = () => {
         data={list}
         onEndReached={() => fetchMore()}
         ListEmptyComponent={
-            <View>
-              <Image
-                source={{
-                  uri: 'https://static.vecteezy.com/system/resources/thumbnails/013/927/147/small_2x/adaptive-interface-design-illustration-concept-on-white-background-vector.jpg',
-                }}
-                style={{padding: 20, height: 250}}
-              />
-              <Text
-                style={{
-                  fontSize: 18,
-                  color: '#000',
-                  fontWeight: '500',
-                  textAlign: 'center',
-                }}>
-                Data Not Found
-              </Text>
-            </View>
-          }
+          <View>
+            <Image
+              source={{
+                uri: 'https://static.vecteezy.com/system/resources/thumbnails/013/927/147/small_2x/adaptive-interface-design-illustration-concept-on-white-background-vector.jpg',
+              }}
+              style={{padding: 20, height: 250}}
+            />
+            <Text
+              style={{
+                fontSize: 18,
+                color: '#000',
+                fontWeight: '500',
+                textAlign: 'center',
+              }}>
+              Data Not Found
+            </Text>
+          </View>
+        }
         keyExtractor={(item, index) => index.toString()}
         onEndReachedThreshold={0.1}
         renderItem={renderItem}

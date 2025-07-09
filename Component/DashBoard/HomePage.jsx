@@ -91,6 +91,8 @@ const HomePage = () => {
     getProfileApiData,
     activeLog,
     allowfacenex,
+    punchInRadius,
+    activeLocation
   } = useContext(ThemeContext);
   const [getleavetypeapidata, setGetLeaveTypeApiData] = useState([]);
   const [loader, setLoader] = useState(false);
@@ -647,6 +649,7 @@ const HomePage = () => {
       handleOpenCamera();
     }
   };
+  
   const punch_IN = async () => {
     setloading(true);
     GetLocation.getCurrentPosition({
@@ -654,68 +657,86 @@ const HomePage = () => {
       timeout: 15000,
     })
       .then(async location => {
-        var lat = parseFloat(location.latitude);
-        var long = parseFloat(location.longitude);
+        const lat = parseFloat(location.latitude);
+        const long = parseFloat(location.longitude);
+        const currentLocation = { latitude: lat, longitude: long };
+        const dis = getDistance(activeLocation, currentLocation); // distance in meters
+        const radius = punchInRadius;
+        const remainingDistance = Math.abs(dis - radius);
+  
         const urlAddress = `https://maps.googleapis.com/maps/api/geocode/json?latlng=${lat},${long}&key=AIzaSyCAdzVvYFPUpI3mfGWUTVXLDTerw1UWbdg`;
         const address = await axios.get(urlAddress);
-        var body = {
+  
+        const body = {
           punch_in_latitude: lat,
           punch_in_longitude: long,
           punch_in_address: address.data?.results[0]?.formatted_address,
         };
-        setDisabledBtn(true);
-        try {
-          const url = `${BASE_URL}/employee/make/attendance`;
-          let token = await AsyncStorage.getItem('TOKEN');
-          const response = await punchin(url, body, token);
-          CheckDailyAttendances();
-          if (response?.data?.status) {
-            AsyncStorage.setItem(
-              'oldLocation',
-              JSON.stringify({latitude: lat, longitude: long}),
-            );
-            setKycModal(false);
-            user_details();
+  
+        // ✅ Radius condition
+        if (radius === 0 || dis <= radius) {
+          setDisabledBtn(true);
+          try {
+            const url = `${BASE_URL}/employee/make/attendance`;
+            let token = await AsyncStorage.getItem('TOKEN');
+            const response = await punchin(url, body, token);
             CheckDailyAttendances();
-            setLoader(false);
+            if (response?.data?.status) {
+              AsyncStorage.setItem(
+                'oldLocation',
+                JSON.stringify(currentLocation)
+              );
+              setKycModal(false);
+              user_details();
+              CheckDailyAttendances();
+              setLoader(false);
+              setloading(false);
+              setPunch(response?.data);
+              setDisabledBtn(false);
+              showMessage({
+                message: `${response?.data?.message}`,
+                type: 'success',
+                duration: 3000,
+              });
+            } else {
+              showMessage({
+                message: `${response?.data?.message}`,
+                type: 'danger',
+                duration: 4000,
+              });
+              const payload = {
+                data: body,
+                url,
+                method: 'post',
+                message: response?.data?.message,
+              };
+              activeLog(payload);
+              setKycModal(false);
+              setLoader(false);
+              setloading(false);
+              setDisabledBtn(false);
+            }
+          } catch (error) {
+            console.error('Error making POST request:', error);
             setloading(false);
-            setPunch(response?.data);
-            setDisabledBtn(false);
-            showMessage({
-              message: `${response?.data?.message}`,
-              type: 'success',
-              duration: 3000,
-            });
-          } else {
-            showMessage({
-              message: `${response?.data?.message}`,
-              type: 'danger',
-              duration: 4000,
-            });
-            const payload = {
-              data: body,
-              url,
-              url,
-              method: 'post',
-              message: response?.data?.message,
-            };
-            activeLog(payload);
             setKycModal(false);
-            setLoader(false);
-            setloading(false);
             setDisabledBtn(false);
+            setLoader(false);
           }
-        } catch (error) {
-          console.error('Error making POST request:', error);
+        } else {
           setloading(false);
-          setKycModal(false);
-          setDisabledBtn(false);
-          setLoader(false);
+          const  dis= remainingDistance >= 1000
+          ? `${(remainingDistance / 1000).toFixed(2)} kilometers`
+          : `${remainingDistance} meters`;
+          showMessage({
+            message: `You are out of allowed punch-in range. ${dis}  away.`,
+            type: 'danger',
+            duration: 4000,
+          });
         }
       })
       .catch(error => {
-        const {code, message} = error;
-
+        const { code, message } = error;
         setloading(false);
         showMessage({
           message: message,
@@ -724,6 +745,7 @@ const HomePage = () => {
         });
       });
   };
+  
   const punch_Out_EMP = async punchOutConfirm => {
     setloading(true);
     GetLocation.getCurrentPosition({
@@ -733,6 +755,11 @@ const HomePage = () => {
       .then(async location => {
         var lat = parseFloat(location.latitude);
         var long = parseFloat(location.longitude);
+        const currentLocation = { latitude: lat, longitude: long };
+        const dis = getDistance(activeLocation, currentLocation); // distance in meters
+        const radius = punchInRadius;
+        const remainingDistance = Math.abs(dis - radius);
+  
         const urlAddress = `https://maps.googleapis.com/maps/api/geocode/json?latlng=${lat},${long}&key=AIzaSyCAdzVvYFPUpI3mfGWUTVXLDTerw1UWbdg`;
         const address = await axios.get(urlAddress);
         var body = {
@@ -742,50 +769,64 @@ const HomePage = () => {
           attendance_id: attendanceId,
           ...(punchOutConfirm && {force: true}),
         };
-        setDisabledBtn(true);
-        try {
-          const url = `${BASE_URL}/employee/make/attendance`;
-          let token = await AsyncStorage.getItem('TOKEN');
-          const response = await punchin(url, body, token);
-          if (response?.data?.status) {
-            CheckDailyAttendances();
-            getLastAttendance;
-            breakingList();
-            setLoader(false);
-            setloading(false);
-            setPunch(response?.data);
-            setDisabledBtn(false);
-            showMessage({
-              message: `${response?.data?.message}`,
-              type: 'success',
-            });
-          } else {
-            setLoader(false);
-            setloading(false);
-            setDisabledBtn(false);
-            if (response.data.before_punchout_confirm_required) {
-              Alert.alert('Punch Out', response?.data?.message, [
-                {
-                  text: 'Cancel',
-                  onPress: () => console.log('Cancel Pressed'),
-                  style: 'cancel',
-                },
-                {
-                  text: 'OK',
-                  onPress: () =>
-                    punch_Out_EMP(
-                      response.data.before_punchout_confirm_required,
-                    ),
-                },
-              ]);
+    
+        if (radius === 0 || dis <= radius) {
+          setDisabledBtn(true);
+          try {
+            const url = `${BASE_URL}/employee/make/attendance`;
+            let token = await AsyncStorage.getItem('TOKEN');
+            const response = await punchin(url, body, token);
+            if (response?.data?.status) {
+              CheckDailyAttendances();
+              getLastAttendance;
+              breakingList();
+              setLoader(false);
+              setloading(false);
+              setPunch(response?.data);
+              setDisabledBtn(false);
+              showMessage({
+                message: `${response?.data?.message}`,
+                type: 'success',
+              });
+            } else {
+              setLoader(false);
+              setloading(false);
+              setDisabledBtn(false);
+              if (response.data.before_punchout_confirm_required) {
+                Alert.alert('Punch Out', response?.data?.message, [
+                  {
+                    text: 'Cancel',
+                    onPress: () => console.log('Cancel Pressed'),
+                    style: 'cancel',
+                  },
+                  {
+                    text: 'OK',
+                    onPress: () =>
+                      punch_Out_EMP(
+                        response.data.before_punchout_confirm_required,
+                      ),
+                  },
+                ]);
+              }
             }
+          } catch (error) {
+            console.error('Error making POST request:', error);
+            setloading(false);
+            setDisabledBtn(false);
+            setLoader(false);
           }
-        } catch (error) {
-          console.error('Error making POST request:', error);
+        } else {
           setloading(false);
-          setDisabledBtn(false);
-          setLoader(false);
+          const  dis= remainingDistance >= 1000
+          ? `${(remainingDistance / 1000).toFixed(2)} kilometers`
+          : `${remainingDistance} meters`;
+          showMessage({
+            message: `You are out of allowed punch-out range. ${dis}  away.`,
+            type: 'danger',
+            duration: 4000,
+          });
         }
+       
       })
       .catch(error => {
         const {code, message} = error;
@@ -2521,10 +2562,15 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
   },
   modalContainer: {
-    justifyContent: 'center',
-    alignItems: 'center',
+    // justifyContent: 'center',
+    // alignItems: 'center',
     // backgroundColor: 'rgba(0,0,0,0.5)',
-    width: '100%',
+    // width: '100%',
+    flex: 1,
+  backgroundColor: 'rgba(0, 0, 0, 0.5)', 
+  justifyContent: 'center',
+  alignItems: 'center',
+  width: '100%',
   },
   modalContent: {
     width: '80%',

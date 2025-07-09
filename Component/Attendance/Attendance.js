@@ -124,7 +124,7 @@ const Attendance = () => {
       const response = await gettodayattendance(url, token);
       if (response?.data?.status === true) {
         setTodayAttendanceDetails(response?.data?.todayAttendanceDetails);
-        setLoader(false);
+        // setLoader(false);
       } else {
         setLoader(false);
       }
@@ -140,6 +140,7 @@ const Attendance = () => {
       setLoaderModal(false);
     }
   }, [loading]);
+  console.log(loading,'loading')
   useEffect(() => {
     getTodayAttendance();
     attendance_by_month();
@@ -211,25 +212,25 @@ const Attendance = () => {
       const paddedDay = day.padStart(2, '0');
       return `${year}-${paddedMonth}-${paddedDay}`;
     }
-
     try {
+      setLoader(true);
       let token = await AsyncStorage.getItem('TOKEN');
-
       let data = {
         from_date: fromDate,
         to_date: toDate,
       };
       data.from_date = formatDate(data.from_date);
       data.to_date = formatDate(data.to_date);
-      setLoading(true);
       const url = `${BASE_URL}/search/filter/attendance`;
       const response = await getrecentattendence(url, data, token);
       if (response?.data?.status == true) {
+        setLoading(false);
         setLoader(false);
         if (response.data.data == 'No Attendance Found Of Respective Dates') {
           setData([]);
         } else {
           setData(response?.data);
+          setLoader(false);
         }
       } else {
         setLoading(false);
@@ -260,7 +261,7 @@ const Attendance = () => {
       const url = `${BASE_URL}/attendance/export`;
       const response = await getrecentattendence(url, data, token);
       if (response?.data?.status) {
-        setLoader(false);
+        // setLoader(false);
         setDataExport(response.data.data);
       } else {
         setLoading(false);
@@ -1077,7 +1078,7 @@ const styles = StyleSheet.create({
   legendItem: {
     flexDirection: 'row',
     alignItems: 'center',
-    width: '45%', // Adjust the width as needed
+    width: '45%',
     marginBottom: 10,
   },
   legendColor: {

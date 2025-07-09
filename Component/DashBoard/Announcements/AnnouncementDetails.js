@@ -213,6 +213,7 @@ import {
   PermissionsAndroid,
   Platform,
   Linking,
+  Alert,
 } from 'react-native';
 import React, {useState, useEffect, useContext} from 'react';
 
@@ -271,9 +272,12 @@ const AnnouncementDetails = ({navigation}) => {
 
   // 🟩 Download Handler
   const handleDownload = async (image) => {
-    Linking.openURL(image)
-    
-  };
+    if (image) {
+      Linking.openURL(image);
+    } else {
+      Alert.alert('Empty File', 'No document record');
+    }
+  }
 
   return (
     <SafeAreaView

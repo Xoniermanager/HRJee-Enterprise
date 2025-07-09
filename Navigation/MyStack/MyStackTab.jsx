@@ -541,7 +541,7 @@ const MyStackTab = () => {
         name="EditPRM"
         component={EditPRM}
         options={{
-          title: 'Update PRM',
+          title: 'PRM',
 
           headerBackTitleVisible: false,
           headerStyle: {

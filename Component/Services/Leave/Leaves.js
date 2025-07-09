@@ -10,6 +10,7 @@ import {
   Modal,
   Pressable,
   TextInput,
+  Image
 } from 'react-native';
 import { responsiveWidth } from 'react-native-responsive-dimensions';
 import { useIsFocused } from '@react-navigation/native';
@@ -337,6 +338,7 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     marginBottom: 15,
     textAlign: 'center',
+    color:'#000'
   },
   row: {
     flexDirection: 'row',

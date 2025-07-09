@@ -8,6 +8,7 @@ import {
   Alert,
   ActivityIndicator,
   Linking,
+  Image
 } from 'react-native';
 import DocumentPicker from 'react-native-document-picker';
 import AntDesign from 'react-native-vector-icons/AntDesign';

@@ -32,6 +32,8 @@ const ConextApi = ({children}) => {
   const [liveLocationActive,setLiveLocationActive]=useState(null);
   const [getProfileApiData, setGetProfileApiData] = useState('');
   const [allowfacenex,setAllowfacenex]=useState(null);
+  const [punchInRadius,setPunchInRadius]=useState(null);
+  const [activeLocation,setActiveLocation]=useState(null);
   const services = [
     {
       id: '1',
@@ -218,6 +220,10 @@ const ConextApi = ({children}) => {
         let facekycPermission=response?.data?.data?.details?.face_recognition
         let facekycAdd=response?.data?.data?.details?.face_kyc
         setFace_kyc_img(facekycAdd);
+        setPunchInRadius(response?.data?.data?.details?.punch_in_radius);
+        let latitude=response?.data?.data?.user_active_location?.latitude;
+        let long=response?.data?.data?.user_active_location?.longitude;
+        setActiveLocation({latitude: latitude, longitude: long})
         setFacePermission(response?.data?.data?.details?.face_recognition);
         setAllowfacenex(response?.data?.data?.details?.allow_face_nex);
         setRewardList(response?.data?.data?.user_reward);
@@ -352,7 +358,8 @@ axios.request(config)
         getProfileApiData,
         activeLog,
         allowfacenex,
-        
+        punchInRadius,
+        activeLocation
       }}>
       {children}
     </ThemeContext.Provider>

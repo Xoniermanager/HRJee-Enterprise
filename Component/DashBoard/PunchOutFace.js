@@ -1,19 +1,21 @@
 import React, {useState, useEffect, useRef, useContext} from 'react';
 import {View, Text, StyleSheet, Dimensions} from 'react-native';
 import {AWS_ACCESS_KEY, AWS_SECRET_KEY, AWS_REGION, AWS_S3_BUCKET} from '@env';
-import {AnimatedCircularProgress} from 'react-native-circular-progress';
-import {RNCamera} from 'react-native-camera';
+import {ThemeContext} from '../../Store/ConetxtApi.jsx/ConextApi';
 import AWS, {Rekognition, S3} from 'aws-sdk';
 import RNFS from 'react-native-fs';
 import {Buffer} from 'buffer';
 import {showMessage} from 'react-native-flash-message';
-import {useNavigation} from '@react-navigation/native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import {BASE_URL} from '../../utils';
+import {faceuploadKyc} from '../../APINetwork/ComponentApi';
+import {AnimatedCircularProgress} from 'react-native-circular-progress';
+import {RNCamera} from 'react-native-camera';
 import ImageResizer from '@bam.tech/react-native-image-resizer';
+import axios from 'axios';
 const {width, height} = Dimensions.get('window');
-const FaceLogin = ({route}) => {
-  const {faceData} = route?.params;
-  const navigation = useNavigation();
+const PunchOutFace = ({punchout}) => {
+  const [tempImage, setTempImage] = useState('');
   const s3 = new S3({
     accessKeyId: AWS_ACCESS_KEY,
     secretAccessKey: AWS_SECRET_KEY,
@@ -25,53 +27,49 @@ const FaceLogin = ({route}) => {
     region: AWS_REGION,
   });
   const cameraRef = useRef(null);
+  const {isCameraOpen, setIsCameraOpen, empyId, face_kyc_img} =
+    useContext(ThemeContext);
+    console.log("first",empyId)
   const [matchProgress, setMatchProgress] = useState(0);
-  const [pictureTaken, setPictureTaken] = useState(false);
- 
-
+  const progressIntervalRef = useRef(null);
   useEffect(() => {
-    setPictureTaken(false);
-    let progressInterval = setInterval(() => {
-      setMatchProgress(prev => {
-        if (prev >= 1) {
-          clearInterval(progressInterval);
-
-          return 1;
-        }
-        return prev + 0.1;
-      });
-    }, 1000);
-
-    return () => clearInterval(progressInterval);
-  }, []);
+    if (isCameraOpen) {
+      let progress = 0;
+      clearInterval(progressIntervalRef.current);
+      progressIntervalRef.current = setInterval(() => {
+        progress = Math.min(progress + 0.05, 1);
+        setMatchProgress(progress);
+      }, 300);
+    }
+  }, [isCameraOpen]);
   const takePicture = async () => {
-    if (cameraRef.current && !pictureTaken) {
-      setPictureTaken(true);
+    if (cameraRef.current) {
       try {
-        const data = await cameraRef.current.takePictureAsync({quality: 0.5});
+        const photo = await cameraRef.current.takePictureAsync({quality: 0.5});
         const resizedImage = await ImageResizer.createResizedImage(
-          data.uri,
+          photo.uri,
           640,
           480,
           'JPEG',
           70,
         );
         const base64 = await RNFS.readFile(resizedImage.uri, 'base64');
-        const buffer = Buffer.from(base64, 'base64')
+        const buffer = Buffer.from(base64, 'base64');
         let uploaddata = await uploadTmpImage(buffer);
+        setTempImage(uploaddata?.key);
         const s3ObjectKey = uploaddata?.key;
-        if(s3ObjectKey){
-          const compareFace = await compareFaces(s3ObjectKey);
+        if (s3ObjectKey) {
+          const ss = await compareFaces(s3ObjectKey);
         }
-       
       } catch (error) {
         console.error('Error capturing image:', error);
+        setIsCameraOpen(false);
       }
     }
   };
-  const uploadTmpImage = async (buffer) => {
+  const uploadTmpImage = async buffer => {
     try {
-      let employeeNumber = faceData.emp_id;
+      let employeeNumber = empyId;
       const rekognitionParams = {
         Image: {Bytes: buffer},
         Attributes: ['ALL'],
@@ -92,31 +90,35 @@ const FaceLogin = ({route}) => {
           message:
             'Multiple faces detected. Please ensure only one face is in the image for KYC verification.',
           type: 'danger',
-          duration: 3000,
+          duration: 4000,
         });
+        setIsCameraOpen(false);
         return;
       }
+
       if (rekognitionResponse.FaceDetails.length === 0) {
         showMessage({
           message: 'No human faces detected. Upload aborted',
           type: 'danger',
-          duration: 3000,
+          duration: 4000,
         });
-
+        setIsCameraOpen(false);
         return;
       }
+
       if (facesWithEyeContact.length === 0) {
         showMessage({
           message:
             'No front-facing faces with eye contact detected. Upload aborted.',
           type: 'danger',
-          duration: 3000,
+          duration: 4000,
         });
+        setIsCameraOpen(false);
         return;
       }
       const params = {
         Bucket: AWS_S3_BUCKET,
-        Key: `hrjee_face_login/${employeeNumber}.jpg`,
+        Key: `hrjee_face_kyc/${employeeNumber}.jpg`,
         Body: buffer,
         ContentType: 'image/jpeg',
       };
@@ -125,8 +127,38 @@ const FaceLogin = ({route}) => {
       return uploadResponse;
     } catch (error) {
       console.error('S3 Upload Error:', error);
+      setIsCameraOpen(false);
     }
   };
+
+  const punchInFaceKyc = async (s3ObjectKey) => {
+    const token = await AsyncStorage.getItem('TOKEN');
+    let data = JSON.stringify({
+      face_punchin_kyc: s3ObjectKey,
+    });
+    console.log(data,'data')
+
+    let config = {
+      method: 'post',
+      maxBodyLength: Infinity,
+      url: `${BASE_URL}/user/punchIn/image`,
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${token}`,
+      },
+      data: data,
+    };
+
+    axios
+      .request(config)
+      .then(response => {
+        console.log(JSON.stringify(response.data));
+      })
+      .catch(error => {
+        console.log(error);
+      });
+  };
+
   const compareFaces = async s3ObjectKey => {
     const params = {
       SourceImage: {
@@ -138,7 +170,7 @@ const FaceLogin = ({route}) => {
       TargetImage: {
         S3Object: {
           Bucket: AWS_S3_BUCKET,
-          Name: faceData.faceImage,
+          Name: face_kyc_img,
         },
       },
       SimilarityThreshold: 90,
@@ -150,42 +182,39 @@ const FaceLogin = ({route}) => {
           err.message ===
           'Requested image should either contain bytes or s3 object.'
         ) {
-          navigation.goBack();
           showMessage({
             message: 'Keep Your Face front to the camera',
             type: 'danger',
-            duration: 3000,
+            duration: 4000,
           });
+          setIsCameraOpen(false);
         } else if (err.message === 'Request has invalid parameters') {
-          navigation.goBack();
+          setIsCameraOpen(false);
           showMessage({
             message: 'Keep Your Face front to the camera',
             type: 'danger',
-            duration: 3000,
+            duration: 4000,
           });
         } else {
-          navigation.goBack();
           showMessage({
             message: err.message,
             type: 'danger',
-            duration: 3000,
+            duration: 4000,
           });
+          setIsCameraOpen(false);
         }
       } else if (data?.UnmatchedFaces.length > 0) {
-        navigation.goBack();
         showMessage({
-          message: 'Face do not match',
+          message: 'Employee face does not match the registered data',
           type: 'danger',
-          duration: 3000,
+          duration: 4000,
         });
+      
+        setIsCameraOpen(false);
       } else {
-        AsyncStorage.setItem('TOKEN', faceData.token);
-        showMessage({
-          message: 'User face matched successfully.',
-          type: 'success',
-          duration: 5000,
-        });
-        navigation.navigate('MyTabbar');
+        punchInFaceKyc(s3ObjectKey)
+        punchout();
+        setIsCameraOpen(false);
       }
     });
   };
@@ -196,19 +225,20 @@ const FaceLogin = ({route}) => {
   };
   return (
     <View style={styles.container}>
-      <RNCamera
-        ref={cameraRef}
-        style={{
-          flex: 1,
-          justifyContent: 'flex-end',
-          alignItems: 'center',
-          width: '100%',
-          height: '80%',
-        }}
-        type={RNCamera.Constants.Type.front}
-        captureAudio={false}
-        onCameraReady={takePicture}>
-         {isCameraOpen && (
+      {isCameraOpen && (
+        <RNCamera
+          ref={cameraRef}
+          style={{
+            flex: 1,
+            justifyContent: 'flex-end',
+            alignItems: 'center',
+            width: '100%',
+            height: '80%',
+          }}
+          type={RNCamera.Constants.Type.front}
+          captureAudio={false}
+          onCameraReady={takePicture}>
+          {isCameraOpen && (
             <View style={styles.progressContainer}>
               <AnimatedCircularProgress
                 size={150}
@@ -230,7 +260,8 @@ const FaceLogin = ({route}) => {
               </AnimatedCircularProgress>
             </View>
           )}
-      </RNCamera>
+        </RNCamera>
+      )}
     </View>
   );
 };
@@ -275,4 +306,4 @@ const styles = StyleSheet.create({
   progressBar: {height: 12, borderRadius: 6, backgroundColor: '#444'},
 });
 
-export default FaceLogin;
+export default PunchOutFace;

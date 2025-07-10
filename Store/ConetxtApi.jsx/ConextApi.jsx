@@ -20,6 +20,7 @@ const ConextApi = ({children}) => {
   const [isEnabled, setIsEnabled] = useState(false);
   const [facePermission,setFacePermission]=useState('');
   const [empyId,setEmpyId]=useState();
+  const  [empId,setEmpId]=useState('')
   const [empyName,setEmpyName]=useState('')
   const [face_kyc_img, setFace_kyc_img] = useState();
   const [requestAttendance,setRequestAttendance]=useState();
@@ -216,6 +217,7 @@ const ConextApi = ({children}) => {
         setCompOff(CompOffs);
         setGetProfileApiData(response?.data?.data);
         setEmpyId(response?.data?.data?.details?.user_id);
+        setEmpId(response?.data?.data?.details?.emp_id);
         setEmpyName(response?.data?.data?.name);
         let facekycPermission=response?.data?.data?.details?.face_recognition
         let facekycAdd=response?.data?.data?.details?.face_kyc
@@ -359,7 +361,8 @@ axios.request(config)
         activeLog,
         allowfacenex,
         punchInRadius,
-        activeLocation
+        activeLocation,
+        empId
       }}>
       {children}
     </ThemeContext.Provider>

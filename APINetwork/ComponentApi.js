@@ -251,8 +251,8 @@ export const AttendanceRequest=(url,data,token,form)=>{
   let item = axiosPost(url,data,token,form);
   return item
 }
-export const faceuploadKyc=(url,data,token,form)=>{
-  let item = axiosPost(url,data,token,form);
+export const faceuploadKyc=(url,data,token)=>{
+  let item = axiosPost(url,data,token);
   return item
 }
 export const faceLogin=(url,data,token,form)=>{

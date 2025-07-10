@@ -1,5 +1,5 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import React, {useEffect, useState} from 'react';
+import React, {useContext, useEffect, useState} from 'react';
 import {FlatList, Image, StyleSheet, View} from 'react-native';
 import {
   Provider as PaperProvider,
@@ -10,9 +10,11 @@ import {
 } from 'react-native-paper';
 import {BASE_URL} from '../../utils';
 import {asignTask} from '../../APINetwork/ComponentApi';
+import { ThemeContext } from '../../Store/ConetxtApi.jsx/ConextApi';
 
 const Shift = () => {
   const [list, setList] = useState([]);
+  const {empId}=useContext(ThemeContext)
 
   const getShift = async () => {
     const token = await AsyncStorage.getItem('TOKEN');
@@ -36,7 +38,10 @@ const Shift = () => {
           <Title style={styles.title}>📅 {shift.shift_name}</Title>
           <Text style={styles.date}>Date: {shift.date}</Text>
           <Divider style={styles.divider} />
-
+          <View style={styles.row}>
+            <Text style={styles.label}>Employee ID:</Text>
+            <Text style={styles.value}>{empId}</Text>
+          </View>
           <View style={styles.row}>
             <Text style={styles.label}>🕘 Start Time:</Text>
             <Text style={styles.value}>{shift.start_time}</Text>
@@ -49,6 +54,7 @@ const Shift = () => {
             <Text style={styles.label}>⏰ Half Day Login:</Text>
             <Text style={styles.value}>{shift.half_day_login}</Text>
           </View>
+        
         </Card.Content>
       </Card>
 

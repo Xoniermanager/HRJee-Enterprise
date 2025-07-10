@@ -9,6 +9,7 @@ import MyDrawer from '../MyDrawer/MyDrawer';
 import { ThemeContext } from '../../Store/ConetxtApi.jsx/ConextApi';
 import MyStack from '../MyStack/MyStack';
 import MyStackTab from '../MyStack/MyStackTab';
+import MyStackDrawer from '../MyStack/MyStackDrawer';
 
 const MyTabbar = ({ route }) => {
   const Tab = createBottomTabNavigator();
@@ -116,7 +117,7 @@ const MyTabbar = ({ route }) => {
       />
        <Tab.Screen
         name="MyDrawer"
-        component={MyDrawer}
+        component={MyStackDrawer}
         options={{
           unmountOnBlur: true,
           tabBarIcon: ({ focused }) => (

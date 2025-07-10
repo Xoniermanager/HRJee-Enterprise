@@ -296,13 +296,13 @@ const Account = () => {
               alignSelf: 'center',
               marginTop: responsiveHeight(1),
               borderTopLeftRadius: 10,
-              borderBottomLeftRadius: expandedbank == true ? 0 : 10,
+              // borderBottomLeftRadius: expandedbank == true ? 0 : 10,
               borderTopRightRadius: 10,
               borderBottomRightRadius: 10,
             }}>
             <View
               style={{
-                marginBottom: expandedbank == true ? 0 : 8,
+                marginBottom:  8,
                 borderWidth: 1,
                 borderColor: currentTheme.background_v2,
                 width: '95%',
@@ -310,9 +310,9 @@ const Account = () => {
                 opacity: 1,
                 elevation: 10,
                 borderTopLeftRadius: 50,
-                borderBottomLeftRadius: expandedbank == true ? 0 : 50,
+                borderBottomLeftRadius:  50,
                 borderTopRightRadius: 50,
-                borderBottomRightRadius: expandedbank == true ? 0 : 50,
+                borderBottomRightRadius:  50,
                 padding: 15,
                 flexDirection: 'row',
                 justifyContent: 'space-between',
@@ -332,6 +332,17 @@ const Account = () => {
                 value={isEnabled}
               />
             </View>
+          </View>
+
+          <View
+            style={{
+              alignSelf: 'center',
+              marginTop: responsiveHeight(1),
+              borderTopLeftRadius: 10,
+              borderBottomLeftRadius: expandedbank == true ? 0 : 10,
+              borderTopRightRadius: 10,
+              borderBottomRightRadius: 10,
+            }}>
             <View
               style={{
                 marginBottom: expandedbank == true ? 0 : 8,

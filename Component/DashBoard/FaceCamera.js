@@ -11,9 +11,12 @@ import {BASE_URL} from '../../utils';
 import {faceuploadKyc} from '../../APINetwork/ComponentApi';
 import {AnimatedCircularProgress} from 'react-native-circular-progress';
 import {RNCamera} from 'react-native-camera';
+import ImageResizer from '@bam.tech/react-native-image-resizer';
+import axios from 'axios';
 const {width, height} = Dimensions.get('window');
 const FaceCamera = ({punchIn}) => {
-  const [tempImage,setTempImage]=useState('')
+  const [tempImage, setTempImage] = useState('');
+  const [kycExists, setKycExists] = useState(false);
   const s3 = new S3({
     accessKeyId: AWS_ACCESS_KEY,
     secretAccessKey: AWS_SECRET_KEY,
@@ -39,37 +42,99 @@ const FaceCamera = ({punchIn}) => {
   useEffect(() => {
     if (isCameraOpen) {
       let progress = 0;
-  clearInterval(progressIntervalRef.current);
-  progressIntervalRef.current = setInterval(() => {
-    progress = Math.min(progress + 0.05, 1);
-    setMatchProgress(progress);
-  },300);
-     
-
-      // return () => clearInterval(progressInterval);
+      clearInterval(progressIntervalRef.current);
+      progressIntervalRef.current = setInterval(() => {
+        progress = Math.min(progress + 0.05, 1);
+        setMatchProgress(progress);
+      }, 300);
     }
   }, [isCameraOpen]);
-
-
 
   const takePicture = async () => {
     if (cameraRef.current) {
       try {
         const photo = await cameraRef.current.takePictureAsync({quality: 0.5});
-        console.log(face_kyc_img,photo)
+        const resizedImage = await ImageResizer.createResizedImage(
+          photo.uri,
+          640,
+          480,
+          'JPEG',
+          70,
+        );
+        const base64 = await RNFS.readFile(resizedImage.uri, 'base64');
+        const buffer = Buffer.from(base64, 'base64');
         if (face_kyc_img == null) {
-          let uploaddata = await uploadFirstImage(photo.uri);
-          const s3ObjectKey = uploaddata.key;
-          uploadFaceKYC(s3ObjectKey);
+          const data = await uploadTmpImage(buffer);
+          const listParams = {
+            Bucket: AWS_S3_BUCKET,
+            Prefix: 'kyc-registration/',
+          };
+          const s3Response = await s3.listObjectsV2(listParams).promise();
+          const kycImages = s3Response.Contents || [];
+          console.log(data.key, 'data.key');
+          console.log(kycImages, 'kycImages');
+
+          let matchFound = false;
+          const comparePromises = kycImages.map(async image => {
+            const compareParams = {
+              SourceImage: {
+                S3Object: {
+                  Bucket: AWS_S3_BUCKET,
+                  Name: data.key,
+                },
+              },
+              TargetImage: {
+                S3Object: {
+                  Bucket: AWS_S3_BUCKET,
+                  Name: image.Key,
+                },
+              },
+              SimilarityThreshold: 90,
+            };
+
+            try {
+              const comparisonResult = await rekognition
+                .compareFaces(compareParams)
+                .promise();
+              if (comparisonResult.FaceMatches.length > 0 && !matchFound) {
+                matchFound = true;
+                showMessage({
+                  message:
+                    'KYC already registered for this employee. Cannot register again.',
+                  type: 'warning',
+                  duration: 4000,
+                });
+                setIsCameraOpen(false);
+                setKycModal(false);
+              }
+            } catch (err) {
+              console.log('Comparison error:', err);
+            }
+          });
+
+          await Promise.all(comparePromises);
+          if (!matchFound) {
+            let uploaddata = await uploadFirstImage(buffer);
+            if (uploaddata) {
+              const s3ObjectKey = uploaddata.key;
+              uploadFaceKYC(s3ObjectKey);
+            }
+          }
         } else {
-          let uploaddata = await uploadTmpImage(photo.uri);
-          console.log(uploaddata,'uploaddata')
-          setTempImage(uploaddata?.key);
+          let uploaddata = await uploadTmpImage(buffer);
           const s3ObjectKey = uploaddata?.key;
-          const ss = await compareFaces(s3ObjectKey);
+          setTempImage(s3ObjectKey);
+          if (s3ObjectKey) {
+            const ss = await compareFaces(s3ObjectKey);
+          }
         }
       } catch (error) {
         console.error('Error capturing image:', error);
+        showMessage({
+          message: 'Error capturing image. Please try again.',
+          type: 'danger',
+          duration: 3000,
+        });
       }
     }
   };
@@ -92,21 +157,36 @@ const FaceCamera = ({punchIn}) => {
       });
     }
   };
-  const punchInFaceKyc = async () => {
+  const punchInFaceKyc = async (s3ObjectKey) => {
     const token = await AsyncStorage.getItem('TOKEN');
-    const url = `${BASE_URL}/user/punchIn/image`;
-    let form = 0;
-    const data = {
-      face_punchin_kyc: tempImage,
+    let data = JSON.stringify({
+      face_punchin_kyc: s3ObjectKey,
+    });
+    console.log(data,'data')
+
+    let config = {
+      method: 'post',
+      maxBodyLength: Infinity,
+      url: `${BASE_URL}/user/punchIn/image`,
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${token}`,
+      },
+      data: data,
     };
-    const response = await faceuploadKyc(url, data, token, form);
-    console.log(response.data)
+
+    axios
+      .request(config)
+      .then(response => {
+        console.log(JSON.stringify(response.data));
+      })
+      .catch(error => {
+        console.log(error);
+      });
   };
-  const uploadFirstImage = async uri => {
+  const uploadFirstImage = async buffer => {
     try {
       let employeeNumber = empyId;
-      const fileData = await RNFS.readFile(uri, 'base64');
-      const buffer = Buffer.from(fileData, 'base64');
       const rekognitionParams = {
         Image: {Bytes: buffer},
         Attributes: ['ALL'],
@@ -168,14 +248,13 @@ const FaceCamera = ({punchIn}) => {
       console.log('✅ Upload successful!', uploadResponse);
       return uploadResponse;
     } catch (error) {
+      setIsCameraOpen(false);
       console.error('S3 Upload Error:', error);
     }
   };
-  const uploadTmpImage = async uri => {
+  const uploadTmpImage = async buffer => {
     try {
       let employeeNumber = empyId;
-      const fileData = await RNFS.readFile(uri, 'base64');
-      const buffer = Buffer.from(fileData, 'base64');
       const rekognitionParams = {
         Image: {Bytes: buffer},
         Attributes: ['ALL'],
@@ -232,6 +311,7 @@ const FaceCamera = ({punchIn}) => {
       console.log('✅ Upload successful!', uploadResponse);
       return uploadResponse;
     } catch (error) {
+      setIsCameraOpen(false);
       console.error('S3 Upload Error:', error);
     }
   };
@@ -287,9 +367,9 @@ const FaceCamera = ({punchIn}) => {
         });
         setIsCameraOpen(false);
       } else {
+        punchInFaceKyc(s3ObjectKey);
         punchIn();
         setIsCameraOpen(false);
-       
       }
     });
   };
@@ -309,7 +389,6 @@ const FaceCamera = ({punchIn}) => {
             alignItems: 'center',
             width: '100%',
             height: '80%',
-
           }}
           type={RNCamera.Constants.Type.front}
           captureAudio={false}
@@ -324,23 +403,20 @@ const FaceCamera = ({punchIn}) => {
                 backgroundColor="#e0e0e0"
                 duration={300}
                 rotation={0}>
-                {fill => (
-                   Math.round(fill) !== 100 ? (
+                {fill =>
+                  Math.round(fill) !== 100 ? (
                     <Text style={styles.progressText}>
-                    {Math.round(fill)}% Recognised
-                  </Text>
-                  ) : (
-                    <Text style={styles.progressText}>
-                      Please Wait
+                      {Math.round(fill)}% Recognised
                     </Text>
+                  ) : (
+                    <Text style={styles.progressText}>Please Wait</Text>
                   )
-                )}
+                }
               </AnimatedCircularProgress>
             </View>
           )}
         </RNCamera>
       )}
-     
     </View>
   );
 };
@@ -380,9 +456,9 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     color: '#fff',
     textAlign: 'center',
+    paddingHorizontal: 10,
   },
   progressBar: {height: 12, borderRadius: 6, backgroundColor: '#444'},
 });
 
 export default FaceCamera;
-

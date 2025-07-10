@@ -92,7 +92,7 @@ import { BASE_URL } from '../../../utils';
                     height:Platform.OS=='ios'? responsiveHeight(20):null
                   }}>
                   <TextInput
-                    placeholder="Type Resignation"
+                    placeholder="Type withdrwan reason"
                     numberOfLines={6}
                     value={remark}
                     textAlignVertical={'top'}

@@ -53,6 +53,7 @@ import axios from 'axios';
 import BackgroundService from 'react-native-background-actions';
 import NotificationController from '../../PushNotification/NotificationController';
 import PullToRefresh from '../../PullToRefresh';
+import PunchOutFace from './PunchOutFace';
 const HomePage = () => {
   const navigation = useNavigation();
   const [monthDay, setMonth] = useState('');
@@ -66,6 +67,7 @@ const HomePage = () => {
   const [openPunchIn, setOpenPunchIn] = useState(false);
   const [openPunchOut, setOpenPunchOut] = useState(false);
   const [reasonText, setReasonText] = useState('');
+  const [chooseFace, setChooseFace] = useState(1);
   const [breakModal, setBreakModal] = useState(false);
   const {
     toggleTheme,
@@ -92,7 +94,7 @@ const HomePage = () => {
     activeLog,
     allowfacenex,
     punchInRadius,
-    activeLocation
+    activeLocation,
   } = useContext(ThemeContext);
   const [getleavetypeapidata, setGetLeaveTypeApiData] = useState([]);
   const [loader, setLoader] = useState(false);
@@ -641,6 +643,7 @@ const HomePage = () => {
   };
 
   const handlePunchIn = async () => {
+    setChooseFace(1);
     if (facePermission == 0) {
       punch_IN();
     } else if (face_kyc_img == null) {
@@ -649,7 +652,18 @@ const HomePage = () => {
       handleOpenCamera();
     }
   };
-  
+  const handlePunchOut = async () => {
+    setChooseFace(0);
+    console.log(facePermission,'facePermission')
+    if (facePermission == 0) {
+      punch_Out_EMP();
+    } else if (face_kyc_img == null) {
+      setKycModal(true);
+    } else {
+      handleOpenCamera();
+    }
+  };
+
   const punch_IN = async () => {
     setloading(true);
     GetLocation.getCurrentPosition({
@@ -659,20 +673,20 @@ const HomePage = () => {
       .then(async location => {
         const lat = parseFloat(location.latitude);
         const long = parseFloat(location.longitude);
-        const currentLocation = { latitude: lat, longitude: long };
+        const currentLocation = {latitude: lat, longitude: long};
         const dis = getDistance(activeLocation, currentLocation); // distance in meters
         const radius = punchInRadius;
         const remainingDistance = Math.abs(dis - radius);
-  
+
         const urlAddress = `https://maps.googleapis.com/maps/api/geocode/json?latlng=${lat},${long}&key=AIzaSyCAdzVvYFPUpI3mfGWUTVXLDTerw1UWbdg`;
         const address = await axios.get(urlAddress);
-  
+
         const body = {
           punch_in_latitude: lat,
           punch_in_longitude: long,
           punch_in_address: address.data?.results[0]?.formatted_address,
         };
-  
+
         // ✅ Radius condition
         if (radius === 0 || dis <= radius) {
           setDisabledBtn(true);
@@ -684,7 +698,7 @@ const HomePage = () => {
             if (response?.data?.status) {
               AsyncStorage.setItem(
                 'oldLocation',
-                JSON.stringify(currentLocation)
+                JSON.stringify(currentLocation),
               );
               setKycModal(false);
               user_details();
@@ -725,9 +739,10 @@ const HomePage = () => {
           }
         } else {
           setloading(false);
-          const  dis= remainingDistance >= 1000
-          ? `${(remainingDistance / 1000).toFixed(2)} kilometers`
-          : `${remainingDistance} meters`;
+          const dis =
+            remainingDistance >= 1000
+              ? `${(remainingDistance / 1000).toFixed(2)} kilometers`
+              : `${remainingDistance} meters`;
           showMessage({
             message: `You are out of allowed punch-in range. ${dis}  away.`,
             type: 'danger',
@@ -736,7 +751,7 @@ const HomePage = () => {
         }
       })
       .catch(error => {
-        const { code, message } = error;
+        const {code, message} = error;
         setloading(false);
         showMessage({
           message: message,
@@ -745,7 +760,7 @@ const HomePage = () => {
         });
       });
   };
-  
+
   const punch_Out_EMP = async punchOutConfirm => {
     setloading(true);
     GetLocation.getCurrentPosition({
@@ -755,11 +770,11 @@ const HomePage = () => {
       .then(async location => {
         var lat = parseFloat(location.latitude);
         var long = parseFloat(location.longitude);
-        const currentLocation = { latitude: lat, longitude: long };
+        const currentLocation = {latitude: lat, longitude: long};
         const dis = getDistance(activeLocation, currentLocation); // distance in meters
         const radius = punchInRadius;
         const remainingDistance = Math.abs(dis - radius);
-  
+
         const urlAddress = `https://maps.googleapis.com/maps/api/geocode/json?latlng=${lat},${long}&key=AIzaSyCAdzVvYFPUpI3mfGWUTVXLDTerw1UWbdg`;
         const address = await axios.get(urlAddress);
         var body = {
@@ -769,7 +784,7 @@ const HomePage = () => {
           attendance_id: attendanceId,
           ...(punchOutConfirm && {force: true}),
         };
-    
+
         if (radius === 0 || dis <= radius) {
           setDisabledBtn(true);
           try {
@@ -817,16 +832,16 @@ const HomePage = () => {
           }
         } else {
           setloading(false);
-          const  dis= remainingDistance >= 1000
-          ? `${(remainingDistance / 1000).toFixed(2)} kilometers`
-          : `${remainingDistance} meters`;
+          const dis =
+            remainingDistance >= 1000
+              ? `${(remainingDistance / 1000).toFixed(2)} kilometers`
+              : `${remainingDistance} meters`;
           showMessage({
             message: `You are out of allowed punch-out range. ${dis}  away.`,
             type: 'danger',
             duration: 4000,
           });
         }
-       
       })
       .catch(error => {
         const {code, message} = error;
@@ -1109,7 +1124,7 @@ const HomePage = () => {
 
       const response = await AttendanceRequest(url, data, token, 0);
       setLoader(false);
-        setModalRequest(false);
+      setModalRequest(false);
       if (response?.data?.status) {
         setReasonText('');
         showMessage({
@@ -1350,7 +1365,13 @@ const HomePage = () => {
     return <HomeSkeleton />;
   }
   if (isCameraOpen) {
-    return <FaceCamera punchIn={punch_IN} />;
+    return chooseFace == 0 ? 
+    (
+      <PunchOutFace punchout={punch_Out_EMP} />
+    ):
+    (
+      <FaceCamera punchIn={punch_IN} />
+    );
   } else {
     return (
       <View style={{flex: 1, backgroundColor: currentTheme.background}}>
@@ -1498,7 +1519,7 @@ const HomePage = () => {
                     </View>
                     {allowfacenex == 0 ? (
                       <TouchableOpacity
-                        onPress={() => handleLogout()}
+                        onPress={() => handlePunchOut()}
                         style={{
                           backgroundColor: currentTheme.buttonText,
                           borderRadius: 20,
@@ -2567,10 +2588,10 @@ const styles = StyleSheet.create({
     // backgroundColor: 'rgba(0,0,0,0.5)',
     // width: '100%',
     flex: 1,
-  backgroundColor: 'rgba(0, 0, 0, 0.5)', 
-  justifyContent: 'center',
-  alignItems: 'center',
-  width: '100%',
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    width: '100%',
   },
   modalContent: {
     width: '80%',

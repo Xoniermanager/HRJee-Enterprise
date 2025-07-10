@@ -12,7 +12,7 @@ import {
   Platform,
   Linking,
   Button,
-  ActivityIndicator
+  ActivityIndicator,
 } from 'react-native';
 import React, {useState, useEffect, useContext} from 'react';
 import {
@@ -51,8 +51,6 @@ const Attendance = () => {
   const [dailyDate, setDailyDate] = useState();
   const [currentMonth, setCurrentMonth] = useState(moment().format('MM'));
   const [monthList, setMonthList] = useState();
-
-
 
   useEffect(() => {
     const initialMonth = moment().format('MM');
@@ -140,7 +138,7 @@ const Attendance = () => {
       setLoaderModal(false);
     }
   }, [loading]);
-  console.log(loading,'loading')
+  console.log(loading, 'loading');
   useEffect(() => {
     getTodayAttendance();
     attendance_by_month();
@@ -325,156 +323,156 @@ const Attendance = () => {
       });
     }
   };
-  const presentDates = monthList?.attendanceDetails?.map(item => item.punch_in.split(' ')[0]);
-  const absentDates = monthList?.absentDetails?.map(item => item.date.split(' ')[0]);
-  const holidayDates = monthList?.holidayDetails?.map(item => item.date.split(' ')[0]);
+  const presentDates = monthList?.attendanceDetails?.map(
+    item => item.punch_in.split(' ')[0],
+  );
+ 
+  const absentDates = monthList?.absentDetails?.map(
+    item => item.date.split(' ')[0],
+  );
+  const holidayDates = monthList?.holidayDetails?.map(
+    item => item.date.split(' ')[0],
+  );
   const leaveDetails = monthList?.leaveDetails || [];
-  // const outdutyates = ['2025-04-23',];
 
   const markedDates = {};
-      console.log(presentDates,'presentDates')
   presentDates?.forEach(date => {
-    markedDates[date] = { status: 'present' };
-  });
-  absentDates?.forEach(date => {
-    markedDates[date] = { status: 'absent' };
-  });
-  holidayDates?.forEach(date => {
-    markedDates[date] = { status: 'holiday' };
-  });
-  leaveDetails?.forEach(leave => {
-    if (leave.is_half_day === 0) {
-      const startDate = moment(leave.from);
-      const endDate = moment(leave.to);
-  
-      for (
-        let date = moment(startDate);
-        date.diff(endDate, 'days') <= 0;
-        date.add(1, 'days')
-      ) {
-        const formattedDate = date.format('YYYY-MM-DD');
-        markedDates[formattedDate] = { status: 'leave' };
-      }
-    }
-  });
-  leaveDetails?.forEach(leave => {
-    if (leave.is_half_day === 1) {
-      const startDate = moment(leave.from);
-      const endDate = moment(leave.to);
-  
-      for (
-        let date = moment(startDate);
-        date.diff(endDate, 'days') <= 0;
-        date.add(1, 'days')
-      ) {
-        const formattedDate = date.format('YYYY-MM-DD');
-        markedDates[formattedDate] = { status: 'halfday' };
-      }
-    }
+    markedDates[date] = {status: 'present'};
   });
 
-  // outdutyates?.forEach(date => {
-  //   markedDates[date] = { status: 'outduty' };
-  // });
- 
+  absentDates?.forEach(date => {
+    markedDates[date] = {status: 'absent'};
+  });
+  holidayDates?.forEach(date => {
+    markedDates[date] = {status: 'holiday'};
+  });
+  leaveDetails?.forEach(leave => {
+    if (leave.is_half_day == 0) {
+      const startDate = moment(leave.from);
+      const endDate = moment(leave.to);
+
+      for (
+        let date = moment(startDate);
+        date.diff(endDate, 'days') <= 0;
+        date.add(1, 'days')
+      ) {
+        const formattedDate = date.format('YYYY-MM-DD');
+        markedDates[formattedDate] = {status: 'leave'};
+      }
+    }
+  });
+  leaveDetails?.forEach(leave => {
+    if (leave.is_half_day == 1) {
+      const startDate = moment(leave.from);
+      const endDate = moment(leave.to);
+
+      for (
+        let date = moment(startDate);
+        date.diff(endDate, 'days') <= 0;
+        date.add(1, 'days')
+      ) {
+        const formattedDate = date.format('YYYY-MM-DD');
+        markedDates[formattedDate] = {status: 'halfday'};
+      }
+    }
   
+  });
+  console.log(markedDates,'markedDates')
   return (
     <SafeAreaView
       style={[
         styles.container,
         {backgroundColor: currentTheme.attendance_background_v2},
       ]}>
-    
-        <ScrollView style={{marginBottom:80}}> 
+      <ScrollView style={{marginBottom: 80}}>
         <View
-        style={{
-          marginTop: 15,
-        }}>
-        <View
-          style={{marginTop: 20, alignSelf: 'center', flexDirection: 'row'}}>
-          <Text style={[styles.name, {color: currentTheme.text}]}>
-            Attendance
-          </Text>
-          <Switch
-            style={{marginLeft: 5}}
-            trackColor={{false: '#767577', true: '#81b0ff'}}
-            thumbColor={isEnabled ? '#fff' : '#f4f3f4'}
-            ios_backgroundColor="#3e3e3e"
-            onValueChange={toggleSwitch}
-            value={isEnabled}
-          />
-        </View>
-      </View>
-        {!isEnabled ? (
-        <>
+          style={{
+            marginTop: 15,
+          }}>
           <View
-            style={{
-              width: '100%',
-              height: '100%',
-              backgroundColor: currentTheme.background,
-              borderTopLeftRadius: 40,
-              marginTop: isEnabled ? responsiveHeight(12) : responsiveHeight(3),
-              borderTopRightRadius: 40,
-            }}>
-            <View style={{marginHorizontal: 15}}>
-              <Calendar
-              theme={{
-                selectedDayBackgroundColor: currentTheme.text,
-                todayTextColor: currentTheme.text,
-                arrowColor: currentTheme.text,
-              }}
-              dayComponent={({date, state}) => {
-                const isToday = moment().format('YYYY-MM-DD') === date.dateString;
-                const isSunday = moment(date.dateString).day() === 0;
-                const mark = markedDates[date.dateString];
-                let backgroundColor = '#fff';
-                let textColor = '#000';
-                if (mark?.status === 'holiday' || isSunday) {
-                  console.log(mark?.status)
-                  backgroundColor = 'blue';
-                  textColor = '#fff';
-                } else if (mark?.status === 'present') {
-                  backgroundColor = 'green';
-                  textColor = '#fff';
-                } else if (mark?.status === 'absent') {
-                  backgroundColor = 'red';
-                  textColor = '#fff';
-                }
-                else if (mark?.status === 'leave') {
-                  backgroundColor = 'orange';
-                  textColor = '#fff';
-                }
-                else if (mark?.status === 'halfday') {
-                  backgroundColor = 'pink';
-                  textColor = '#fff';
-                }
-                else if (mark?.status === 'outduty') {
-                  backgroundColor = 'peachpuff';
-                  textColor = '#000';
-                }
-            return (
-                  <TouchableOpacity
-                    style={{
-                      width:responsiveWidth(10.5),
-                      height:responsiveScreenHeight(5.5),
-                      justifyContent: 'center',
-                      alignItems: 'center',
-                      borderWidth: 1,
-                      borderColor: '#ccc',
-                      borderRadius: 8,
-                      backgroundColor: backgroundColor,
-                    
-                    }}
-                    onPress={() => onDayPress(date)}>
-                    <Text
-                      style={{
-                        color: textColor,
-                        fontWeight: '600',
-                      }}>
-                      {date.day}
-                    </Text>
-                  </TouchableOpacity>
-                );
+            style={{marginTop: 20, alignSelf: 'center', flexDirection: 'row'}}>
+            <Text style={[styles.name, {color: currentTheme.text}]}>
+              Attendance
+            </Text>
+            <Switch
+              style={{marginLeft: 5}}
+              trackColor={{false: '#767577', true: '#81b0ff'}}
+              thumbColor={isEnabled ? '#fff' : '#f4f3f4'}
+              ios_backgroundColor="#3e3e3e"
+              onValueChange={toggleSwitch}
+              value={isEnabled}
+            />
+          </View>
+        </View>
+        {!isEnabled ? (
+          <>
+            <View
+              style={{
+                width: '100%',
+                height: '100%',
+                backgroundColor: currentTheme.background,
+                borderTopLeftRadius: 40,
+                marginTop: isEnabled
+                  ? responsiveHeight(12)
+                  : responsiveHeight(3),
+                borderTopRightRadius: 40,
+              }}>
+              <View style={{marginHorizontal: 15}}>
+                <Calendar
+                  theme={{
+                    selectedDayBackgroundColor: currentTheme.text,
+                    todayTextColor: currentTheme.text,
+                    arrowColor: currentTheme.text,
+                  }}
+                  dayComponent={({date, state}) => {
+                    const isToday =
+                      moment().format('YYYY-MM-DD') === date.dateString;
+                    const isSunday = moment(date.dateString).day() === 0;
+                    const mark = markedDates[date.dateString];
+                    let backgroundColor = '#fff';
+                    let textColor = '#000';
+                    if (mark?.status === 'holiday') {
+                      console.log(mark?.status);
+                      backgroundColor = 'blue';
+                      textColor = '#fff';
+                    } else if (mark?.status === 'present') {
+                      backgroundColor = 'green';
+                      textColor = '#fff';
+                    } else if (mark?.status === 'absent') {
+                      backgroundColor = 'red';
+                      textColor = '#fff';
+                    } else if (mark?.status === 'leave') {
+                      backgroundColor = 'orange';
+                      textColor = '#fff';
+                    } else if (mark?.status === 'halfday') {
+                      backgroundColor = 'pink';
+                      textColor = '#fff';
+                    } else if (mark?.status === 'outduty') {
+                      backgroundColor = 'peachpuff';
+                      textColor = '#000';
+                    }
+                    return (
+                      <TouchableOpacity
+                        style={{
+                          width: responsiveWidth(10.5),
+                          height: responsiveScreenHeight(5.5),
+                          justifyContent: 'center',
+                          alignItems: 'center',
+                          borderWidth: 1,
+                          borderColor: '#ccc',
+                          borderRadius: 8,
+                          backgroundColor: backgroundColor,
+                        }}
+                        onPress={() => onDayPress(date)}>
+                        <Text
+                          style={{
+                            color: textColor,
+                            fontWeight: '600',
+                          }}>
+                          {date.day}
+                        </Text>
+                      </TouchableOpacity>
+                    );
                   }}
                   style={[
                     styles.calendar,
@@ -482,539 +480,539 @@ const Attendance = () => {
                   ]}
                   onMonthChange={handleMonthChange}
                   markingType={'multi-dot'}
-/>
-              <Modal
-                animationType="slide"
-                transparent={true}
-                visible={modalVisible}
-                onRequestClose={() => setModalVisible(false)}>
-                <View style={styles.modalContainer}>
-                  <View
-                    style={[
-                      styles.modalView,
-                      {backgroundColor: currentTheme.modalBack},
-                    ]}>
-                    {/* Header */}
+                />
+                <Modal
+                  animationType="slide"
+                  transparent={true}
+                  visible={modalVisible}
+                  onRequestClose={() => setModalVisible(false)}>
+                  <View style={styles.modalContainer}>
                     <View
-                      style={{
-                        flexDirection: 'row',
-                        justifyContent: 'space-between',
-                        alignItems: 'center',
-                      }}>
-                      <Text
+                      style={[
+                        styles.modalView,
+                        {backgroundColor: currentTheme.modalBack},
+                      ]}>
+                      {/* Header */}
+                      <View
                         style={{
-                          color: currentTheme.text,
-                          fontWeight: '500',
-                          fontSize: 18,
+                          flexDirection: 'row',
+                          justifyContent: 'space-between',
+                          alignItems: 'center',
                         }}>
-                        Attendance Details
-                      </Text>
-                      <TouchableOpacity onPress={() => setModalVisible(false)}>
-                        <Entypo
-                          name="circle-with-cross"
-                          size={30}
-                          color={currentTheme.text}
-                        />
-                      </TouchableOpacity>
-                    </View>
-
-                    {/* Divider */}
-                    <View
-                      style={{
-                        borderWidth: 0.5,
-                        marginVertical: 5,
-                        opacity: 0.3,
-                        borderColor: currentTheme.text,
-                      }}
-                    />
-
-                    {/* Selected Date */}
-                    <View
-                      style={{
-                        backgroundColor: currentTheme.background,
-                        alignSelf: 'flex-start',
-                        borderRadius: 10,
-                        marginVertical: 5,
-                      }}>
-                      <Text
-                        style={{
-                          color: currentTheme.text,
-                          padding: 5,
-                          marginHorizontal: 5,
-                        }}>
-                        {selectedDate}
-                      </Text>
-                    </View>
-
-                    {/* Divider */}
-                    <View
-                      style={{
-                        borderWidth: 0.5,
-                        marginVertical: 5,
-                        opacity: 0.3,
-                        borderColor: currentTheme.text,
-                      }}
-                    />
-
-                    {/* FlatList */}
-                    <FlatList
-                      data={dailyDate?.attendance || []}
-                      keyExtractor={(_, index) => index.toString()}
-                      renderItem={({item, index}) => (
-                        <View
+                        <Text
                           style={{
-                            marginVertical: 8,
-                            padding: 10,
-                            backgroundColor: currentTheme.background,
-                            borderRadius: 10,
+                            color: currentTheme.text,
+                            fontWeight: '500',
+                            fontSize: 18,
                           }}>
-                          <Text
-                            style={{
-                              color: currentTheme.text,
-                              fontWeight: '600',
-                              fontSize: 16,
-                              marginBottom: 8,
-                            }}>
-                            Shift {index + 1}
-                          </Text>
-
-                          <View
-                            style={{
-                              flexDirection: 'row',
-                              justifyContent: 'space-between',
-                            }}>
-                            <View>
-                              <Text
-                                style={{
-                                  color: currentTheme.text,
-                                  marginVertical: 5,
-                                }}>
-                                Punch In
-                              </Text>
-                              <Text
-                                style={{
-                                  color: currentTheme.text,
-                                  marginVertical: 5,
-                                }}>
-                                Punch Out
-                              </Text>
-                              <Text
-                                style={{
-                                  color: currentTheme.text,
-                                  marginVertical: 5,
-                                }}>
-                                Working Hours
-                              </Text>
-                            </View>
-                            <View>
-                              <Text
-                                style={{
-                                  color: currentTheme.text,
-                                  marginVertical: 5,
-                                }}>
-                                {item.punch_in ?? 'N/A'}
-                              </Text>
-                              <Text
-                                style={{
-                                  color: currentTheme.text,
-                                  marginVertical: 5,
-                                }}>
-                                {item.punch_out ?? 'N/A'}
-                              </Text>
-                              <Text
-                                style={{
-                                  color: currentTheme.text,
-                                  marginVertical: 5,
-                                }}>
-                                {item.total_working_hours ?? 'N/A'}
-                              </Text>
-                            </View>
-                          </View>
-                          <View
-                            style={{
-                              borderWidth: 0.5,
-                              marginVertical: 5,
-                              opacity: 0.3,
-                              borderColor: currentTheme.text,
-                            }}
-                          />
-                        </View>
-                      )}
-                      ListEmptyComponent={() => (
-                        <Text style={{color: currentTheme.text, marginTop: 20}}>
-                          No attendance data
+                          Attendance Details
                         </Text>
-                      )}
-                    />
-                  </View>
-                </View>
-              </Modal>
+                        <TouchableOpacity
+                          onPress={() => setModalVisible(false)}>
+                          <Entypo
+                            name="circle-with-cross"
+                            size={30}
+                            color={currentTheme.text}
+                          />
+                        </TouchableOpacity>
+                      </View>
 
-              {/* Status Section */}
-              <View
-                style={[
-                  styles.statusContainer,
-                  {backgroundColor: currentTheme.background_v2},
-                ]}>
-                <StatusItem
-                  color="green"
-                  text="Present"
-                  value={monthList?.totalPresent}
-                />
-                <StatusItem
-                  color="red"
-                  text="Absent"
-                  value={monthList?.totalAbsent}
-                />
-                <StatusItem
-                  color="orange"
-                  text="Leave"
-                  value={monthList?.totalLeave}
-                />
-                <StatusItem
-                  color="blue"
-                  text="Holiday"
-                  value={monthList?.totalHoliday}
-                />
-                <StatusItem
-                  color="pink"
-                  text="Halfday"
-                  value={monthList?.shortAttendance}
-                />
-              </View>
+                      {/* Divider */}
+                      <View
+                        style={{
+                          borderWidth: 0.5,
+                          marginVertical: 5,
+                          opacity: 0.3,
+                          borderColor: currentTheme.text,
+                        }}
+                      />
 
-              {/* Legend */}
-              <View style={styles.legendContainer}>
-                <LegendItem
-                  color="green"
-                  text="Present"
-                  style={{color: '#fff'}}
-                />
-                <LegendItem color="red" text="Absent" />
-                <LegendItem color="orange" text="Leave" />
-                <LegendItem color="blue" text="Holiday" />
-                <LegendItem color="pink" text="Halfday" />
-                <LegendItem color="peachpuff" text="Outdoor Duty" />
-                {/* <LegendItem color="yellow" text="Leave Without Pay" />
-                <LegendItem color="lightgreen" text="Logged In" /> */}
-              </View>
-            </View>
-          </View>
-          <Modal
-        transparent
-        animationType="fade"
-        visible={loaderModal}
-        statusBarTranslucent
-      >
-        <View style={styles.overlay}>
-          <ActivityIndicator size="large" color="blue" />
-        </View>
-      </Modal>
-        </>
-      ) : (
-        <>
-          <View
-            style={{
-              height: '100%',
-              backgroundColor: currentTheme.background,
-              borderTopLeftRadius: 40,
-              borderTopRightRadius: 40,
-              marginTop: responsiveHeight(1.5),
-              flex: 1,
-              // marginHorizontal:5
-              padding:0
-            }}>
-            <ScrollView>
-              <View
-                style={{
-                  width: responsiveWidth(90),
-                  backgroundColor: currentTheme.background,
-                  alignSelf: 'center',
-                  marginTop: responsiveHeight(1),
-                  borderRadius: 20,
-                  shadowColor: '#000',
-                  shadowRadius: 10,
-                  shadowOpacity: 0.6,
-                  elevation: 8,
-                  borderWidth: 0.5,
-                  borderColor: '#30C1DD',
-                  padding: 15,
-                  shadowOffset: {
-                    width: 0,
-                    height: 4,
-                  },
-                }}>
-                <Text
-                  style={{
-                    marginLeft: 10,
-                    marginTop: 5,
-                    color: currentTheme.text,
-                    fontSize: 16,
-                  }}>
-                  This Month Attendance
-                </Text>
-                <View
-                  style={{
-                    width: '100%',
-                    borderWidth: 0.8,
-                    borderColor: currentTheme.text,
-                    marginVertical: 10,
-                  }}></View>
+                      {/* Selected Date */}
+                      <View
+                        style={{
+                          backgroundColor: currentTheme.background,
+                          alignSelf: 'flex-start',
+                          borderRadius: 10,
+                          marginVertical: 5,
+                        }}>
+                        <Text
+                          style={{
+                            color: currentTheme.text,
+                            padding: 5,
+                            marginHorizontal: 5,
+                          }}>
+                          {selectedDate}
+                        </Text>
+                      </View>
 
-                <FlatList
-                  style={{
-                    alignSelf: 'center',
-                    marginBottom: Platform.OS == 'ios' ? 20 : null,
-                  }}
-                  horizontal
-                  showsHorizontalScrollIndicator={false}
-                  data={showData}
-                  renderItem={renderServicesList}
-                  keyExtractor={item => item.id}
-                />
-              </View>
-              <View
-                style={{
-                  flexDirection: 'row',
-                  justifyContent: 'center',
-                  marginVertical: 10,
-                }}>
-                <TouchableOpacity
-                  onPress={showFromDatePicker}
-                  style={{
-                    width: responsiveWidth(40),
-                    height: responsiveHeight(15),
-                    borderRadius: 15,
-                    backgroundColor: currentTheme.background,
-                    padding: 15,
-                    elevation: 7,
-                    marginHorizontal: 5,
-                    alignItems: 'center',
-                    marginTop: responsiveHeight(2.5),
-                    borderWidth: 0.5,
-                    borderColor: currentTheme.text,
-                  }}>
-                  <Text
-                    style={{
-                      fontSize:15,
-                      color: currentTheme.text,
-                      textAlign: 'center',
-                      marginTop: 5,
-                    }}>
-                    Start Date
-                  </Text>
-                  <View
-                    style={{
-                      backgroundColor: currentTheme.inputText_color,
-                      flexDirection: 'row',
-                      borderRadius: 10,
-                      padding: 8,
-                      alignItems: 'center',
-                      marginTop:5,
-                      paddingHorizontal:10
-                    }}>
-                    <Text
-                      style={{
-                        fontSize: 15,
-                        // marginHorizontal: 20,
-                        color: currentTheme.text,
-                      }}>
-                      {fromDate ? fromDate : '-- / -- / ---- '}
-                    </Text>
-                    <Image
-                      style={{
-                        height: 20,
-                        width: 20,
-                        tintColor: currentTheme.text,
-                        marginLeft:5
-                      }}
-                      source={require('../../assets/Attendence/dates.png')}
-                    />
-                  </View>
-                </TouchableOpacity>
-                <TouchableOpacity
-                  onPress={showToDatePicker}
-                  style={{
-                    width: responsiveWidth(40),
-                    height: responsiveHeight(15),
-                    borderRadius: 15,
-                    backgroundColor: currentTheme.background,
-                    padding: 15,
-                    elevation: 7,
-                    marginHorizontal: 5,
-                    alignItems: 'center',
-                    marginTop: responsiveHeight(2.5),
-                    borderWidth: 0.5,
-                    borderColor: currentTheme.text,
-                  }}>
-                  <Text
-                    style={{
-                      fontSize:15,
-                      color: currentTheme.text,
-                      textAlign: 'center',
-                      marginTop: 5,
-                    }}>
-                    End Date
-                  </Text>
-                  <View
-                    style={{
-                      backgroundColor: currentTheme.inputText_color,
-                      flexDirection: 'row',
-                      marginTop: 5,
-                      borderRadius: 10,
-                      padding:10,
-                      marginTop:5,
-                      paddingHorizontal:10
+                      {/* Divider */}
+                      <View
+                        style={{
+                          borderWidth: 0.5,
+                          marginVertical: 5,
+                          opacity: 0.3,
+                          borderColor: currentTheme.text,
+                        }}
+                      />
 
-                    }}>
-                    <Text
-                      style={{
-                        fontSize: 15,
-                        // marginHorizontal: 20,
-                        color: currentTheme.text,
-                      }}>
-                      {toDate ? toDate : '-- / -- / ---- '}
-                    </Text>
-                    <Image
-                      style={{
-                        height: 20,
-                        width: 20,
-                        tintColor: currentTheme.text,
-                        marginLeft:5
-                      }}
-                      source={require('../../assets/Attendence/dates.png')}
-                    />
-                  </View>
-                </TouchableOpacity>
-                <DateTimePickerModal
-                  isVisible={isFromDatePickerVisible}
-                  mode="date"
-                  onConfirm={handleFromDateConfirm}
-                  onCancel={hideFromDatePicker}
-                />
-                <DateTimePickerModal
-                  isVisible={isToDatePickerVisible}
-                  mode="date"
-                  onConfirm={handleToDateConfirm}
-                  onCancel={hideToDatePicker}
-                />
-              </View>
-              <View
-                style={{
-                  width: responsiveWidth(90),
-                  alignSelf: 'center',
-                  marginBottom: 100,
-                }}>
-                <Text
-                  style={{
-                    color: currentTheme.text,
-                    fontWeight: 'bold',
-                    fontSize: 20,
-                    padding: 5,
-                    marginVertical: 5,
-                  }}>
-                  Logs
-                </Text>
-                {data?.data?.length > 0 ? (
-                  <>
-                    {data?.data?.map((elements, index) => {
-                      return (
-                        <View style={{flexDirection: 'row'}}>
+                      {/* FlatList */}
+                      <FlatList
+                        data={dailyDate?.attendance || []}
+                        keyExtractor={(_, index) => index.toString()}
+                        renderItem={({item, index}) => (
                           <View
                             style={{
-                              position: 'absolute',
-                              justifyContent: 'center',
+                              marginVertical: 8,
+                              padding: 10,
+                              backgroundColor: currentTheme.background,
+                              borderRadius: 10,
                             }}>
+                            <Text
+                              style={{
+                                color: currentTheme.text,
+                                fontWeight: '600',
+                                fontSize: 16,
+                                marginBottom: 8,
+                              }}>
+                              Shift {index + 1}
+                            </Text>
+
                             <View
                               style={{
-                                borderWidth: 1.5,
-                                height: 50,
-                                width: 2,
-                                elevation: 7,
-                                backgroundColor: currentTheme.text,
-                                opacity: 0.3,
-                              }}></View>
-                            <Image
+                                flexDirection: 'row',
+                                justifyContent: 'space-between',
+                              }}>
+                              <View>
+                                <Text
+                                  style={{
+                                    color: currentTheme.text,
+                                    marginVertical: 5,
+                                  }}>
+                                  Punch In
+                                </Text>
+                                <Text
+                                  style={{
+                                    color: currentTheme.text,
+                                    marginVertical: 5,
+                                  }}>
+                                  Punch Out
+                                </Text>
+                                <Text
+                                  style={{
+                                    color: currentTheme.text,
+                                    marginVertical: 5,
+                                  }}>
+                                  Working Hours
+                                </Text>
+                              </View>
+                              <View>
+                                <Text
+                                  style={{
+                                    color: currentTheme.text,
+                                    marginVertical: 5,
+                                  }}>
+                                  {item.punch_in ?? 'N/A'}
+                                </Text>
+                                <Text
+                                  style={{
+                                    color: currentTheme.text,
+                                    marginVertical: 5,
+                                  }}>
+                                  {item.punch_out ?? 'N/A'}
+                                </Text>
+                                <Text
+                                  style={{
+                                    color: currentTheme.text,
+                                    marginVertical: 5,
+                                  }}>
+                                  {item.total_working_hours ?? 'N/A'}
+                                </Text>
+                              </View>
+                            </View>
+                            <View
                               style={{
-                                height: 15,
-                                width: 15,
-                                marginLeft: -6,
-                                resizeMode: 'contain',
-                                position: 'absolute',
-                                tintColor: currentTheme.text,
+                                borderWidth: 0.5,
+                                marginVertical: 5,
+                                opacity: 0.3,
+                                borderColor: currentTheme.text,
                               }}
-                              source={require('../../assets/Attendence/point.png')}
                             />
                           </View>
+                        )}
+                        ListEmptyComponent={() => (
+                          <Text
+                            style={{color: currentTheme.text, marginTop: 20}}>
+                            No attendance data
+                          </Text>
+                        )}
+                      />
+                    </View>
+                  </View>
+                </Modal>
 
-                          <View
-                            key={index}
-                            style={{
-                              marginBottom: 5,
-                              justifyContent: 'space-between',
-                              flex: 1,
-                              flexDirection: 'row',
-                              padding: 15,
-                              borderRadius: 20,
-                              marginLeft: 10,
-                              backgroundColor: currentTheme.inputText_color,
-                            }}>
-                            <View>
-                              <Text
-                                style={{
-                                  fontSize: 16,
-                                  color: currentTheme.text,
-                                }}>
-                                {elements?.date}
-                              </Text>
+                {/* Status Section */}
+                <View
+                  style={[
+                    styles.statusContainer,
+                    {backgroundColor: currentTheme.background_v2},
+                  ]}>
+                  <StatusItem
+                    color="green"
+                    text="Present"
+                    value={monthList?.totalPresent}
+                  />
+                  <StatusItem
+                    color="red"
+                    text="Absent"
+                    value={monthList?.totalAbsent}
+                  />
+                  <StatusItem
+                    color="orange"
+                    text="Leave"
+                    value={monthList?.totalLeave}
+                  />
+                  <StatusItem
+                    color="blue"
+                    text="Holiday"
+                    value={monthList?.totalHoliday}
+                  />
+                  <StatusItem
+                    color="pink"
+                    text="Halfday"
+                    value={monthList?.shortAttendance}
+                  />
+                </View>
 
-                              <Text
-                                style={{
-                                  fontSize: 16,
-                                  color: currentTheme.text,
-                                  fontWeight: 'bold',
-                                }}>
-                                {elements?.total_hours}
-                              </Text>
-                            </View>
-                            <View>
-                              <Text
-                                style={{
-                                  color: currentTheme.text,
-                                  fontSize: 15,
-                                  marginTop: 4,
-                                }}>
-                                Punch In: {elements?.punch_in ?? '--'}
-                              </Text>
-                              <Text
-                                style={{
-                                  color: currentTheme.text,
-                                  fontSize: 15,
-                                }}>
-                                Punch Out: {elements?.punch_out ?? '--'}
-                              </Text>
-                            </View>
-                          </View>
-                        </View>
-                      );
-                    })}
-                  </>
-                ) : (
+                {/* Legend */}
+                <View style={styles.legendContainer}>
+                  <LegendItem
+                    color="green"
+                    text="Present"
+                    style={{color: '#fff'}}
+                  />
+                  <LegendItem color="red" text="Absent" />
+                  <LegendItem color="orange" text="Leave" />
+                  <LegendItem color="blue" text="Holiday" />
+                  <LegendItem color="pink" text="Halfday" />
+                  <LegendItem />
+                  {/* <LegendItem color="peachpuff" text="Outdoor Duty" /> */}
+                  {/* <LegendItem color="yellow" text="Leave Without Pay" />
+                <LegendItem color="lightgreen" text="Logged In" /> */}
+                </View>
+              </View>
+            </View>
+            <Modal
+              transparent
+              animationType="fade"
+              visible={loaderModal}
+              statusBarTranslucent>
+              <View style={styles.overlay}>
+                <ActivityIndicator size="large" color="blue" />
+              </View>
+            </Modal>
+          </>
+        ) : (
+          <>
+            <View
+              style={{
+                height: '100%',
+                backgroundColor: currentTheme.background,
+                borderTopLeftRadius: 40,
+                borderTopRightRadius: 40,
+                marginTop: responsiveHeight(1.5),
+                flex: 1,
+                // marginHorizontal:5
+                padding: 0,
+              }}>
+              <ScrollView>
+                <View
+                  style={{
+                    width: responsiveWidth(90),
+                    backgroundColor: currentTheme.background,
+                    alignSelf: 'center',
+                    marginTop: responsiveHeight(1),
+                    borderRadius: 20,
+                    shadowColor: '#000',
+                    shadowRadius: 10,
+                    shadowOpacity: 0.6,
+                    elevation: 8,
+                    borderWidth: 0.5,
+                    borderColor: '#30C1DD',
+                    padding: 15,
+                    shadowOffset: {
+                      width: 0,
+                      height: 4,
+                    },
+                  }}>
                   <Text
                     style={{
-                      textAlign: 'center',
+                      marginLeft: 10,
+                      marginTop: 5,
                       color: currentTheme.text,
+                      fontSize: 16,
                     }}>
-                    There are no avaliable Attendance
+                    This Month Attendance
                   </Text>
-                )}
-              </View>
-            </ScrollView>
-          </View>
-       
-        </>
-      )}
-        </ScrollView>
+                  <View
+                    style={{
+                      width: '100%',
+                      borderWidth: 0.8,
+                      borderColor: currentTheme.text,
+                      marginVertical: 10,
+                    }}></View>
+
+                  <FlatList
+                    style={{
+                      alignSelf: 'center',
+                      marginBottom: Platform.OS == 'ios' ? 20 : null,
+                    }}
+                    horizontal
+                    showsHorizontalScrollIndicator={false}
+                    data={showData}
+                    renderItem={renderServicesList}
+                    keyExtractor={item => item.id}
+                  />
+                </View>
+                <View
+                  style={{
+                    flexDirection: 'row',
+                    justifyContent: 'center',
+                    marginVertical: 10,
+                  }}>
+                  <TouchableOpacity
+                    onPress={showFromDatePicker}
+                    style={{
+                      width: responsiveWidth(40),
+                      height: responsiveHeight(15),
+                      borderRadius: 15,
+                      backgroundColor: currentTheme.background,
+                      padding: 15,
+                      elevation: 7,
+                      marginHorizontal: 5,
+                      alignItems: 'center',
+                      marginTop: responsiveHeight(2.5),
+                      borderWidth: 0.5,
+                      borderColor: currentTheme.text,
+                    }}>
+                    <Text
+                      style={{
+                        fontSize: 15,
+                        color: currentTheme.text,
+                        textAlign: 'center',
+                        marginTop: 5,
+                      }}>
+                      Start Date
+                    </Text>
+                    <View
+                      style={{
+                        backgroundColor: currentTheme.inputText_color,
+                        flexDirection: 'row',
+                        borderRadius: 10,
+                        padding: 8,
+                        alignItems: 'center',
+                        marginTop: 5,
+                        paddingHorizontal: 10,
+                      }}>
+                      <Text
+                        style={{
+                          fontSize: 15,
+                          // marginHorizontal: 20,
+                          color: currentTheme.text,
+                        }}>
+                        {fromDate ? fromDate : '-- / -- / ---- '}
+                      </Text>
+                      <Image
+                        style={{
+                          height: 20,
+                          width: 20,
+                          tintColor: currentTheme.text,
+                          marginLeft: 5,
+                        }}
+                        source={require('../../assets/Attendence/dates.png')}
+                      />
+                    </View>
+                  </TouchableOpacity>
+                  <TouchableOpacity
+                    onPress={showToDatePicker}
+                    style={{
+                      width: responsiveWidth(40),
+                      height: responsiveHeight(15),
+                      borderRadius: 15,
+                      backgroundColor: currentTheme.background,
+                      padding: 15,
+                      elevation: 7,
+                      marginHorizontal: 5,
+                      alignItems: 'center',
+                      marginTop: responsiveHeight(2.5),
+                      borderWidth: 0.5,
+                      borderColor: currentTheme.text,
+                    }}>
+                    <Text
+                      style={{
+                        fontSize: 15,
+                        color: currentTheme.text,
+                        textAlign: 'center',
+                        marginTop: 5,
+                      }}>
+                      End Date
+                    </Text>
+                    <View
+                      style={{
+                        backgroundColor: currentTheme.inputText_color,
+                        flexDirection: 'row',
+                        marginTop: 5,
+                        borderRadius: 10,
+                        padding: 10,
+                        marginTop: 5,
+                        paddingHorizontal: 10,
+                      }}>
+                      <Text
+                        style={{
+                          fontSize: 15,
+                          // marginHorizontal: 20,
+                          color: currentTheme.text,
+                        }}>
+                        {toDate ? toDate : '-- / -- / ---- '}
+                      </Text>
+                      <Image
+                        style={{
+                          height: 20,
+                          width: 20,
+                          tintColor: currentTheme.text,
+                          marginLeft: 5,
+                        }}
+                        source={require('../../assets/Attendence/dates.png')}
+                      />
+                    </View>
+                  </TouchableOpacity>
+                  <DateTimePickerModal
+                    isVisible={isFromDatePickerVisible}
+                    mode="date"
+                    onConfirm={handleFromDateConfirm}
+                    onCancel={hideFromDatePicker}
+                  />
+                  <DateTimePickerModal
+                    isVisible={isToDatePickerVisible}
+                    mode="date"
+                    onConfirm={handleToDateConfirm}
+                    onCancel={hideToDatePicker}
+                  />
+                </View>
+                <View
+                  style={{
+                    width: responsiveWidth(90),
+                    alignSelf: 'center',
+                    marginBottom: 100,
+                  }}>
+                  <Text
+                    style={{
+                      color: currentTheme.text,
+                      fontWeight: 'bold',
+                      fontSize: 20,
+                      padding: 5,
+                      marginVertical: 5,
+                    }}>
+                    Logs
+                  </Text>
+                  {data?.data?.length > 0 ? (
+                    <>
+                      {data?.data?.map((elements, index) => {
+                        return (
+                          <View style={{flexDirection: 'row'}}>
+                            <View
+                              style={{
+                                position: 'absolute',
+                                justifyContent: 'center',
+                              }}>
+                              <View
+                                style={{
+                                  borderWidth: 1.5,
+                                  height: 50,
+                                  width: 2,
+                                  elevation: 7,
+                                  backgroundColor: currentTheme.text,
+                                  opacity: 0.3,
+                                }}></View>
+                              <Image
+                                style={{
+                                  height: 15,
+                                  width: 15,
+                                  marginLeft: -6,
+                                  resizeMode: 'contain',
+                                  position: 'absolute',
+                                  tintColor: currentTheme.text,
+                                }}
+                                source={require('../../assets/Attendence/point.png')}
+                              />
+                            </View>
+
+                            <View
+                              key={index}
+                              style={{
+                                marginBottom: 5,
+                                justifyContent: 'space-between',
+                                flex: 1,
+                                flexDirection: 'row',
+                                padding: 15,
+                                borderRadius: 20,
+                                marginLeft: 10,
+                                backgroundColor: currentTheme.inputText_color,
+                              }}>
+                              <View>
+                                <Text
+                                  style={{
+                                    fontSize: 16,
+                                    color: currentTheme.text,
+                                  }}>
+                                  {elements?.date}
+                                </Text>
+
+                                <Text
+                                  style={{
+                                    fontSize: 16,
+                                    color: currentTheme.text,
+                                    fontWeight: 'bold',
+                                  }}>
+                                  {elements?.total_hours}
+                                </Text>
+                              </View>
+                              <View>
+                                <Text
+                                  style={{
+                                    color: currentTheme.text,
+                                    fontSize: 15,
+                                    marginTop: 4,
+                                  }}>
+                                  Punch In: {elements?.punch_in ?? '--'}
+                                </Text>
+                                <Text
+                                  style={{
+                                    color: currentTheme.text,
+                                    fontSize: 15,
+                                  }}>
+                                  Punch Out: {elements?.punch_out ?? '--'}
+                                </Text>
+                              </View>
+                            </View>
+                          </View>
+                        );
+                      })}
+                    </>
+                  ) : (
+                    <Text
+                      style={{
+                        textAlign: 'center',
+                        color: currentTheme.text,
+                      }}>
+                      There are no avaliable Attendance
+                    </Text>
+                  )}
+                </View>
+              </ScrollView>
+            </View>
+          </>
+        )}
+      </ScrollView>
     </SafeAreaView>
   );
 };
@@ -1051,20 +1049,17 @@ const styles = StyleSheet.create({
     padding: 10,
     borderRadius: 10,
     marginBottom: 20,
-    gap:5, 
-    
+    gap: 5,
   },
   statusItem: {
     alignItems: 'center',
     borderRadius: 10,
-    paddingVertical:10,
-    paddingHorizontal:8,
-    
+    paddingVertical: 10,
+    paddingHorizontal: 8,
   },
   statusText: {
     color: 'white',
     fontWeight: 'bold',
-    
   },
   statusValue: {
     color: 'white',

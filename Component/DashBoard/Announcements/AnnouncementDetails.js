@@ -272,9 +272,11 @@ const AnnouncementDetails = ({navigation}) => {
 
   // 🟩 Download Handler
   const handleDownload = async (image) => {
+    console.log(image,'dfncldfn')
     if (image) {
       Linking.openURL(image);
-    } else {
+    }
+     else {
       Alert.alert('Empty File', 'No document record');
     }
   }

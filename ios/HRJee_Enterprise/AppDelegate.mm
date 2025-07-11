@@ -1,12 +1,14 @@
 #import "AppDelegate.h"
 #import <React/RCTBundleURLProvider.h>
+#import <Firebase.h>
+#import <FirebaseMessaging.h>
 @implementation AppDelegate
 
 - (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions
 {
   self.moduleName = @"HRJee_Enterprise";
   self.initialProps = @{};
-
+    // [FIRApp configure];
   return [super application:application didFinishLaunchingWithOptions:launchOptions];
 }
 

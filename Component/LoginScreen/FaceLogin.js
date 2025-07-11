@@ -208,8 +208,7 @@ const FaceLogin = ({route}) => {
         type={RNCamera.Constants.Type.front}
         captureAudio={false}
         onCameraReady={takePicture}>
-         {isCameraOpen && (
-            <View style={styles.progressContainer}>
+         <View style={styles.progressContainer}>
               <AnimatedCircularProgress
                 size={150}
                 width={15}
@@ -229,7 +228,6 @@ const FaceLogin = ({route}) => {
                 }
               </AnimatedCircularProgress>
             </View>
-          )}
       </RNCamera>
     </View>
   );

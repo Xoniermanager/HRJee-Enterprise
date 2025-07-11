@@ -35,6 +35,7 @@ import GetLocation from 'react-native-get-location';
 import { UpdateStatusTask, asignTask } from '../../../APINetwork/ComponentApi';
 import { BASE_URL } from '../../../utils';
 import PullToRefresh from '../../../PullToRefresh';
+import Reload from '../../../Reload';
 const TaskPage = () => {
   const navigation = useNavigation();
   const [selected, setSelected] = useState(0);
@@ -64,6 +65,9 @@ const TaskPage = () => {
   const [userStatus, setUserStatus] = useState(null);
   const [systemStatus, setSystemStatus] = useState(null);
   const [resetLoader, setResetLoader] = useState(false);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [isLoading, setIsLoading] = useState(false);
+  const [lastPage, setLastPage] = useState();
   const userstatusData = [
     {label: 'Pending', value: 'pending'},
     {label: 'Processing', value: 'processing'},
@@ -130,6 +134,7 @@ const TaskPage = () => {
     const response = await asignTask(url, token);
     if (response.data.status) {
       setList(response.data.data.data);
+      setLastPage(response?.data?.data?.last_page);
     }
   };
   const dispositionCodeList = async () => {
@@ -209,6 +214,14 @@ const TaskPage = () => {
       getTask();
     }
   };
+  const getResponseValue = (responseData, key, fallback = 'N/A') => {
+    return responseData?.[key] || fallback;
+  };
+  
+  const getFirstResponseValue = (responseData) => {
+    const values = Object.values(responseData || {});
+    return values.length > 0 ? values[0] : 'No Data';
+  };
   const TaskCardBasic = ({item}) => {
     const responseData = JSON.parse(item.response_data || '{}');
     const status = item.user_end_status?.toUpperCase() || 'UNKNOWN';
@@ -220,7 +233,7 @@ const TaskPage = () => {
         : item.user_end_status === 'completed'
         ? '#90EE90'
         : '#D3D3D3';
-
+  
     return (
       <TouchableOpacity
         style={[
@@ -228,13 +241,9 @@ const TaskPage = () => {
           {backgroundColor: selected === item.id ? '#D3E6F7' : '#F9F9F9'},
         ]}
         onPress={() => [setSelected(item.id), fetchLatLng(item)]}>
-        <View
-          style={{
-            flexDirection: 'row',
-            justifyContent: 'space-between',
-            alignItems: 'center',
-          }}>
-          <Text style={styles.taskTitle}>{responseData.name}</Text>
+        <View style={{flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center'}}>
+          <Text style={styles.taskTitle}>{getFirstResponseValue(responseData)}</Text>
+  
           <View style={{flexDirection: 'row', alignItems: 'center'}}>
             <Text
               style={{
@@ -250,19 +259,19 @@ const TaskPage = () => {
               }}>
               {status}
             </Text>
-
-            {item.user_end_status === 'completed' ? null : (
+  
+            {item.user_end_status !== 'completed' && (
               <Menu>
                 <MenuTrigger>
                   <Icon name="dots-vertical" size={18} color="#2C648C" />
                 </MenuTrigger>
                 <MenuOptions customStyles={menuOptionsStyle}>
-                  {item.user_end_status === 'pending' ? (
+                  {item.user_end_status === 'pending' && (
                     <MenuOption onSelect={() => UpdateStatus(item.id)}>
                       <Text style={styles.menuText}>Processing</Text>
                     </MenuOption>
-                  ) : null}
-                  {item.user_end_status === 'processing' ? (
+                  )}
+                  {item.user_end_status === 'processing' && (
                     <MenuOption
                       onSelect={() => [
                         setModalVisible(true),
@@ -271,58 +280,50 @@ const TaskPage = () => {
                       ]}>
                       <Text style={styles.menuText}>Update Task</Text>
                     </MenuOption>
-                  ) : null}
+                  )}
                 </MenuOptions>
               </Menu>
             )}
           </View>
         </View>
-
+  
         {/* Name and Remark */}
         <View style={styles.row}>
           <Icon name="clock-time-four-outline" size={18} color="#2C648C" />
-          <Text style={styles.rowText}>{responseData.name}</Text>
-
-          <Icon
-            name="view-dashboard-outline"
-            size={18}
-            color="#2C648C"
-            style={{marginLeft: 20}}
-          />
+          <Text style={styles.rowText}>{getResponseValue(responseData, 'name')}</Text>
+  
+          <Icon name="view-dashboard-outline" size={18} color="#2C648C" style={{marginLeft: 20}} />
           <Text style={styles.rowText}>{item.remark || 'No Remark'}</Text>
         </View>
-
+  
         {/* Address and Navigate */}
         <View style={styles.row}>
           <Icon name="map-marker" size={18} color="#2C648C" />
           <Text style={styles.address}>{item.visit_address}</Text>
-
+  
           {addressLatitude && (
             <TouchableOpacity
               onPress={() =>
                 navigation.navigate('MapTask', {
                   lat: addressLatitude.lat,
                   lng: addressLatitude.lng,
-                  visitAddress:item.visit_address,
-                  name:responseData.name,
-                  phone:responseData.phone,
+                  visitAddress: item.visit_address,
+                  name: getResponseValue(responseData, 'name'),
+                  phone: getResponseValue(responseData, 'phone'),
                 })
               }
               style={{marginLeft: 30}}>
-              <Icon
-                name="arrow-right-circle-outline"
-                size={22}
-                color="#2C648C"
-              />
+              <Icon name="arrow-right-circle-outline" size={22} color="#2C648C" />
             </TouchableOpacity>
           )}
         </View>
       </TouchableOpacity>
     );
   };
+  
   const TaskCardWithMap = ({item}) => {
     const responseData = JSON.parse(item.response_data || '{}');
-    const status = item.user_end_status || item.user_end_status || 'unknown';
+    const status = item.user_end_status?.toUpperCase() || 'UNKNOWN';
     const statusColor =
       item.user_end_status === 'pending'
         ? '#FFD700'
@@ -331,28 +332,19 @@ const TaskPage = () => {
         : item.user_end_status === 'completed'
         ? '#90EE90'
         : '#D3D3D3';
+  
     return (
       <TouchableOpacity
         style={[
           styles.card,
           {backgroundColor: selected === item.id ? '#D3E6F7' : '#F9F9F9'},
         ]}
-        onPress={() => [
-          setSelected(item.id),
-          fetchLatLng(item),
-          setSelected(item.id),
-        ]}>
-        <View
-          style={{
-            flexDirection: 'row',
-            justifyContent: 'space-between',
-            alignItems: 'center',
-          }}>
-      <View style={{width:responsiveWidth(44)}}>
-            
-            <Text style={styles.taskTitle}>{responseData.name}</Text>
-            </View>
-
+        onPress={() => [setSelected(item.id), fetchLatLng(item)]}>
+        <View style={{flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center'}}>
+          <View style={{width: responsiveWidth(44)}}>
+            <Text style={styles.taskTitle}>{getFirstResponseValue(responseData)}</Text>
+          </View>
+  
           <View style={{flexDirection: 'row', alignItems: 'center'}}>
             <Text
               style={{
@@ -368,19 +360,19 @@ const TaskPage = () => {
               }}>
               {status}
             </Text>
-
-            {item.user_end_status === 'completed' ? null : (
+  
+            {item.user_end_status !== 'completed' && (
               <Menu>
                 <MenuTrigger>
                   <Icon name="dots-vertical" size={18} color="#2C648C" />
                 </MenuTrigger>
                 <MenuOptions customStyles={menuOptionsStyle}>
-                  {item.user_end_status === 'pending' ? (
+                  {item.user_end_status === 'pending' && (
                     <MenuOption onSelect={() => UpdateStatus(item.id)}>
                       <Text style={styles.menuText}>Processing</Text>
                     </MenuOption>
-                  ) : null}
-                  {item.user_end_status === 'processing' ? (
+                  )}
+                  {item.user_end_status === 'processing' && (
                     <MenuOption
                       onSelect={() => [
                         setModalVisible(true),
@@ -389,53 +381,46 @@ const TaskPage = () => {
                       ]}>
                       <Text style={styles.menuText}>Update Task</Text>
                     </MenuOption>
-                  ) : null}
+                  )}
                 </MenuOptions>
               </Menu>
             )}
           </View>
         </View>
-
+  
         {/* Name and Remark */}
         <View style={styles.row}>
           <Icon name="clock-time-four-outline" size={18} color="#2C648C" />
-          <Text style={styles.rowText}>{responseData.name}</Text>
-
-          <Icon
-            name="view-dashboard-outline"
-            size={18}
-            color="#2C648C"
-            style={{marginLeft: 20}}
-          />
+          <Text style={styles.rowText}>{getResponseValue(responseData, 'name')}</Text>
+  
+          <Icon name="view-dashboard-outline" size={18} color="#2C648C" style={{marginLeft: 20}} />
           <Text style={styles.rowText}>{item.remark || 'No Remark'}</Text>
         </View>
+  
+        {/* Address and Navigate */}
         <View style={styles.row}>
           <Icon name="map-marker" size={18} color="#2C648C" />
           <Text style={styles.address}>{item.visit_address}</Text>
-
-          {addressLatitude && selected == item.id && (
+  
+          {addressLatitude && selected === item.id && (
             <TouchableOpacity
               onPress={() =>
                 navigation.navigate('MapTask', {
                   lat: addressLatitude.lat,
                   lng: addressLatitude.lng,
-                  visitAddress:item.visit_address,
-                  name:responseData.name,
-                  phone:responseData.phone,
+                  visitAddress: item.visit_address,
+                  name: getResponseValue(responseData, 'name'),
+                  phone: getResponseValue(responseData, 'phone'),
                 })
               }
               style={{marginLeft: 8}}>
-              <Icon
-                name="arrow-right-circle-outline"
-                size={22}
-                color="#2C648C"
-              />
+              <Icon name="arrow-right-circle-outline" size={22} color="#2C648C" />
             </TouchableOpacity>
           )}
         </View>
-
-        {/* Google Map View */}
-        {addressLatitude && selected == item.id && (
+  
+        {/* Map View */}
+        {addressLatitude && selected === item.id && (
           <MapView
             style={styles.map}
             initialRegion={{
@@ -455,6 +440,7 @@ const TaskPage = () => {
       </TouchableOpacity>
     );
   };
+  
   const renderItem = ({item, index}) => {
     return (
       <View>
@@ -606,6 +592,19 @@ const TaskPage = () => {
     setUserStatus(null);
     setSystemStatus(null);
     setLocationFilter('');
+  };
+  const fetchMore = async () => {
+    if (currentPage < lastPage) {
+      const nextPage = currentPage + 1;
+      const token = await AsyncStorage.getItem("TOKEN");
+      const url = `${BASE_URL}/assign/task?page=${nextPage}`;
+      const response = await Patient_appointment(url, token);
+      setIsLoading(response?.data?.data?.data);
+      setCurrentPage(nextPage);
+      setList((prevData) => [...prevData, ...response?.data?.data?.data]);
+    } else {
+      setIsLoading([]);
+    }
   };
 
   return (
@@ -803,7 +802,14 @@ const TaskPage = () => {
         <View style={{marginBottom: 60}}>
           <FlatList
             data={list}
+            onEndReached={() => fetchMore()}
             keyExtractor={item => item.id.toString()}
+            ListFooterComponent={() =>
+              isLoading && isLoading?.length == 0 ? null : isLoading?.length <
+                10 ? null : (
+                <Reload />
+              )
+            }
             renderItem={renderItem}
             contentContainerStyle={styles.listContent}
             ListEmptyComponent={

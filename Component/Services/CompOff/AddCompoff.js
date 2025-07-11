@@ -19,7 +19,7 @@ import {showMessage} from 'react-native-flash-message';
 import Themes from '../../Theme/Theme';
 const AddCompoff = () => {
   const navigation = useNavigation();
-  const {currentTheme,empyName,empyId,} = useContext(ThemeContext);
+  const {currentTheme,empyName,empId,} = useContext(ThemeContext);
   const [startDate, setStartDate] = useState(null);
   const [endDate, setEndDate] = useState(null);
   const [showStartPicker, setShowStartPicker] = useState(false);
@@ -118,7 +118,7 @@ const AddCompoff = () => {
               <Text style={styles.label}>Employee ID</Text>
               <TextInput
                 style={styles.inputs}
-                value={JSON.stringify(empyId)}
+                value={JSON.stringify(empId)}
                 editable={false}
               />
             </View>

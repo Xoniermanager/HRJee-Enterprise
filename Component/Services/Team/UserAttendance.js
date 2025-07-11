@@ -108,8 +108,9 @@ const UserAttendance = ({route}) => {
           data={list}
           renderItem={renderItem}
           keyExtractor={item => item.id}
-          contentContainerStyle={styles.container}
+          contentContainerStyle={{ paddingBottom: 80 }}
           onEndReached={() => fetchMore()}
+          
           ListFooterComponent={() =>
             loader && loader?.length == 0 ? null : loader?.length <
               10 ? null : (

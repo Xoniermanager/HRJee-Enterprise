@@ -62,7 +62,9 @@ const LoginScreen = () => {
     const token = await messaging().getToken();
     console.log(token);
     setfcmtoken(token);
+
   }
+  
   useEffect(() => {
     requestUserPermission();
   }, []);
@@ -70,6 +72,30 @@ const LoginScreen = () => {
   const toggleShowPassword = () => {
     setShowPassword(!showPassword);
   };
+  const saveFcmToken=(token)=>{
+    let data = JSON.stringify({
+      "fcm_token": fcmtoken
+    });
+    
+    let config = {
+      method: 'post',
+      maxBodyLength: Infinity,
+      url: `${BASE_URL}/save/token`,
+      headers: { 
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`
+      },
+      data : data
+    };
+    
+    axios.request(config)
+    .then((response) => {
+      console.log(response.data,'heelllo hrjee');
+    })
+    .catch((error) => {
+      console.log(error.response.data);
+    });
+  }
 
   const loginSubmit = async () => {
     try {
@@ -101,6 +127,7 @@ const LoginScreen = () => {
             setEmailError('');
             setPasswordError('');
             setLoader(false);
+            saveFcmToken(response?.data?.access_token);
             if (
               response &&
               response.data &&
@@ -131,6 +158,7 @@ const LoginScreen = () => {
             setEmailError('');
             setPasswordError('');
             setLoader(false);
+            saveFcmToken(response?.data?.access_token);
             if (
               response &&
               response.data &&
@@ -190,6 +218,7 @@ const LoginScreen = () => {
               faceImage: response.data.data.details.face_kyc,
             };
             setModalRequest(false);
+            saveFcmToken(faceData.token);
             setFaceData(faceData)
             setUserInfo(response.data.data)
             bottomSheetRef.current?.expand();

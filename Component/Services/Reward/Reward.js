@@ -11,6 +11,7 @@ export default function Reward() {
       <FlatList
         data={rewardList}
         keyExtractor={item => item.id.toString()}
+        contentContainerStyle={{ paddingBottom: 80 }}
         ListEmptyComponent={
           <View>
             <Image

@@ -91,6 +91,7 @@ const Resign = () => {
       <FlatList
         data={list?.data}
         keyExtractor={item => item.id}
+        contentContainerStyle={{ paddingBottom: 80 }}
         ListEmptyComponent={
           <View>
             <Image

@@ -30,6 +30,7 @@ const PRMList = () => {
   const {currentTheme} = useContext(ThemeContext);
   const [list, setList] = useState();
   const [deleteLoader, setDeleteLoader] = useState(null);
+ 
   const getAllPRMList = async () => {
     const token = await AsyncStorage.getItem('TOKEN');
     const url = `${BASE_URL}/get/all/prm/request`;
@@ -78,6 +79,7 @@ const PRMList = () => {
           data={list}
           keyExtractor={item => item.id}
           showsVerticalScrollIndicator={false}
+          contentContainerStyle={{ paddingBottom: 80 }}
           ListEmptyComponent={
             <View>
               <Image

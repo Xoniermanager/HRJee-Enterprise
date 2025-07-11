@@ -53,6 +53,7 @@ const Team = () => {
         data={teamUser}
         renderItem={renderItem}
         keyExtractor={item => item.id}
+        contentContainerStyle={{ paddingBottom: 80 }}
         ListEmptyComponent={
           <View>
             <Image

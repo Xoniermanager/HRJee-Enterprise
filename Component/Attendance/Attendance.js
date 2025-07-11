@@ -219,9 +219,10 @@ const Attendance = () => {
       };
       data.from_date = formatDate(data.from_date);
       data.to_date = formatDate(data.to_date);
+      console.log(data,'859|HrjeewwZG1Kf0TOn6dNoCQ3JokAQa1yeDvrXsWkzHurPQ4af97a7b')
       const url = `${BASE_URL}/search/filter/attendance`;
       const response = await getrecentattendence(url, data, token);
-      if (response?.data?.status == true) {
+      if (response?.data?.status) {
         setLoading(false);
         setLoader(false);
         if (response.data.data == 'No Attendance Found Of Respective Dates') {
@@ -377,7 +378,7 @@ const Attendance = () => {
     }
   
   });
-  console.log(markedDates,'markedDates')
+ 
   return (
     <SafeAreaView
       style={[

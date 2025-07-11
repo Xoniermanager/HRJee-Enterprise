@@ -70,7 +70,7 @@ const NewsDetails = ({navigation}) => {
 
   // 🟩 Download Handler
   const handleDownload = async (image) => {
-    if (image) {
+    if (image!='https://hrjee-dev.xonierconnect.com/storage') {
       Linking.openURL(image);
     } else {
       Alert.alert('Empty File', 'No document record');

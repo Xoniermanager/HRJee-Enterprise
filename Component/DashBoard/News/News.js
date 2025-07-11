@@ -240,10 +240,17 @@ const styles = StyleSheet.create({
     flex: 1,
     height: responsiveHeight(65),
   },
+  emptyContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingHorizontal: 20,
+  },
   emptyImage: {
-    width: responsiveWidth(60),
-    height: responsiveHeight(25),
-    resizeMode: 'contain',
+    width: responsiveWidth(70),
+    height: responsiveHeight(35),
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   emptyText: {
     fontSize: 18,
@@ -252,3 +259,4 @@ const styles = StyleSheet.create({
     marginTop: 20,
   },
 });
+

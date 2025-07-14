@@ -398,7 +398,7 @@ const ApplyLeave = ({navigation}) => {
                     fontSize: 18,
                     marginTop: responsiveHeight(1),
                   }}>
-                  {daysBetween} Days
+                  {daysBetween+1} Days
                 </Text>
               </View>
               <View style={{marginHorizontal: responsiveWidth(2)}}>

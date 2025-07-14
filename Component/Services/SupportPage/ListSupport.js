@@ -1,6 +1,6 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import {useIsFocused, useNavigation} from '@react-navigation/native';
-import React, {useEffect, useState} from 'react';
+import { useIsFocused, useNavigation } from '@react-navigation/native';
+import React, { useEffect, useState } from 'react';
 import {
   View,
   Text,
@@ -10,31 +10,32 @@ import {
   Alert,
   Image,
 } from 'react-native';
-import {BASE_URL} from '../../../utils';
-import {asignTask, deleteRequest} from '../../../APINetwork/ComponentApi';
-import {showMessage} from 'react-native-flash-message';
+import { BASE_URL } from '../../../utils';
+import { asignTask, deleteRequest } from '../../../APINetwork/ComponentApi';
+import { showMessage } from 'react-native-flash-message';
 
 const ListSupport = () => {
   const navigation = useNavigation();
-  const isfocuesed = useIsFocused();
+  const isFocused = useIsFocused();
   const [lastPage, setLastPage] = useState('');
-  const [list, setList] = useState();
-  const [loader, setLoader] = useState();
+  const [list, setList] = useState([]);
   const [currentPage, setCurrentPage] = useState(1);
   const [isLoading, setIsLoading] = useState(false);
-  const getlist = async () => {
+
+  const getList = async () => {
     const token = await AsyncStorage.getItem('TOKEN');
     const url = `${BASE_URL}/support`;
     const response = await asignTask(url, token);
-    if (response.data.status) {
-      setList(response.data.data.supports?.data);
-      setLastPage(response?.data?.data?.last_page);
+    if (response?.data?.status) {
+      setList(response.data.data.supports?.data || []);
+      setLastPage(response?.data?.data?.last_page || 1);
     }
   };
+
   useEffect(() => {
-    getlist();
-  }, [isfocuesed]);
-  console.log(list);
+    if (isFocused) getList();
+  }, [isFocused]);
+
   const fetchMore = async () => {
     if (currentPage < lastPage) {
       setIsLoading(true);
@@ -42,43 +43,45 @@ const ListSupport = () => {
       const token = await AsyncStorage.getItem('TOKEN');
       const url = `${BASE_URL}/support?page=${nextPage}`;
       const response = await asignTask(url, token);
-      setLoader(response.data.supports?.data.data);
+      const newData = response?.data?.supports?.data?.data || [];
+      setList(prevData => [...prevData, ...newData]);
       setCurrentPage(nextPage);
       setIsLoading(false);
-      setList(prevData => [...prevData, ...response.data.supports?.data.data]);
-    } else {
-      setLoader([]);
     }
   };
 
-  const handleDelete = async id => {
+  const handleDelete = async (id) => {
     const token = await AsyncStorage.getItem('TOKEN');
     const url = `${BASE_URL}/support/${id}`;
-    const data = null;
-    const response = await deleteRequest(url, data, token);
-    getlist();
-    showMessage({
-      message: response.data.message,
-      type: 'success',
-    });
+    const response = await deleteRequest(url, null, token);
+    if (response?.data?.message) {
+      showMessage({
+        message: response.data.message,
+        type: 'success',
+      });
+      getList();
+    }
   };
 
-  const renderItem = ({item}) => (
+  const renderItem = ({ item }) => (
     <View style={styles.card}>
       <Text style={styles.subject}>{item.subject}</Text>
-      <View style={{flexDirection: 'row', justifyContent: 'space-between'}}>
+
+      <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
         <Text style={styles.label}>Status:</Text>
         <Text style={styles.status}>{item.status}</Text>
       </View>
+
       {item?.remark ? (
-        <View style={{flexDirection: 'row', justifyContent: 'space-between'}}>
+        <View style={styles.block}>
           <Text style={styles.label}>Remark:</Text>
-          <Text style={styles.label}>{item.remark}</Text>
+          <Text style={styles.value}>{item.remark}</Text>
         </View>
       ) : null}
-      <View style={{flexDirection: 'row', justifyContent: 'space-between'}}>
-        <Text style={styles.label}>Comment: </Text>
-        <Text style={styles.label}>{item.comment}</Text>
+
+      <View style={styles.block}>
+        <Text style={styles.label}>Comment:</Text>
+        <Text style={styles.value}>{item.comment}</Text>
       </View>
 
       <Text style={styles.date}>
@@ -91,59 +94,55 @@ const ListSupport = () => {
       <View style={styles.actions}>
         <TouchableOpacity
           style={[styles.button, styles.edit]}
-          onPress={() => navigation.navigate('SupportPage', {id: item.id})}>
+          onPress={() => navigation.navigate('SupportPage', { id: item.id })}
+        >
           <Text style={styles.buttonText}>Edit</Text>
         </TouchableOpacity>
-        {item?.remark == null ? (
+        {!item?.remark && (
           <TouchableOpacity
             style={[styles.button, styles.delete]}
-            onPress={() => handleDelete(item.id)}>
+            onPress={() => handleDelete(item.id)}
+          >
             <Text style={styles.buttonText}>Delete</Text>
           </TouchableOpacity>
-        ) : null}
+        )}
       </View>
     </View>
   );
 
   return (
     <View style={styles.container}>
-      {/* Top Header & Add Button */}
       <View style={styles.header}>
         <Text style={styles.title}>Support Requests</Text>
         <TouchableOpacity
           style={styles.addButton}
-          onPress={() => navigation.navigate('SupportPage')}>
+          onPress={() => navigation.navigate('SupportPage')}
+        >
           <Text style={styles.addButtonText}>+ Add</Text>
         </TouchableOpacity>
       </View>
 
-      {/* FlatList to render support items */}
       <FlatList
         data={list}
-        onEndReached={() => fetchMore()}
+        onEndReached={fetchMore}
+        onEndReachedThreshold={0.1}
+        keyExtractor={(item, index) => index.toString()}
+        renderItem={renderItem}
+        contentContainerStyle={{ paddingBottom: 16 }}
         ListEmptyComponent={
-          <View>
+          <View style={{ alignItems: 'center', marginTop: 40 }}>
             <Image
               source={{
                 uri: 'https://static.vecteezy.com/system/resources/thumbnails/013/927/147/small_2x/adaptive-interface-design-illustration-concept-on-white-background-vector.jpg',
               }}
-              style={{padding: 20, height: 250}}
+              style={{ width: 250, height: 250, marginBottom: 20 }}
+              resizeMode="contain"
             />
-            <Text
-              style={{
-                fontSize: 18,
-                color: '#000',
-                fontWeight: '500',
-                textAlign: 'center',
-              }}>
+            <Text style={{ fontSize: 18, color: '#000', fontWeight: '500' }}>
               Data Not Found
             </Text>
           </View>
         }
-        keyExtractor={(item, index) => index.toString()}
-        onEndReachedThreshold={0.1}
-        renderItem={renderItem}
-        contentContainerStyle={{paddingBottom: 16}}
       />
     </View>
   );
@@ -183,29 +182,39 @@ const styles = StyleSheet.create({
     marginBottom: 16,
     shadowColor: '#000',
     shadowOpacity: 0.05,
-    shadowOffset: {width: 0, height: 2},
+    shadowOffset: { width: 0, height: 2 },
     shadowRadius: 6,
     elevation: 3,
   },
   subject: {
     fontSize: 18,
     fontWeight: '600',
-    marginBottom: 4,
+    marginBottom: 6,
     color: '#000',
   },
   label: {
     fontSize: 14,
-    marginBottom: 2,
+    fontWeight: '500',
     color: '#555',
+  },
+  value: {
+    fontSize: 14,
+    color: '#333',
+    marginTop: 4,
+    marginBottom: 8,
   },
   status: {
     color: '#DC2626',
     fontWeight: '600',
+    fontSize: 14,
   },
   date: {
     fontSize: 12,
     color: '#888',
     marginTop: 4,
+  },
+  block: {
+    marginTop: 8,
   },
   actions: {
     flexDirection: 'row',
@@ -217,9 +226,6 @@ const styles = StyleSheet.create({
     paddingVertical: 6,
     borderRadius: 6,
     marginLeft: 8,
-  },
-  view: {
-    backgroundColor: '#10B981',
   },
   edit: {
     backgroundColor: '#F59E0B',

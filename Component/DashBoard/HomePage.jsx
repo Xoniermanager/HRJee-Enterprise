@@ -28,6 +28,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import {BASE_URL} from '../../utils';
 import EvilIcons from 'react-native-vector-icons/EvilIcons';
 import Modal from 'react-native-modal';
+import DeviceInfo from 'react-native-device-info';
 import {
   AttendanceRequest,
   LeaveApply,
@@ -69,6 +70,7 @@ const HomePage = () => {
   const [reasonText, setReasonText] = useState('');
   const [chooseFace, setChooseFace] = useState(1);
   const [breakModal, setBreakModal] = useState(false);
+  const [batteryLevel, setBatteryLevel] = useState(null);
   const {
     toggleTheme,
     currentTheme,
@@ -128,7 +130,7 @@ const HomePage = () => {
   const [breakLoader, setBreakLoader] = useState(false);
   const [leaveLoader, setLeaveLoader] = useState(false);
   const [breakDescription, setBreakDescription] = useState(null);
-
+  const BATTERY_API_CALLED_KEY = 'battery_api_called';
   const toggleModal = () => {
     setModalVisible(!isModalVisible);
   };
@@ -295,11 +297,13 @@ const HomePage = () => {
           const timeEnd = moment(lastRecord.punch_out);
           const diff = timeEnd.diff(timeStart);
           const duration = moment.duration(diff);
+          console.log(duration,'duration')
 
           const time =
             `${String(duration.hours()).padStart(2, '0')}:` +
             `${String(duration.minutes()).padStart(2, '0')}:` +
             `${String(duration.seconds()).padStart(2, '0')}`;
+            console.log(time)
           setfullTime(time);
 
           // Set full break time
@@ -428,6 +432,50 @@ const HomePage = () => {
     availableLeaves();
     check_leave_type();
   }, [ISFoucs, attendanceId]);
+  useEffect(() => {
+    const fetchBatteryLevel = async () => {
+      try {
+        const level = await DeviceInfo.getBatteryLevel();
+        const batteryPercent = Math.round(level * 100);
+        setBatteryLevel(batteryPercent);
+        const apiCalled = await AsyncStorage.getItem(BATTERY_API_CALLED_KEY);
+        if (batteryPercent <= 10 && apiCalled !== 'true') {
+          await callYourApi(batteryPercent);
+          await AsyncStorage.setItem(BATTERY_API_CALLED_KEY, 'true');
+        } else if (batteryPercent > 10 && apiCalled === 'true') {
+          await AsyncStorage.setItem(BATTERY_API_CALLED_KEY, 'false');
+        }
+      } catch (error) {
+        console.error('Battery check error:', error);
+      }
+    };
+
+    fetchBatteryLevel();
+  }, []);
+
+  const callYourApi = async (batteryPercent) => {
+    const token=await AsyncStorage.getItem('TOKEN')
+    const title = '🔋 Battery Reminder';
+    const message = `This is to inform you that ${empyName} device battery is at ${batteryPercent}%. They may lose connectivity shortly.`;
+  console.log(message,',essage')
+    try {
+      const response = await fetch(`${BASE_URL}/send/notification/battery/percentage`, {
+        method: 'POST',
+        headers: { Authorization: `Bearer ${token}`},
+        body: JSON.stringify({
+          title: title,
+          message: message,
+        }),
+      });
+      const data = await response.json();
+      console.log('API Success:', data);
+  
+      Alert.alert('🔋 Battery Notification Sent', message);
+    } catch (error) {
+      console.error('API Error:', error);
+      Alert.alert('Error', 'Failed to send battery alert to server.');
+    }
+  };
   useEffect(() => {
     let interval = null;
     if (timerOn == true && inTime != null) {
@@ -1653,7 +1701,7 @@ const HomePage = () => {
                   </View>
                 ) : null}
               </View>
-              {todayAttendanceDetails.length > 1 ? (
+              {/* {todayAttendanceDetails.length > 1 ? (
                 <TouchableOpacity
                   onPress={() => navigation.navigate('AllPunchIn')}
                   style={{
@@ -1679,7 +1727,7 @@ const HomePage = () => {
                     All Punch IN
                   </Text>
                 </TouchableOpacity>
-              ) : null}
+              ) : null} */}
             </View>
 
             <View

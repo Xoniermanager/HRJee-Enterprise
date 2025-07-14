@@ -8,6 +8,8 @@ import {
   TouchableOpacity,
   View,
   Keyboard,
+  PermissionsAndroid,
+  Platform,
 } from 'react-native';
 import React, {useContext, useEffect, useRef, useState} from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -16,8 +18,9 @@ import axios from 'axios';
 import {showMessage} from 'react-native-flash-message';
 import {AttendanceRequest} from '../../../APINetwork/ComponentApi';
 import {useNavigation} from '@react-navigation/native';
-import { ThemeContext } from '../../../Store/ConetxtApi.jsx/ConextApi';
-import { GooglePlacesAutocomplete } from "react-native-google-places-autocomplete";
+import {ThemeContext} from '../../../Store/ConetxtApi.jsx/ConextApi';
+import {GooglePlacesAutocomplete} from 'react-native-google-places-autocomplete';
+import Geolocation from '@react-native-community/geolocation';
 
 const AddAddress = ({route}) => {
   const addressRef = useRef();
@@ -37,7 +40,7 @@ const AddAddress = ({route}) => {
       setIsDataLoaded(true);
       return;
     }
-    
+
     try {
       const token = await AsyncStorage.getItem('TOKEN');
       const config = {
@@ -48,18 +51,17 @@ const AddAddress = ({route}) => {
           Authorization: `Bearer ${token}`,
         },
       };
-      
+
       const response = await axios(config);
       setReasonText(response.data.data.reason || '');
       setAddress(response.data.data.address || '');
       setLat(response.data.data.latitude || '');
       setLong(response.data.data.longitude || '');
-      
-      // Set the address in GooglePlacesAutocomplete after data is loaded
+
       if (addressRef.current && response.data.data.address) {
         addressRef.current.setAddressText(response.data.data.address);
       }
-      
+
       setIsDataLoaded(true);
     } catch (error) {
       console.log(error);
@@ -71,7 +73,6 @@ const AddAddress = ({route}) => {
     getItem();
   }, []);
 
-  // Update GooglePlacesAutocomplete when address changes from API
   useEffect(() => {
     if (isDataLoaded && addressRef.current && address) {
       addressRef.current.setAddressText(address);
@@ -90,7 +91,7 @@ const AddAddress = ({route}) => {
             },
           },
         );
-        
+
         if (response.data.results.length > 0) {
           const location = response.data.results[0].geometry.location;
           setLat(location.lat.toString());
@@ -116,15 +117,15 @@ const AddAddress = ({route}) => {
 
   const address_Request = async () => {
     const token = await AsyncStorage.getItem('TOKEN');
-    
+
     if (address.trim() === '') {
       showMessage({
         message: 'Please enter your address.',
         type: 'danger',
       });
       return;
-    } 
-    
+    }
+
     if (reasonText.trim() === '') {
       showMessage({
         message: 'Please enter a reason.',
@@ -132,7 +133,7 @@ const AddAddress = ({route}) => {
       });
       return;
     }
-    
+
     if (!lat || !long) {
       showMessage({
         message: 'Location data is incomplete. Please check your address.',
@@ -142,7 +143,7 @@ const AddAddress = ({route}) => {
     }
 
     setLoader(true);
-    
+
     try {
       let data = JSON.stringify({
         address: address,
@@ -150,14 +151,14 @@ const AddAddress = ({route}) => {
         longitude: long,
         reason: reasonText,
       });
-      
+
       const url = id
         ? `${BASE_URL}/address/request/update/${id}`
         : `${BASE_URL}/address/request/store`;
-      
+
       let form = 0;
       const response = await AttendanceRequest(url, data, token, form);
-      
+
       if (response.data.status) {
         showMessage({
           message: `${response?.data?.message}`,
@@ -184,16 +185,90 @@ const AddAddress = ({route}) => {
     const selectedAddress = data?.description || '';
     setAddress(selectedAddress);
     fetchCoordinates(selectedAddress);
-    Keyboard.dismiss(); // Hide keyboard after selection
+    Keyboard.dismiss();
   };
 
   const handleAddressChange = (text) => {
     setAddress(text);
-    // Clear coordinates when manually typing
-    if (text.trim() === '') {
-      // setLat('');
-      // setLong('');
+  };
+
+  const requestLocationPermission = async () => {
+    if (Platform.OS === 'android') {
+      const granted = await PermissionsAndroid.request(
+        PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION,
+        {
+          title: 'Location Permission',
+          message: 'This app needs access to your location.',
+          buttonNeutral: 'Ask Me Later',
+          buttonNegative: 'Cancel',
+          buttonPositive: 'OK',
+        },
+      );
+      return granted === PermissionsAndroid.RESULTS.GRANTED;
     }
+    return true;
+  };
+
+  const getCurrentLocation = async () => {
+    const hasPermission = await requestLocationPermission();
+    if (!hasPermission) {
+      showMessage({
+        message: 'Location permission denied',
+        type: 'danger',
+      });
+      return;
+    }
+
+    setLoader(true);
+    Geolocation.getCurrentPosition(
+      async (position) => {
+        const {latitude, longitude} = position.coords;
+        setLat(latitude.toString());
+        setLong(longitude.toString());
+
+        try {
+          const response = await axios.get(
+            `https://maps.googleapis.com/maps/api/geocode/json`,
+            {
+              params: {
+                latlng: `${latitude},${longitude}`,
+                key: GOOGLE_PLACES_API_KEY,
+              },
+            }
+          );
+
+          if (response.data.results.length > 0) {
+            const formattedAddress = response.data.results[0].formatted_address;
+            setAddress(formattedAddress);
+            if (addressRef.current) {
+              addressRef.current.setAddressText(formattedAddress);
+            }
+          } else {
+            showMessage({
+              message: 'Unable to find address for this location.',
+              type: 'danger',
+            });
+          }
+        } catch (error) {
+          console.log('Geocoding error:', error);
+          showMessage({
+            message: 'Failed to fetch address from location.',
+            type: 'danger',
+          });
+        } finally {
+          setLoader(false);
+        }
+      },
+      (error) => {
+        console.log('Location error:', error);
+        showMessage({
+          message: 'Failed to get current location.',
+          type: 'danger',
+        });
+        setLoader(false);
+      },
+      {enableHighAccuracy: true, timeout: 15000, maximumAge: 10000},
+    );
   };
 
   if (!isDataLoaded) {
@@ -212,6 +287,13 @@ const AddAddress = ({route}) => {
       showsVerticalScrollIndicator={false}
     >
       <View style={styles.modalContainer}>
+        <TouchableOpacity
+          style={[styles.locationButton, { backgroundColor: currentTheme.background_v2 }]}
+          onPress={getCurrentLocation}
+        >
+          <Text style={styles.locationButtonText}>Use Current Location</Text>
+        </TouchableOpacity>
+
         <Text style={styles.sectionTitle}>Address</Text>
         
         <View style={styles.autocompleteWrapper}>
@@ -223,7 +305,7 @@ const AddAddress = ({route}) => {
             query={{
               key: GOOGLE_PLACES_API_KEY,
               language: "en",
-              components: 'country:in', // Restrict to India, change as needed
+              components: 'country:in',
             }}
             textInputProps={{
               value: address,
@@ -292,7 +374,7 @@ const AddAddress = ({route}) => {
 
         <View style={styles.buttonRow}>
           <TouchableOpacity
-            style={[styles.saveButton, {backgroundColor: currentTheme.background_v2}]}
+            style={[styles.saveButton, { backgroundColor: currentTheme.background_v2 }]}
             onPress={address_Request}
             disabled={loader}
           >
@@ -361,7 +443,6 @@ const styles = StyleSheet.create({
     marginBottom: 30,
   },
   saveButton: {
-    backgroundColor: '#0043ae',
     padding: 15,
     borderRadius: 8,
     alignItems: 'center',
@@ -374,8 +455,6 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     fontSize: 16,
   },
-  
-  // Google Places Autocomplete Styles
   autocompleteWrapper: {
     zIndex: 1,
     marginBottom: 10,
@@ -426,5 +505,18 @@ const styles = StyleSheet.create({
   emptyResultsText: {
     color: '#666',
     fontSize: 14,
+  },
+  locationButton: {
+    padding: 12,
+    borderRadius: 8,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 15,
+    alignSelf:'flex-end'
+  },
+  locationButtonText: {
+    color: '#fff',
+    fontSize: 12,
+    fontWeight: 'bold',
   },
 });

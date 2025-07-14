@@ -272,7 +272,7 @@ const Person_Detils = () => {
               style={[styles.textInput, {color: currentTheme.text}]}
               placeholder="Father's Name"
               placeholderTextColor={currentTheme.text}
-              value={details.father_name}
+              value={details.father_name=="null"?"":details.father_name}
               onChangeText={value => handleInputChange('father_name', value)}
             />
           </View>
@@ -286,7 +286,7 @@ const Person_Detils = () => {
               style={[styles.textInput, {color: currentTheme.text}]}
               placeholder="Mother's Name"
               placeholderTextColor={currentTheme.text}
-              value={details.mother_name}
+              value={details.mother_name=="null"?"":details.mother_name}
               onChangeText={value => handleInputChange('mother_name', value)}
             />
           </View>

@@ -598,7 +598,7 @@ const TaskPage = () => {
       const nextPage = currentPage + 1;
       const token = await AsyncStorage.getItem("TOKEN");
       const url = `${BASE_URL}/assign/task?page=${nextPage}`;
-      const response = await Patient_appointment(url, token);
+      const response = await asignTask(url, token);
       setIsLoading(response?.data?.data?.data);
       setCurrentPage(nextPage);
       setList((prevData) => [...prevData, ...response?.data?.data?.data]);
